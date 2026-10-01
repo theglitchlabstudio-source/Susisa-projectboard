@@ -284,7 +284,7 @@ else{jy-=1;k+=179;if(r.leap===1)k+=1}
 jm=7+div(k,30);jd=mod(k,30)+1;return{jy:jy,jm:jm,jd:jd}}
 
 /* ================= SEED DATA ================= */
-var SEED_V = 1;
+var SEED_V = 2;
 function d(m, dd){ return j2d(1405, m, dd); }
 
 var LANES = {
@@ -305,17 +305,19 @@ var SPRINTS = [
   {id:'post', n:'بعد از افتتاحیه', a:d(8,1), b:d(10,30), gate:'G5'}
 ];
 var CHAPTERS = [
-  {n:0, t:'راهنمای استفاده و بستر', ph:'open'},
-  {n:1, t:'هستهٔ استراتژیک', ph:'open'},
-  {n:2, t:'اصول محصول و منو', ph:'open'},
-  {n:3, t:'هویت کلامی', ph:'open'},
-  {n:4, t:'هویت بصری', ph:'open'},
-  {n:5, t:'شخصیت‌ها (سو، سی، سا)', ph:'after'},
-  {n:6, t:'بسته‌بندی', ph:'after'},
-  {n:7, t:'فضای فیزیکی', ph:'after'},
-  {n:8, t:'استراتژی دیجیتال', ph:'open'},
-  {n:9, t:'ارجاع عملیاتی', ph:'after'},
-  {n:10, t:'فیلتر هفت و بریف‌ها', ph:'open'}
+  {n:0,  t:'راهنما و حاکمیت', ph:'open'},
+  {n:1,  t:'Raw Brand Notes (یادداشت‌های خام)', ph:'open'},
+  {n:2,  t:'بازار و رقبا', ph:'open'},
+  {n:3,  t:'پلتفرم برند (هستهٔ استراتژیک)', ph:'open'},
+  {n:4,  t:'محصول و منو', ph:'open'},
+  {n:5,  t:'هویت کلامی', ph:'open'},
+  {n:6,  t:'هویت بصری', ph:'open'},
+  {n:7,  t:'استراتژی دیجیتال و محتوا', ph:'open'},
+  {n:8,  t:'ابزار تصمیم و بریف', ph:'open'},
+  {n:9,  t:'بسته‌بندی', ph:'after'},
+  {n:10, t:'فضای فیزیکی', ph:'after'},
+  {n:11, t:'شخصیت‌ها (سو، سی، سا)', ph:'after'},
+  {n:12, t:'ارجاع عملیاتی', ph:'after'}
 ];
 var BSTATES = ['برای درخواست','درخواست شد','تأیید شد','در تولید یا چاپ','تحویل شد'];
 
@@ -338,74 +340,94 @@ function seedTasks(){
  var L = [];
  /* ---- زودتر انجام‌شده ---- */
  var E = {sprint:'early', status:'done', early:true, lane:'main'};
- L.push(T('e01','مصاحبه‌ها و تعریف کیس (دو جلسه)', Object.assign({bb:1,owner:'M',notes:'دادهٔ خام مصاحبه؛ مرجع تصمیم تیم است.'},E)));
- L.push(T('e02','مطالعهٔ ۱۰ برند جهانی هات‌داگ', Object.assign({bb:1,owner:'A'},E)));
+ L.push(T('e01','مصاحبه‌ها و تعریف کیس (دو جلسه)', Object.assign({bb:3,owner:'M',notes:'دادهٔ خام مصاحبه؛ مرجع تصمیم تیم است.'},E)));
+ L.push(T('e02','مطالعهٔ ۱۰ برند جهانی هات‌داگ', Object.assign({bb:3,owner:'A'},E)));
  L.push(T('e03','پروپوزال v2 و فهرست خدمات', Object.assign({bb:0,owner:'M'},E)));
- L.push(T('e04','تگ‌لاین و سه اسلوگن (نهایی)', Object.assign({bb:3,owner:'A',
+ L.push(T('e04','تگ‌لاین و سه اسلوگن (نهایی)', Object.assign({bb:5,owner:'A',
    notes:'تگ‌لاین: The Sausage Is the Boss.\nاسلوگن‌ها: Hot Dog Nerds. Certified. / Short Menu. Big Trouble. / Too Serious for a Hot Dog.\nمانده در برندبوک: قواعد استفاده و نقشهٔ نقاط تماس.'},E)));
- L.push(T('e05','لوگوی فعلی (وردمارک شعله‌ای) و تابلوی سردر', Object.assign({bb:4,owner:'M',
+ L.push(T('e05','لوگوی فعلی (وردمارک شعله‌ای) و تابلوی سردر', Object.assign({bb:6,owner:'M',
    notes:'در اسپرینت ۲ فقط بهینه‌سازی و نسخه‌بندی می‌شود، بازطراحی نمی‌شود.'},E)));
- L.push(T('e06','دیوار سفید و ۷ تابلو (طراحی و اجرا)', Object.assign({bb:7,owner:'M'},E)));
- L.push(T('e07','طرح دو تابلوی باقی‌ماندهٔ دیوار', Object.assign({bb:7,owner:'M',notes:'طرح مشخص است؛ تولید در صف است (ریل بودجه).'},E)));
- L.push(T('e08','کاغذ ساندویچ: طراحی و تأیید', Object.assign({bb:6,owner:'M',
+ L.push(T('e06','دیوار سفید و ۷ تابلو (طراحی و اجرا)', Object.assign({bb:10,owner:'M'},E)));
+ L.push(T('e07','طرح دو تابلوی باقی‌ماندهٔ دیوار', Object.assign({bb:10,owner:'M',notes:'طرح مشخص است؛ تولید در صف است (ریل بودجه).'},E)));
+ L.push(T('e08','کاغذ ساندویچ: طراحی و تأیید', Object.assign({bb:9,owner:'M',
    notes:'۲۳×۲۳ سانتی‌متر، ۳۰۰ dpi. نکته‌های بازبینی پیش از چاپ: فونت جملهٔ «Short Menu. Big Trouble.» با بقیه می‌خواند؟ نقطه بعد از Menu؟ نسخهٔ وکتور؟ تست‌پرینت.'},E)));
- L.push(T('e09','منوی نهایی (اقلام، نام‌ها و قیمت‌ها)', Object.assign({bb:2,owner:'M',
+ L.push(T('e09','منوی نهایی (اقلام، نام‌ها و قیمت‌ها)', Object.assign({bb:4,owner:'M',
    notes:'قیمت‌ها هزار تومان.\nStarters: چیپس و پنیر ۲۴۵، سیب‌زمینی ۱۸۵\nSandwiches: آمریکن داگ ۴۹۵، کرالف پنیری ۷۹۵، دپرشن داگ ۳۴۷، هانی کراست ۶۵۵\nPlates: هات‌داگ اسلایسی ۴۹۵، کرالف اسلایسی ۸۷۰\nToppings: دیپ چدار ۹۵، سیب‌زمینی ۸۰، خامه ترش ۶۵، پیاز کاراملی ۵۵؛ رایگان: خیارشور، گوجه، رلیش پیاز، رلیش خیارشور.\nمنو همیشه تغییر می‌کند؛ مرجع واحد در برندبوک نگه‌داری می‌شود.'},E)));
- L.push(T('e10','ابزار رسپی آشپزخانه (kitchen-recipe-os)', Object.assign({bb:9,owner:'M',
+ L.push(T('e10','ابزار رسپی آشپزخانه (kitchen-recipe-os)', Object.assign({bb:12,owner:'M',
    notes:'خدمت رایگان، پیش‌نیاز لاگ دورریز. https://theglitchlabstudio-source.github.io/kitchen-recipe-os/'},E)));
 
  /* ---- اسپرینت ۰ ---- */
- L.push(T('s0a','تصمیم بستر برندبوک (GitHub Pages یا آرتیفکت)', {sprint:'s0',bb:0,owner:'M',prio:'p0',type:'decision',start:d(7,9),due:d(7,10)}));
- L.push(T('s0b','قفل املای لاتین (SUSISA) و نام پیج اینستاگرام', {sprint:'s0',bb:4,owner:'M',prio:'p0',type:'decision',start:d(7,9),due:d(7,10),
-   notes:'در اسناد سه شکل دیده می‌شود: Susisa / SUSISA / Sosisas. نام پیج فعلی: «sausages|سوسیسا».'}));
- L.push(T('s0c','ساخت صفحهٔ زندهٔ برندبوک با اسکلت ۱۱ فصل', {sprint:'s0',bb:0,owner:'M',prio:'p0',start:d(7,10),due:d(7,13),deps:['s0a'],
-   notes:'فارسی RTL، موبایل‌پسند. هر گیت یک بار به‌روز می‌شود.'}));
- L.push(T('s0d','راه‌اندازی دفتر تصمیم (چه، چرا، کی، چه کسی)', {sprint:'s0',bb:10,owner:'A',prio:'p1',start:d(7,10),due:d(7,11)}));
- L.push(T('s0e','ممیزی دارایی‌های بصری موجود (تابلو، دیوار، کاغذ، منو، لوگو)', {sprint:'s0',bb:4,owner:'M',prio:'p0',start:d(7,11),due:d(7,13),
+ L.push(T('s0a','تصمیم بستر برندبوک (GitHub Pages یا آرتیفکت)', {sprint:'s0',bb:0,owner:'M',prio:'p0',type:'decision',status:'done',doneAt:d(7,9),start:d(7,9),due:d(7,10),notes:'تصمیم ۹ مهر: GitHub Pages.'}));
+ L.push(T('s0b','قفل نام برند: Susisa / سوسیسا، لوگوی فعلی و نام پیج', {sprint:'s0',bb:6,owner:'M',prio:'p0',type:'decision',status:'done',doneAt:d(7,9),start:d(7,9),due:d(7,10),
+   notes:'تصمیم ۹ مهر: نام برند نهایی شد؛ املای لاتین Susisa؛ لوگوی فعلی می‌ماند؛ نام پیج تغییر نمی‌کند.'}));
+ L.push(T('s0c','ساخت صفحهٔ زندهٔ برندبوک (اسکلت ۱۳ فصل) و انتشار در ریپو', {sprint:'s0',bb:0,owner:'M',prio:'p0',status:'done',doneAt:d(7,9),start:d(7,9),due:d(7,10),deps:['s0a'],
+   notes:'ریپو: theglitchlabstudio-source/Susisa-Brandbook. فارسی RTL، موبایل‌پسند.'}));
+ L.push(T('s0h','بازطراحی برنامهٔ پروژه، ساخت برد پروژه v3 و انتشار در ریپو', {sprint:'s0',bb:0,owner:'M',prio:'p0',status:'done',doneAt:d(7,9),start:d(7,9),due:d(7,9),
+   notes:'ریپو: theglitchlabstudio-source/Susisa-projectboard'}));
+ L.push(T('s0i','پژوهش ساختار برندبوک برندهای هم‌رده و بازطراحی فصل‌ها با نگاه استراتژیست', {sprint:'s0',bb:0,owner:'M',prio:'p0',status:'done',doneAt:d(7,9),start:d(7,9),due:d(7,9),
+   notes:'نتیجه: ۱۳ فصل در پنج بخش (مبنا، استراتژی، بیان، اجرا و کانال‌ها، نقاط تماس و عملیات).'}));
+ L.push(T('s0j','فعال‌سازی GitHub Pages برای ریپوی برندبوک و برد (Settings ← Pages ← main / root)', {sprint:'s0',bb:0,owner:'M',prio:'p0',start:d(7,9),due:d(7,10),
+   check:ck('برندبوک: آدرس باز می‌شود','برد پروژه: آدرس باز می‌شود')}));
+ L.push(T('s0k','تصمیم: ریپوها عمومی بمانند یا خصوصی شوند؟ (مصاحبه، قیمت و بودجه حساس‌اند)', {sprint:'s0',bb:0,owner:'M',prio:'p0',type:'decision',start:d(7,9),due:d(7,10),
+   notes:'الان هر دو ریپو عمومی‌اند و هر کسی می‌تواند محتوا را ببیند. Pages برای ریپوی خصوصی نیاز به پلن پولی GitHub دارد. تا تصمیم، فصل ۱ (Raw Notes) در نسخهٔ عمومی منتشر نمی‌شود و نسخهٔ کامل فقط در ولت می‌ماند.'}));
+ L.push(T('s0l','Raw Brand Notes: یادداشت‌های خام مصاحبه (فصل ۱ برندبوک)', {sprint:'s0',bb:1,owner:'M',prio:'p0',status:'doing',start:d(7,9),due:d(7,10),
+   notes:'اولین سند برندبوک. داده است، نه تصمیم. سنتز استراتژی از روی همین سند انجام می‌شود.',
+   check:[{x:'استخراج ۱۸ موضوع و حدود ۱۵۰ یادداشت از متن کامل مصاحبه‌ها',done:true},{x:'بازبینی ممضی: حذف موارد خصوصی یا غیرضروری',done:false},{x:'بازبینی امیرحسین: درستی برداشت‌ها',done:false},{x:'تصمیم انتشار (وابسته به s0k)',done:false}]}));
+ L.push(T('s0d','راه‌اندازی دفتر تصمیم (چه، چرا، کی، چه کسی)', {sprint:'s0',bb:8,owner:'A',prio:'p1',start:d(7,10),due:d(7,11)}));
+ L.push(T('s0e','ممیزی دارایی‌های بصری موجود (تابلو، دیوار، کاغذ، منو، لوگو)', {sprint:'s0',bb:6,owner:'M',prio:'p0',start:d(7,11),due:d(7,13),
    check:ck('فهرست فایل‌ها و نسخه‌ها','رنگ‌های واقعی روی تابلو و دیوار','فونت‌های استفاده‌شده و مجوزشان')}));
- L.push(T('s0f','ممیزی پیج اینستاگرام (پست‌ها، هایلایت، بیو، گرید)', {sprint:'s0',bb:8,owner:'T',prio:'p1',start:d(7,11),due:d(7,12),
+ L.push(T('s0f','ممیزی پیج اینستاگرام (پست‌ها، هایلایت، بیو، گرید)', {sprint:'s0',bb:7,owner:'T',prio:'p1',start:d(7,11),due:d(7,12),
    notes:'در نمای عمومی فقط نام، بیو و ۹۷ دنبال‌کننده دیده شد. برای پست‌ها لازم است با حساب وارد شوید.'}));
- L.push(T('s0g','اصلاح نام و بیو پیج طبق املای نهایی', {sprint:'s0',bb:8,owner:'T',prio:'p1',start:d(7,12),due:d(7,13),deps:['s0b']}));
- L.push(T('G0','گیت ۰: برندبوک آنلاین است و تصمیم‌های پایه قفل شد', {sprint:'s0',type:'gate',owner:'M',prio:'p0',due:d(7,13),deps:['s0a','s0b','s0c','s0e']}));
+ L.push(T('s0g','بیو و آدرس پیج برای دورهٔ سافت‌اوپنینگ (نام پیج تغییر نمی‌کند)', {sprint:'s0',bb:7,owner:'T',prio:'p1',start:d(7,12),due:d(7,13)}));
+ L.push(T('G0','گیت ۰: برندبوک آنلاین است و تصمیم‌های پایه قفل شد', {sprint:'s0',type:'gate',owner:'M',prio:'p0',due:d(7,13),deps:['s0a','s0b','s0c','s0e','s0j','s0l']}));
 
  /* ---- اسپرینت ۱: هسته ---- */
- L.push(T('s1a','بیانیهٔ تخصص (سنتز مصاحبه و ۱۰ کیس)', {sprint:'s1',bb:1,owner:'A',prio:'p0',start:d(7,11),due:d(7,12),deps:['e01','e02']}));
- L.push(T('s1b','سه پیش‌نویس جایگاه‌یابی و انتخاب یکی', {sprint:'s1',bb:1,owner:'A',prio:'p0',start:d(7,12),due:d(7,14),deps:['s1a'],
-   notes:'مأموریت: سوسیسا هات‌داگ‌فروشی تخصصی مشهد است. رقیب تخصصی وجود ندارد.'}));
- L.push(T('s1c','وعدهٔ برند و گزارهٔ مرکزی', {sprint:'s1',bb:1,owner:'A',prio:'p0',start:d(7,14),due:d(7,15),deps:['s1b'],
+ L.push(T('s1a','سنتز Raw Notes ← بیانیهٔ تخصص (با ۱۰ کیس جهانی)', {sprint:'s1',bb:3,owner:'A',prio:'p0',start:d(7,11),due:d(7,12),deps:['s0l','e02'],
+   notes:'ورودی: فصل ۱ (Raw Brand Notes). هر تصمیم به شمارهٔ یادداشت خامش ارجاع می‌دهد.'}));
+ L.push(T('s1m','نقشهٔ بازار مشهد: دو قطب (اغذیه‌های سنتی و برندهای مدرن) و جای خالی', {sprint:'s1',bb:2,owner:'A',prio:'p0',start:d(7,11),due:d(7,15),
+   notes:'پیش‌نویس اولیه در فصل ۲ هست؛ نیاز به راستی‌آزمایی میدانی دارد.'}));
+ L.push(T('s1j','تحلیل رقبا: ۸ تا ۱۰ رقیب مشهدی و ۳ تا ۵ برند نمونه (محصول، قیمت، لحن، اینستاگرام، اسنپ‌فود)', {sprint:'s1',bb:2,owner:'T',prio:'p0',start:d(7,11),due:d(7,17),
+   notes:'ورودی هم جایگاه‌یابی (فصل ۳) و هم استراتژی اینستاگرام (فصل ۷). نتیجه در فصل ۲ ثبت می‌شود.'}));
+ L.push(T('s1n','کدهای دسته: همهٔ هات‌داگی‌ها و فست‌فودی‌ها چه می‌کنند و ما کجا می‌شکنیم', {sprint:'s1',bb:2,owner:'A',prio:'p1',start:d(7,15),due:d(7,17),deps:['s1j']}));
+ L.push(T('s1b','سه پیش‌نویس جایگاه‌یابی و انتخاب یکی', {sprint:'s1',bb:3,owner:'A',prio:'p0',start:d(7,12),due:d(7,14),deps:['s1a','s1m'],
+   notes:'مأموریت: سوسیسا هات‌داگ‌فروشی تخصصی مشهد است. رقیب تخصصی وجود ندارد. پیش‌نویس سه‌گزینه‌ای در فصل ۳ نوشته شده.'}));
+ L.push(T('s1r','نام و معماری برند: قواعد نام‌گذاری (فارسی، لاتین)، نام آیتم‌ها، زیربرندها', {sprint:'s1',bb:3,owner:'A',prio:'p1',start:d(7,12),due:d(7,14),deps:['s0b'],
+   notes:'نام برند Susisa / سوسیسا نهایی است.'}));
+ L.push(T('s1p','ارزش پیشنهادی و دلایل باور (چرا باید حرفمان را باور کنند)', {sprint:'s1',bb:3,owner:'A',prio:'p0',start:d(7,14),due:d(7,15),deps:['s1b']}));
+ L.push(T('s1c','وعدهٔ برند و گزارهٔ مرکزی', {sprint:'s1',bb:3,owner:'A',prio:'p0',start:d(7,14),due:d(7,15),deps:['s1b'],
    notes:'پیش‌نویس موجود: «رفتار خیابانی + انضباط محصول».'}));
- L.push(T('s1d','سه پرسونا: مشتری هفتگی، کنجکاو، بیرون‌بر زمستانی', {sprint:'s1',bb:1,owner:'T',prio:'p1',start:d(7,14),due:d(7,16),deps:['s1b']}));
- L.push(T('s1e','هفت دستهٔ ارزش با قاعدهٔ اجرایی', {sprint:'s1',bb:1,owner:'A',prio:'p1',start:d(7,14),due:d(7,16),deps:['s1b']}));
- L.push(T('s1f','خطوط قرمز و کلمات ممنوع', {sprint:'s1',bb:1,owner:'A',prio:'p1',start:d(7,15),due:d(7,16),deps:['s1e'],
-   notes:'ممنوع‌های شناخته‌شده: snap، fast food، dirty، best، real، و dog به‌تنهایی.'}));
- L.push(T('s1g','داستان برند (بدون جزئیات خصوصی)', {sprint:'s1',bb:1,owner:'A',prio:'p1',start:d(7,15),due:d(7,17),deps:['s1b']}));
- L.push(T('s1h','شخصیت برند: جدی و جسور ولی ظاهراً احمق، به‌علاوهٔ ضدشخصیت', {sprint:'s1',bb:1,owner:'A',prio:'p1',start:d(7,15),due:d(7,17),deps:['s1b']}));
- L.push(T('s1i','کالیبرهٔ فیلتر هفت و ثبت در دفتر تصمیم', {sprint:'s1',bb:10,owner:'M',prio:'p1',start:d(7,12),due:d(7,14),deps:['s0d']}));
- L.push(T('s1j','تحلیل رقابتی دیجیتال سبک (۸ تا ۱۰ رقیب مشهدی و ۳ تا ۵ برند نمونه)', {sprint:'s1',bb:8,owner:'T',prio:'p0',start:d(7,11),due:d(7,17),
-   notes:'ورودی استراتژی اینستاگرام: حضور اینستاگرام و اسنپ‌فود، لحن، نوع محتوا، ریتم انتشار. تحلیل کامل بازار خارج از محدوده است.'}));
- L.push(T('s1k','سند یک‌صفحه‌ای هسته (مونتاژ فصل ۱)', {sprint:'s1',bb:1,owner:'M',prio:'p0',start:d(7,17),due:d(7,18),deps:['s1c','s1d','s1e','s1f','s1g','s1h']}));
- L.push(T('G1','گیت ۱: هسته تأیید شد', {sprint:'s1',type:'gate',owner:'M',prio:'p0',due:d(7,18),deps:['s1k','s1j','s1i']}));
+ L.push(T('s1d','سه پرسونا: مشتری هفتگی، کنجکاو، بیرون‌بر زمستانی', {sprint:'s1',bb:3,owner:'T',prio:'p1',start:d(7,14),due:d(7,16),deps:['s1b','s1j']}));
+ L.push(T('s1e','هفت دستهٔ ارزش با قاعدهٔ اجرایی', {sprint:'s1',bb:3,owner:'A',prio:'p1',start:d(7,14),due:d(7,16),deps:['s1b']}));
+ L.push(T('s1f','خطوط قرمز و کلمات ممنوع', {sprint:'s1',bb:3,owner:'A',prio:'p1',start:d(7,15),due:d(7,16),deps:['s1e'],
+   notes:'ممنوع‌های شناخته‌شده: snap، fast food، dirty، best، real، و dog به‌تنهایی. واژگان محبوب و ممنوع بنیان‌گذار در فصل ۱ جمع شده.'}));
+ L.push(T('s1g','داستان برند (بدون جزئیات خصوصی)', {sprint:'s1',bb:3,owner:'A',prio:'p1',start:d(7,15),due:d(7,17),deps:['s1b']}));
+ L.push(T('s1h','شخصیت برند: جدی و جسور ولی ظاهراً احمق، به‌علاوهٔ ضدشخصیت', {sprint:'s1',bb:3,owner:'A',prio:'p1',start:d(7,15),due:d(7,17),deps:['s1b']}));
+ L.push(T('s1q','چشم‌انداز و مسیر رشد (سیستم‌سازی، شعبهٔ بعدی، نقش بنیان‌گذار)', {sprint:'s1',bb:3,owner:'A',prio:'p2',start:d(7,16),due:d(7,17),deps:['s1b'],
+   notes:'بنیان‌گذار هم سیستم و رشد می‌خواهد و هم می‌گوید فقط خودش «چسب» مجموعه است؛ این تنش باید روشن شود.'}));
+ L.push(T('s1i','کالیبرهٔ فیلتر هفت و ثبت در دفتر تصمیم', {sprint:'s1',bb:8,owner:'M',prio:'p1',start:d(7,12),due:d(7,14),deps:['s0d']}));
+ L.push(T('s1k','برگهٔ یک‌صفحه‌ای برند (Brand on a page) و مونتاژ فصل ۳', {sprint:'s1',bb:3,owner:'M',prio:'p0',start:d(7,17),due:d(7,18),deps:['s1c','s1d','s1e','s1f','s1g','s1h','s1p','s1r']}));
+ L.push(T('G1','گیت ۱: بازار و هسته تأیید شد', {sprint:'s1',type:'gate',owner:'M',prio:'p0',due:d(7,18),deps:['s1k','s1j','s1n','s1i']}));
 
  /* ---- اسپرینت ۲: بصری و کلامی ---- */
- L.push(T('s2a','مودبورد و جهت بصری (از تابلو، دیوار و کاغذ ساندویچ)', {sprint:'s2',bb:4,owner:'M',prio:'p0',start:d(7,18),due:d(7,19),deps:['s0e']}));
- L.push(T('s2b','نمونه‌برداری رنگ و کدهای چاپ و دیجیتال', {sprint:'s2',bb:4,owner:'M',prio:'p0',start:d(7,18),due:d(7,19),deps:['s0e'],
+ L.push(T('s2a','مودبورد و جهت بصری (از تابلو، دیوار و کاغذ ساندویچ)', {sprint:'s2',bb:6,owner:'M',prio:'p0',start:d(7,18),due:d(7,19),deps:['s0e']}));
+ L.push(T('s2b','نمونه‌برداری رنگ و کدهای چاپ و دیجیتال', {sprint:'s2',bb:6,owner:'M',prio:'p0',start:d(7,18),due:d(7,19),deps:['s0e'],
    notes:'رنگ‌های لوگو: قرمز #CC0212، کرم #FAE089 (باید با نمونهٔ چاپی تأیید شود).'}));
- L.push(T('s2c','لوگو: بهینه‌سازی و نسخه‌ها (اصلی، ساده، تک‌رنگ، آیکن)، حریم و حداقل اندازه', {sprint:'s2',bb:4,owner:'M',prio:'p0',start:d(7,19),due:d(7,22),deps:['s2a','s0b'],
+ L.push(T('s2c','لوگو: بهینه‌سازی و نسخه‌ها (اصلی، ساده، تک‌رنگ، آیکن)، حریم و حداقل اندازه', {sprint:'s2',bb:6,owner:'M',prio:'p0',start:d(7,19),due:d(7,22),deps:['s2a','s0b'],
    notes:'بهینه‌سازی و تست روی آیکن پیج، استیکر ۳ سانتی و تک‌رنگ. بازطراحی نیست. فایل وکتور لازم است.'}));
- L.push(T('s2d','تایپوگرافی فارسی و لاتین و بررسی مجوز فونت‌ها', {sprint:'s2',bb:4,owner:'M',prio:'p0',start:d(7,19),due:d(7,21),deps:['s2a'],
+ L.push(T('s2d','تایپوگرافی فارسی و لاتین و بررسی مجوز فونت‌ها', {sprint:'s2',bb:6,owner:'M',prio:'p0',start:d(7,19),due:d(7,21),deps:['s2a'],
    notes:'پوشهٔ Font&typograohy چندین فونت با مجوز Demo / Personal use دارد؛ برای استفادهٔ تجاری باید مجوز بررسی شود.'}));
- L.push(T('s2e','الگو و عناصر گرافیکی (از کاغذ ساندویچ: WOOW، HOT، مُهر Certified)', {sprint:'s2',bb:4,owner:'M',prio:'p1',start:d(7,20),due:d(7,22),deps:['s2a']}));
- L.push(T('s2f','کیت هویت یک‌صفحه‌ای و بستهٔ فایل', {sprint:'s2',bb:4,owner:'M',prio:'p0',start:d(7,22),due:d(7,24),deps:['s2b','s2c','s2d','s2e']}));
- L.push(T('s2g','تصمیم: قاعدهٔ تصویر محصول (عکس واقعی در برابر بازسازی با AI)', {sprint:'s2',bb:4,owner:'M',prio:'p1',type:'decision',start:d(7,19),due:d(7,21),
+ L.push(T('s2e','الگو و عناصر گرافیکی (از کاغذ ساندویچ: WOOW، HOT، مُهر Certified)', {sprint:'s2',bb:6,owner:'M',prio:'p1',start:d(7,20),due:d(7,22),deps:['s2a']}));
+ L.push(T('s2f','کیت هویت یک‌صفحه‌ای و بستهٔ فایل', {sprint:'s2',bb:6,owner:'M',prio:'p0',start:d(7,22),due:d(7,24),deps:['s2b','s2c','s2d','s2e']}));
+ L.push(T('s2g','تصمیم: قاعدهٔ تصویر محصول (عکس واقعی در برابر بازسازی با AI)', {sprint:'s2',bb:6,owner:'M',prio:'p1',type:'decision',start:d(7,19),due:d(7,21),
    notes:'در پروپوزال قید شده: عکس واقعی بدون دستکاری AI. منوی تلویزیون با تصاویر پالوده‌شده با Gemini ساخته می‌شود. باید قاعدهٔ واحد در راهنمای عکاسی ثبت شود.'}));
- L.push(T('s2h','راهنمای عکاسی (نور، زاویه، پس‌زمینه، قواعد)', {sprint:'s2',bb:4,owner:'T',prio:'p1',start:d(7,21),due:d(7,23),deps:['s2a','s2g']}));
- L.push(T('s2i','نردبان لحن (از جدی تا فان، مرزها)', {sprint:'s2',bb:3,owner:'A',prio:'p0',start:d(7,18),due:d(7,20),deps:['s1k']}));
- L.push(T('s2j','واژگان مجاز و ممنوع (فارسی و انگلیسی)', {sprint:'s2',bb:3,owner:'A',prio:'p1',start:d(7,19),due:d(7,21),deps:['s1f']}));
- L.push(T('s2k','قالب کپشن، هشتگ و قواعد نگارشی فارسی', {sprint:'s2',bb:3,owner:'A',prio:'p1',start:d(7,20),due:d(7,22),deps:['s2i']}));
- L.push(T('s2l','نمونه‌های کارشده در سه کانال (اینستاگرام، تابلو، منو)', {sprint:'s2',bb:3,owner:'A',prio:'p1',start:d(7,22),due:d(7,24),deps:['s2i','s2j']}));
- L.push(T('s2m','الگوی نام‌گذاری و توضیح تخصصی آیتم‌های منو (۸ آیتم و تاپینگ‌ها)', {sprint:'s2',bb:2,owner:'T',prio:'p1',start:d(7,19),due:d(7,23),deps:['e09','s2i'],
+ L.push(T('s2h','راهنمای عکاسی (نور، زاویه، پس‌زمینه، قواعد)', {sprint:'s2',bb:6,owner:'T',prio:'p1',start:d(7,21),due:d(7,23),deps:['s2a','s2g']}));
+ L.push(T('s2i','نردبان لحن (از جدی تا فان، مرزها)', {sprint:'s2',bb:5,owner:'A',prio:'p0',start:d(7,18),due:d(7,20),deps:['s1k']}));
+ L.push(T('s2j','واژگان مجاز و ممنوع (فارسی و انگلیسی)', {sprint:'s2',bb:5,owner:'A',prio:'p1',start:d(7,19),due:d(7,21),deps:['s1f']}));
+ L.push(T('s2k','قالب کپشن، هشتگ و قواعد نگارشی فارسی', {sprint:'s2',bb:5,owner:'A',prio:'p1',start:d(7,20),due:d(7,22),deps:['s2i']}));
+ L.push(T('s2l','نمونه‌های کارشده در سه کانال (اینستاگرام، تابلو، منو)', {sprint:'s2',bb:5,owner:'A',prio:'p1',start:d(7,22),due:d(7,24),deps:['s2i','s2j']}));
+ L.push(T('s2m','الگوی نام‌گذاری و توضیح تخصصی آیتم‌های منو (۸ آیتم و تاپینگ‌ها)', {sprint:'s2',bb:4,owner:'T',prio:'p1',start:d(7,19),due:d(7,23),deps:['e09','s2i'],
    notes:'الگوی توضیح: سوسیس، روکش، نان، سس. نام‌های فارسی و لاتین یک‌دست شوند.'}));
- L.push(T('s2n','اصول محصول و منو (منوی کوتاه، فیلتر آیتم جدید، شیت مستر منو)', {sprint:'s2',bb:2,owner:'A',prio:'p1',start:d(7,22),due:d(7,24),deps:['s2m'],
+ L.push(T('s2n','اصول محصول و منو (منوی کوتاه، فیلتر آیتم جدید، شیت مستر منو)', {sprint:'s2',bb:4,owner:'A',prio:'p1',start:d(7,22),due:d(7,24),deps:['s2m'],
    notes:'منو همیشه تغییر می‌کند؛ یک منبع واحد برای همهٔ نقاط تماس.'}));
  L.push(T('s2o','ثبت کارهای زودتر انجام‌شده در برندبوک (بدون بازکاری)', {sprint:'s2',bb:0,owner:'T',prio:'p1',start:d(7,20),due:d(7,24),deps:['s0c'],
    check:ck('تگ‌لاین و اسلوگن‌ها: قواعد استفاده و نقشهٔ نقاط تماس','لوگو و سردر','دیوار و ۹ تابلو: منطق روایت','کاغذ ساندویچ: قواعد کاربرد','منوی نهایی')}));
@@ -413,73 +435,74 @@ function seedTasks(){
  L.push(T('G2','گیت ۲: برندبوک نسخهٔ افتتاحیه منتشر شد', {sprint:'s2',type:'gate',owner:'M',prio:'p0',due:d(7,25),deps:['s2p','s2h']}));
 
  /* ---- اسپرینت ۳: استراتژی دیجیتال ---- */
- L.push(T('s3a','نقش اینستاگرام در مسیر مشتری و ستون‌های محتوا', {sprint:'s3',bb:8,owner:'M',prio:'p0',start:d(7,19),due:d(7,21),deps:['G1'],
+ L.push(T('s3a','نقش اینستاگرام در مسیر مشتری و ستون‌های محتوا', {sprint:'s3',bb:7,owner:'M',prio:'p0',start:d(7,19),due:d(7,21),deps:['G1'],
    notes:'ستون‌های پیشنهادی در پروپوزال: محصول و بافت، پشت‌صحنه، «چرا این‌طوری»، بیرون‌بر و زمستان.'}));
- L.push(T('s3b','قواعد استوری، ریلز و هایلایت', {sprint:'s3',bb:8,owner:'T',prio:'p1',start:d(7,21),due:d(7,23),deps:['s3a']}));
- L.push(T('s3c','ساختار گرید و بیو و هایلایت‌ها', {sprint:'s3',bb:8,owner:'T',prio:'p1',start:d(7,24),due:d(7,25),deps:['s3a','s2f']}));
- L.push(T('s3d','طرح گرید و بریف ۹ پست اول', {sprint:'s3',bb:8,owner:'M',prio:'p0',start:d(7,25),due:d(7,27),deps:['s3c']}));
- L.push(T('s3e','تقویم محتوای ماه اول (۱ تا ۳۰ آبان)', {sprint:'s3',bb:8,owner:'T',prio:'p0',start:d(7,22),due:d(7,26),deps:['s3a']}));
- L.push(T('s3f','جدول تولید: قطعه، مسئول، تاریخ، بریف و ابزار هر قطعه', {sprint:'s3',bb:8,owner:'T',prio:'p0',start:d(7,23),due:d(7,26),deps:['s3e'],
+ L.push(T('s3b','قواعد استوری، ریلز و هایلایت', {sprint:'s3',bb:7,owner:'T',prio:'p1',start:d(7,21),due:d(7,23),deps:['s3a']}));
+ L.push(T('s3c','ساختار گرید و بیو و هایلایت‌ها', {sprint:'s3',bb:7,owner:'T',prio:'p1',start:d(7,24),due:d(7,25),deps:['s3a','s2f']}));
+ L.push(T('s3d','طرح گرید و بریف ۹ پست اول', {sprint:'s3',bb:7,owner:'M',prio:'p0',start:d(7,25),due:d(7,27),deps:['s3c']}));
+ L.push(T('s3e','تقویم محتوای ماه اول (۱ تا ۳۰ آبان)', {sprint:'s3',bb:7,owner:'T',prio:'p0',start:d(7,22),due:d(7,26),deps:['s3a']}));
+ L.push(T('s3f','جدول تولید: قطعه، مسئول، تاریخ، بریف و ابزار هر قطعه', {sprint:'s3',bb:7,owner:'T',prio:'p0',start:d(7,23),due:d(7,26),deps:['s3e'],
    notes:'«رسپی تولید» هر قطعه: ایده، شات‌ها، متن، قالب، مسئول، موعد.'}));
- L.push(T('s3g','برنامهٔ عکاسی و ویدیوی افتتاحیه (فهرست شات، زمان، مسئول)', {sprint:'s3',bb:8,owner:'T',prio:'p0',start:d(7,24),due:d(7,26),deps:['s2h']}));
- L.push(T('s3h','شاخص‌ها و خط پایه (دنبال‌کننده، سفارش، نظرات)', {sprint:'s3',bb:8,owner:'T',prio:'p2',start:d(7,25),due:d(7,27)}));
- L.push(T('s3i','تدوین فصل ۸ برندبوک: استراتژی دیجیتال', {sprint:'s3',bb:8,owner:'M',prio:'p0',start:d(7,26),due:d(7,27),deps:['s3b','s3d','s3f']}));
+ L.push(T('s3g','برنامهٔ عکاسی و ویدیوی افتتاحیه (فهرست شات، زمان، مسئول)', {sprint:'s3',bb:7,owner:'T',prio:'p0',start:d(7,24),due:d(7,26),deps:['s2h']}));
+ L.push(T('s3h','شاخص‌ها و خط پایه (دنبال‌کننده، سفارش، نظرات)', {sprint:'s3',bb:7,owner:'T',prio:'p2',start:d(7,25),due:d(7,27)}));
+ L.push(T('s3i','تدوین فصل ۷ برندبوک: استراتژی دیجیتال و محتوا', {sprint:'s3',bb:7,owner:'M',prio:'p0',start:d(7,26),due:d(7,27),deps:['s3b','s3d','s3f']}));
  L.push(T('G3','گیت ۳: استراتژی و جدول تولید تأیید شد', {sprint:'s3',type:'gate',owner:'M',prio:'p0',due:d(7,27),deps:['s3i','s3g','s3h']}));
 
  /* ---- اسپرینت ۴ ---- */
- L.push(T('s4a','عکاسی و تولید محتوا طبق جدول', {sprint:'s4',bb:8,owner:'T',prio:'p0',start:d(7,27),due:d(7,30),deps:['s3f','s3g']}));
- L.push(T('s4b','استوری‌ها و پست‌های روز افتتاحیه: آماده و زمان‌بندی‌شده', {sprint:'s4',bb:8,owner:'T',prio:'p0',start:d(7,28),due:d(7,30),deps:['s4a']}));
- L.push(T('s4c','اصلاح نهایی پیج (بیو، آدرس، هایلایت‌ها، پست‌های ثابت)', {sprint:'s4',bb:8,owner:'T',prio:'p0',start:d(7,29),due:d(7,30),deps:['s3c']}));
- L.push(T('s4d','چک‌لیست آمادگی افتتاحیه و جلسهٔ گزارش با امیررضا', {sprint:'s4',bb:8,owner:'M',prio:'p0',start:d(7,30),due:d(7,30),
+ L.push(T('s4a','عکاسی و تولید محتوا طبق جدول', {sprint:'s4',bb:7,owner:'T',prio:'p0',start:d(7,27),due:d(7,30),deps:['s3f','s3g']}));
+ L.push(T('s4b','استوری‌ها و پست‌های روز افتتاحیه: آماده و زمان‌بندی‌شده', {sprint:'s4',bb:7,owner:'T',prio:'p0',start:d(7,28),due:d(7,30),deps:['s4a']}));
+ L.push(T('s4c','اصلاح نهایی پیج (بیو، آدرس، هایلایت‌ها، پست‌های ثابت)', {sprint:'s4',bb:7,owner:'T',prio:'p0',start:d(7,29),due:d(7,30),deps:['s3c']}));
+ L.push(T('s4d','چک‌لیست آمادگی افتتاحیه و جلسهٔ گزارش با امیررضا', {sprint:'s4',bb:7,owner:'M',prio:'p0',start:d(7,30),due:d(7,30),
    check:ck('منو و قیمت‌ها نهایی','استیکر روی ظرف‌ها نصب','محیط و تابلوها','پیج و استوری‌های روز اول','منوی تلویزیون')}));
  L.push(T('G4','گیت ۴: افتتاحیه (۱ آبان)', {sprint:'s4',type:'gate',owner:'M',prio:'p0',due:d(8,1),deps:['s4a','s4b','s4c','s4d']}));
 
  /* ---- ریل بودجه ---- */
- L.push(T('b1','استیکر لوگو روی ظرف‌های آماده', {lane:'budget',bb:6,owner:'M',prio:'p0',status:'wait',due:d(7,27),
+ L.push(T('b1','استیکر لوگو روی ظرف‌های آماده', {lane:'budget',bb:9,owner:'M',prio:'p0',status:'wait',due:d(7,27),
    budget:{state:0,amount:'',vendor:'',lead:7,need:d(7,28)},
    notes:'تا زمان طراحی ظرف، همهٔ غذاها در ظرف آمادهٔ بدون برچسب با استیکر لوگو سرو می‌شوند.',
    check:ck('طرح فایل چاپی استیکر (از لوگو)','درخواست بودجه از امیررضا','انتخاب چاپخانه و سفارش','تحویل و نصب روی ظرف‌ها')}));
- L.push(T('b2','چاپ کاغذ ساندویچ', {lane:'budget',bb:6,owner:'M',prio:'p1',status:'wait',due:d(7,28),
+ L.push(T('b2','چاپ کاغذ ساندویچ', {lane:'budget',bb:9,owner:'M',prio:'p1',status:'wait',due:d(7,28),
    budget:{state:0,amount:'',vendor:'',lead:10,need:d(7,30)},
    notes:'طراحی تأیید شده؛ منتظر تأمین‌کنندهٔ کاغذ و بودجهٔ چاپ.',
    check:ck('اصلاح فونت اسلوگن و املا','فایل وکتور','تأیید جوهر مناسب تماس با غذا','تست‌پرینت','چاپ تیراژ اولیه')}));
- L.push(T('b3','تولید بورد و تابلوهای دیوار', {lane:'budget',bb:7,owner:'M',prio:'p1',status:'doing',due:d(7,17),
+ L.push(T('b3','تولید بورد و تابلوهای دیوار', {lane:'budget',bb:10,owner:'M',prio:'p1',status:'doing',due:d(7,17),
    budget:{state:3,amount:'',vendor:'',lead:7,need:d(7,20)},
    notes:'در صف تولید است و تا هفتهٔ آینده آماده می‌شود.'}));
- L.push(T('b4','هزینهٔ عکاسی و تولید محتوای افتتاحیه', {lane:'budget',bb:8,owner:'M',prio:'p1',status:'todo',due:d(7,20),
+ L.push(T('b4','هزینهٔ عکاسی و تولید محتوای افتتاحیه', {lane:'budget',bb:7,owner:'M',prio:'p1',status:'todo',due:d(7,20),
    budget:{state:0,amount:'',vendor:'',lead:5,need:d(7,27)},
    notes:'برآورد اقلام را بعد از جدول تولید (G3) می‌نویسیم؛ درخواست زودتر مطرح می‌شود.'}));
 
  /* ---- سایدمیشن ---- */
  var S = {lane:'side', owner:'M', prio:'p3', notes:''};
  function side(id,t,bb,extra){ var o=Object.assign({}, S, {bb:bb}, extra||{}); o.notes=(o.notes?o.notes+'\n':'')+'اجرا با درخواست امیررضا و تأمین بودجه.'; L.push(T(id,t,o)); }
- side('x01','اسنپ‌فود: ساختار، متن آیتم‌ها و عکس (بعد از افتتاحیه)',8,{owner:'T',prio:'p2',notes:'اسنپ‌فود بعد از افتتاحیه راه‌اندازی می‌شود.'});
- side('x02','طراحی ظروف و بسته‌بندی (ظرف هات‌داگ، فرایز، پک و بگ بیرون‌بر، باکس پیک)',6,{prio:'p2',notes:'بسته‌بندی حرفه‌ای تا زمستان؛ پیش‌نیاز: کیت بصری.'});
- side('x03','منوی کاغذی و منوی QR',7,{prio:'p2'});
- side('x04','منوی تلویزیون: تصاویر محصول و خروجی MP4',7,{status:'doing',prio:'p2',notes:'استودیوی منو v6؛ تصاویر محصول با Gemini از روی عکس واقعی.'});
- side('x05','استراتژی بیرون‌بر، پیک و تست سفر منو',6,{prio:'p2',owner:'T'});
- side('x06','لاگ دورریز (پیش‌نیاز: ابزار رسپی ✅)',9,{owner:'T'});
- side('x07','ابزار کنترل کاست (نیازمند داده و کاست مکتوب)',9,{owner:'T'});
- side('x08','استوری جذب نیرو (نگرش قبل از مهارت)',8,{owner:'T',prio:'p2'});
- side('x09','پگ‌بورد و اکسسوری دیوار',7,{});
- side('x10','سئو محلی و ثبت در نقشه‌ها (گوگل‌مپ، نشان، بلد)',8,{owner:'T'});
- side('x11','طراحی و انیمیشن شخصیت‌های سو، سی، سا',5,{owner:'A'});
- side('x12','نرم‌افزار استودیوی منوی تلویزیون (محصول مستقل و قابل‌فروش)',7,{prio:'p3',notes:'پروژهٔ جدا از بستهٔ سوسیسا است؛ زمانش جدا و صریح تعریف شود.'});
+ side('x01','اسنپ‌فود: ساختار، متن آیتم‌ها و عکس (بعد از افتتاحیه)',7,{owner:'T',prio:'p2',notes:'اسنپ‌فود بعد از افتتاحیه راه‌اندازی می‌شود.'});
+ side('x02','طراحی ظروف و بسته‌بندی (ظرف هات‌داگ، فرایز، پک و بگ بیرون‌بر، باکس پیک)',9,{prio:'p2',notes:'بسته‌بندی حرفه‌ای تا زمستان؛ پیش‌نیاز: کیت بصری.'});
+ side('x03','منوی کاغذی و منوی QR',10,{prio:'p2'});
+ side('x04','منوی تلویزیون: تصاویر محصول و خروجی MP4',10,{status:'doing',prio:'p2',notes:'استودیوی منو v6؛ تصاویر محصول با Gemini از روی عکس واقعی.'});
+ side('x05','استراتژی بیرون‌بر، پیک و تست سفر منو',9,{prio:'p2',owner:'T'});
+ side('x06','لاگ دورریز (پیش‌نیاز: ابزار رسپی ✅)',12,{owner:'T'});
+ side('x07','ابزار کنترل کاست (نیازمند داده و کاست مکتوب)',12,{owner:'T'});
+ side('x08','استوری جذب نیرو (نگرش قبل از مهارت)',7,{owner:'T',prio:'p2'});
+ side('x09','پگ‌بورد و اکسسوری دیوار',10,{});
+ side('x10','سئو محلی و ثبت در نقشه‌ها (گوگل‌مپ، نشان، بلد)',7,{owner:'T'});
+ side('x11','طراحی و انیمیشن شخصیت‌های سو، سی، سا',11,{owner:'A'});
+ side('x12','نرم‌افزار استودیوی منوی تلویزیون (محصول مستقل و قابل‌فروش)',10,{prio:'p3',notes:'پروژهٔ جدا از بستهٔ سوسیسا است؛ زمانش جدا و صریح تعریف شود.'});
 
  /* ---- بعد از افتتاحیه ---- */
  var P = {lane:'post', sprint:'post'};
- L.push(T('p01','فصل ۶: قواعد بسته‌بندی و بیرون‌بر (سلسله‌مراتب برند، ضدخیسی، باز کردن در خانه)', Object.assign({bb:6,owner:'M',start:d(8,2),due:d(8,20),deps:['G4']},P)));
- L.push(T('p02','فصل ۷: قواعد فضای فیزیکی (تابلو، دیوار، منوی تلویزیون، علائم، لباس کار)', Object.assign({bb:7,owner:'M',start:d(8,10),due:d(8,30),deps:['G4']},P)));
- L.push(T('p03','تقویم محتوای ماه دوم', Object.assign({bb:8,owner:'T',start:d(8,22),due:d(8,28),deps:['G4']},P)));
- L.push(T('p04','گزارش ماه اول: فروش، پیج، نظرات و بازبینی استراتژی', Object.assign({bb:8,owner:'T',start:d(9,1),due:d(9,5),deps:['p03']},P)));
- L.push(T('p05','فصل ۵: بریف شخصیت‌ها و مرز فان', Object.assign({bb:5,owner:'A',start:d(9,1),due:d(9,15),deps:['G1']},P)));
- L.push(T('p06','فصل ۹: ارجاع عملیاتی (رسپی کارت، چک‌لیست‌ها، رفتار پشت پیشخوان)', Object.assign({bb:9,owner:'T',start:d(9,10),due:d(9,25),deps:['e10']},P)));
- L.push(T('p07','فصل ۱۰: تکمیل قالب بریف و فیلتر هفت', Object.assign({bb:10,owner:'A',start:d(9,16),due:d(9,22),deps:['G1']},P)));
- L.push(T('p08','تقویم محتوای ماه سوم', Object.assign({bb:8,owner:'T',start:d(9,22),due:d(9,30),deps:['p04']},P)));
- L.push(T('p09','مونتاژ ۱۱ فصل با مثال درست و غلط', Object.assign({bb:0,owner:'M',start:d(10,1),due:d(10,12),deps:['p01','p02','p05','p06','p07']},P)));
- L.push(T('p10','کیت دانلود دارایی‌ها و فایل‌های منبع', Object.assign({bb:4,owner:'M',start:d(10,5),due:d(10,12),deps:['s2f']},P)));
+ L.push(T('p01','فصل ۹: قواعد بسته‌بندی و بیرون‌بر (سلسله‌مراتب برند، ضدخیسی، باز کردن در خانه)', Object.assign({bb:9,owner:'M',start:d(8,2),due:d(8,20),deps:['G4']},P)));
+ L.push(T('p02','فصل ۱۰: قواعد فضای فیزیکی (تابلو، دیوار، منوی تلویزیون، علائم، لباس کار)', Object.assign({bb:10,owner:'M',start:d(8,10),due:d(8,30),deps:['G4']},P)));
+ L.push(T('p03','تقویم محتوای ماه دوم', Object.assign({bb:7,owner:'T',start:d(8,22),due:d(8,28),deps:['G4']},P)));
+ L.push(T('p04','گزارش ماه اول: فروش، پیج، نظرات و بازبینی استراتژی', Object.assign({bb:7,owner:'T',start:d(9,1),due:d(9,5),deps:['p03']},P)));
+ L.push(T('p05','فصل ۱۱: بریف شخصیت‌ها و مرز فان', Object.assign({bb:11,owner:'A',start:d(9,1),due:d(9,15),deps:['G1']},P)));
+ L.push(T('p06','فصل ۱۲: ارجاع عملیاتی (رسپی کارت، چک‌لیست‌ها، رفتار پشت پیشخوان)', Object.assign({bb:12,owner:'T',start:d(9,10),due:d(9,25),deps:['e10']},P)));
+ L.push(T('p07','فصل ۸: تکمیل قالب بریف و فیلتر هفت', Object.assign({bb:8,owner:'A',start:d(9,16),due:d(9,22),deps:['G1']},P)));
+ L.push(T('p08','تقویم محتوای ماه سوم', Object.assign({bb:7,owner:'T',start:d(9,22),due:d(9,30),deps:['p04']},P)));
+ L.push(T('p09','مونتاژ ۱۳ فصل با مثال درست و غلط', Object.assign({bb:0,owner:'M',start:d(10,1),due:d(10,12),deps:['p01','p02','p05','p06','p07']},P)));
+ L.push(T('p10','کیت دانلود دارایی‌ها و فایل‌های منبع', Object.assign({bb:6,owner:'M',start:d(10,5),due:d(10,12),deps:['s2f']},P)));
  L.push(T('p11','بازبینی کیفیت و یکدستی برندبوک', Object.assign({bb:0,owner:'M',start:d(10,13),due:d(10,17),deps:['p09','p10']},P)));
  L.push(T('p12','جلسهٔ تحویل و آموزش برندبوک', Object.assign({bb:0,owner:'M',start:d(10,20),due:d(10,22),deps:['p11']},P)));
+ L.push(T('p15','پژوهش رفتار مشتری واقعی (سفارش، نظرات، مشاهده) و بازبینی پرسوناها و جایگاه', Object.assign({bb:2,owner:'A',start:d(9,5),due:d(9,20),deps:['G4']},P)));
  L.push(T('p13','جلسهٔ گزارش ماهانه (آبان)', Object.assign({bb:null,owner:'M',type:'task',start:d(9,2),due:d(9,3)},P)));
  L.push(T('p14','جلسهٔ گزارش ماهانه (آذر)', Object.assign({bb:null,owner:'M',start:d(10,2),due:d(10,3)},P)));
  L.push(T('G5','گیت ۵: برندبوک کامل تحویل شد', {lane:'post',sprint:'post',type:'gate',owner:'M',prio:'p1',due:d(10,22),deps:['p11','p12']}));
@@ -525,8 +548,26 @@ function person(id){ for(var i=0;i<state.people.length;i++) if(state.people[i].i
 /* ---------- storage ---------- */
 function load(){
   var raw=null; try{ raw=localStorage.getItem(LS); }catch(e){}
-  if(raw){ try{ var s=JSON.parse(raw); if(s && s.tasks){ return s; } }catch(e){} }
+  if(raw){ try{ var s=JSON.parse(raw); if(s && s.tasks){ return migrate(s); } }catch(e){} }
   return {v:SEED_V, tasks:seedTasks(), people:clone(PEOPLE0), days:{}, log:[], theme:null};
+}
+/* به‌روزرسانی ساختار برنامه بدون پاک‌کردن کارهای کاربر: تیک‌ها، یادداشت‌ها، چک‌لیست‌ها و تاریخ‌ها حفظ می‌شود */
+function migrate(st){
+  if((st.v||1) >= SEED_V) return st;
+  var MAP = {0:0,1:3,2:4,3:5,4:6,5:11,6:9,7:10,8:7,9:12,10:8};
+  var fresh = seedTasks(), cur = {}, seen = {};
+  st.tasks.forEach(function(t){ cur[t.id]=t; });
+  fresh.forEach(function(f){
+    seen[f.id]=1; var c = cur[f.id];
+    if(!c){ st.tasks.push(f); return; }
+    c.t=f.t; c.bb=f.bb; c.deps=f.deps; c.sprint=f.sprint; c.type=f.type;
+    if(f.status==='done' && c.status!=='done'){ c.status='done'; c.doneAt=f.doneAt; }
+  });
+  st.tasks.forEach(function(t){ if(!seen[t.id] && t.bb!=null && MAP[t.bb]!=null) t.bb = MAP[t.bb]; });
+  st.v = SEED_V;
+  st.log = st.log||[];
+  st.log.unshift({t:Date.now(), j:TODAY, m:'ساختار برنامه با ۱۳ فصل جدید برندبوک به‌روز شد'});
+  return st;
 }
 function save(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
 function logm(m){ state.log.unshift({t:Date.now(), j:TODAY, m:m}); state.log = state.log.slice(0,80); }
@@ -878,7 +919,7 @@ function exportJSON(){
 }
 function importJSON(file){
   var r = new FileReader();
-  r.onload = function(){ try{ var s = JSON.parse(r.result); if(!s.tasks||!s.people) throw 0; state = s; reindex(); logm('فایل پشتیبان بارگذاری شد'); commit(); toast('بارگذاری شد'); }catch(e){ toast('این فایل پشتیبان برد نیست'); } };
+  r.onload = function(){ try{ var s = JSON.parse(r.result); if(!s.tasks||!s.people) throw 0; state = migrate(s); reindex(); logm('فایل پشتیبان بارگذاری شد'); commit(); toast('بارگذاری شد'); }catch(e){ toast('این فایل پشتیبان برد نیست'); } };
   r.readAsText(file);
 }
 function menuHTML(){
@@ -983,7 +1024,7 @@ document.addEventListener('drop', function(e){ var c=e.target.closest && e.targe
 
 /* ---------- init ---------- */
 TODAY = todayJ();
-state = load(); reindex(); syncGates();
+state = load(); reindex(); syncGates(); save();
 render();
 window.__board = {get state(){return state;}, render:render, ui:ui};
 })();

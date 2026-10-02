@@ -50,7 +50,8 @@ a{color:inherit}
 .bar>i{display:block;height:100%;background:var(--brand);border-radius:99px;transition:width .3s}
 .net{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);white-space:nowrap}
 .net i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
-.net.on i{background:var(--ok)} .net.off i{background:var(--warn)}
+.net.on i{background:var(--ok)} .net.off i{background:var(--warn)} .net.err i{background:var(--bad,#CC0212)}
+.adv{margin:6px 0}.adv summary{cursor:pointer;font-size:.8rem;color:var(--muted)}.adv .in{margin-top:6px}
 .tools{display:flex;gap:6px}
 .ibtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0}
 .ibtn:hover{background:var(--surface2)}
@@ -407,11 +408,13 @@ var CHAPTERS = [
 ];
 var BSTATES = ['برای درخواست','درخواست شد','تأیید شد','در تولید یا چاپ','تحویل شد'];
 
+var CLAUDE_AV = 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><rect width="160" height="160" fill="#D97757"/><g stroke="#fff" stroke-width="11" stroke-linecap="round"><path d="M80 28v104M28 80h104M43 43l74 74M117 43L43 117"/></g></svg>');
 var PEOPLE0 = [
   {id:'M', name:'ممضی', color:'#CC0212'},
   {id:'A', name:'امیرحسین', color:'#2F6FD0'},
   {id:'T', name:'همکار گلیچ‌لب', color:'#2F8F86'},
-  {id:'C', name:'امیررضا', color:'#C98A12'}
+  {id:'C', name:'امیررضا', color:'#C98A12'},
+  {id:'CL', name:'Claude', color:'#D97757', bot:true, photo:CLAUDE_AV}
 ];
 
 function T(id, title, o){
@@ -654,12 +657,12 @@ function seedCfg(){
 /* ================= STORE: محلی یا ابری ================= */
 var ICON_URL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAAwFBMVEX//+X//eL/++D+993+9Nv98tn98Nf979b97tX87tb87dT37db86dH10r7rrZ/nf3nWX13bQETXKjHWJS7WJS3jIyzdIyzVJC3VIyzVIyteNzbdIizcIizaIizYIivVIivUIivTIivSIivPIivVICnUHSfUGSTTFiHSFB/SEx7CHiecHyVjGx9WGx5GGhw0GRoxGRoeFxgaGhobFxcaFxcZGRgZFxcYFxcXFxcVFxcSFxcQFxYPFxYNFhYJFhYMDg8ZmMKOAAAHd0lEQVR42rWa6XaiShCAWxZ1uKwiQpJRwAAiuCYERIW8/1vdahSXsAQypv7knOipz1q7ekG7s0RBEO8PD5F9HARRrhed/wZxkkSbzfoBstlESRIHd4AoSoOl770a+gPEePX8ZZhG0RUQ7A8Lb6SMJ/pDZDJWRt7yuA9zQHDc+sp4OjWMxwAMYzodK/72EJwAwXHjKVNTf6iYU8XbHEIMiPZbbzTVHy7TkbfdRxhw8JVf0A8ExT8CIEgX9fo1eaiqsvojwiIJULz1xnXBlS3XdWbzmd4eYY69IEbpss4ATXUHAg8i2o78AxOWKUp8pTqBVMsRWNQhCERw0kz+QRQStPUmlR7SLItHFMP0GYYhumJrgjH2tmhV9w2bR0yvmwlDspKttQ7DGi2rQyy7AmK6uTCInw1bm7BCy5eqEKgzkex3b4SWnJapZPxd1gA0myOYG/0MEubyAwHDmUj8uTWgT3Btg1APcPnOrQHdHsUOWhLqAJo1YKle957QNgh1AAgxcRdi7COxZR7VAeT5bY6eotwRXPlhgEIIfpJGtTGAJO3/JsBSOfI3AZBE3JckejiALQAeGWTNLgOI7vBXLSAeC+DI37QA0qiYRQ8tNNXhf7cOfr2Sy3oRwf+km/41qhbkrxb0KG5gaW0Bq4pFX3XEr1nUflXOAJOqFXnA0uWlrFltAOuqwfHJLslTmFw03R5YLQCb10lVEApp1KNZydIdsXEkMKByuC6JcpaomiA5WgsLYr+y0qSvMcaDhcSLM7VNDJKa/U0hCNhJYotiw4DqDU5JEGCyIPN+9NQUULkBGboiUQD0aErKCI1yNXPRumq8LqsEbALeimiaM2iQrFmQq3cguKEWTMg2CnPLEZvsFjAgPPgjU2+cqBmhJ9iC2CRXMaBmG6vZEkMXAd0+RbHC3FaHWiNAsqqyQB+W+ggi3SdZXpq5Nuyfte8A0X5b1SzwFqFQCWcj6A7Ni4PZ3LFUuZqCAbsw8VubgCPRJTosL0gDZ+46liaX+isD1J0lQLsoLgoXBEMRiOJ4ASj23LW14nlDBogOm+qtPlQzYqoI3R7D9ADSoViOh7SdO6paAtiFx2oflc1fXwN+pjCcIM2ce0+dAHU+kl2R7fa73wmm0ATqQae1hwVAFG+rFx2Rpgi6120gAOl2SH5we2hyAoAJFS0b0pSiCf4bJ93GvY/uDk3OgPC4LrUgCwApFAekOgR0quvkcQZUlQLMXmDzXJ7xbQgEZ+lFQHm7gPkXJiEZD9r95gR0HZFzwC7al5iA1wOSk4cyWEKwTcOATxwujfYCKO14miPh0wPoBALV69BNCXi2yZeKCyArtmlJCBiSEwSOpCieoRp76Tpg3gCSwoyq4RBAv+kQJEGLc5GkGxJujjSugGItPGEDWKrTIQhYheeDuUiTDXOpVwb4uixoQ4hstwO9kheyI03ZlViCaWQAexktbwBfOtLQcgWS/CMMXNedOxr+QfJM4hDTb1AI17O9WwCutgtBdiyeIMAzlgyi5v/U+Q71rRF4LyqXAvb5oK2qc4kDzw9g/rk/poXeivr1RsDcpFpPZQBw0jIrBtl2hD8k6C8cJmuyO+BJog7RAwOup1b3gFMmDbW5xKM/ZfozuCtyBNFnKsqujxvFUK8ARLu9rzi2wEJ6Qk+Uyw/7Z47IkR2aKWH0GQoJM02vAuxCmCMhVWiGpsTKPb2qAYJnOwQFy1g/p/Tw+kwiVpxpNYBgn/gsYsGPtTvuoTbDh/4sgQiSgpUMpEuTBIK2Mrg/zLgHREG69hyRplnEf7PJUIe2OxuIAs+xPZKAWqdhrhAkHdJarwSEcbLQX1RoOh3e1r8bO2EIsvG9yEASsUiSDFOeLmt6JSA4xL6iT3EPZQd2k1MbDd/s2I4zA3Fsq+ye5wbwnuDLNKgzY2L79rjxrZqmnkR7qpxNzyWwej0tCKaySJeT8WMuvnJAFF50TkH/9kJ7ECDcJYuRbubXOtHVX48BhDEUsGnkl3dQ0BDxACL+79ebxmQF4/t+l/dp0H+Io/P99WLyADe9rlFw2N7o38fhuepCqDqctv9kwNh7R8nWK9GfJe4OG/EvfgKNKdp4t/7B+j/ePs6lna7xRfbPg22OVgnyXjL9hgn5c9L/+bn/ODen42Hp/Rxhjrx9hCaZDwxDWSQ4f3Zvn8/88+fHuT9FabDACPOnBgQo+3WmPlqcnhF8xG8cev58u7SoON0CYqS3Z7xCBIIdytw/nizT01uLt08B8bkBJz/Fabj0deWvMTWNdvr34BOU3b6/rtLTQwtwEPnf8y0gQyTH9cIbK6OJ2RQyNRQ/wjFFuoHfDyTvma6P+IND4tVBF0eFhzReLfzXEUB0czqdmqZpVAl8riuTxSnnkQmo9+NJPxggIg4ou4KEwe6YHjbLhe/pI0VRRi9/x1Xyoii6v06znNmh0WhxeYgCDvqPfC4akDOifZIet2ug+L5XI/5inRzPOpG3yl+h4BLgkVCl//yEJ4wPSZomx30UvFdInKSHMG8JaJvk72iwAYjbHD52tRKFAUgY7eIq2cHHl6//Dz7MFQSkX1SuAAAAAElFTkSuQmCC";
 var Store = (function(){
-  var mode = 'local', db = null, ass = null, dl = null, usr = null;
+  var mode = 'local', db = null, dl = null, usr = null, gh = null;
   var canW = true, onRemote = function(){}, onErr = function(m){ try{console.warn(m);}catch(e){} };
   var M = {cfg:null, tasks:[], notes:[], comments:[]};
   var LSK = 'susisa-board-v4', LEG = 'susisa-board-v1';
   var pend = {}, busy = {}, saveT = null;
-  var ready = false, fbMode = false, fbDb = null, fbBoard = '', unreachable = false, FBK = 'susisa-fbcfg';
+  var ready = false, fbMode = false, unreachable = false;
   var P = [], lastP = {};
   function stripC(c){ var x = clone(c); delete x.people; return x; }
   function rebuildPeople(){
@@ -672,46 +675,304 @@ var Store = (function(){
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
 
-  /* ---------- Firebase (نسخهٔ مستقل از کلود) ---------- */
-  function fbConfig(){
-    var c = (typeof window !== 'undefined' && window.SUSISA_CFG) || null;
-    if(!(c && c.apiKey && c.projectId)){ try{ c = JSON.parse(localStorage.getItem(FBK) || 'null'); }catch(e){ c = null; } }
-    if(c && c.apiKey && c.projectId && c.board) return c;
-    return null;
+  /* ---------- GitHub به‌عنوان پایگاه‌داده (بدون Claude و بدون سرویس دیگر) ---------- */
+  var GHK = 'susisa-gh', GHC = 'susisa-ghcache', GHQ = 'susisa-ghqueue';
+  var COLS = ['cfg','tasks','notes','comments','profiles'];
+  var ghMeta = {status:'init', login:null, avatar:null, push:null, rate:null, err:null};
+  var onStatus = function(){};
+  function setStatus(st, err){ if(ghMeta.status !== st || (err && ghMeta.err !== err)){ ghMeta.status = st; if(err !== undefined) ghMeta.err = err; try{ onStatus(st); }catch(e){} } }
+  function ghConfig(){
+    var c = {owner:'', repo:'', branch:'board-data', token:''};
+    var d = (typeof window !== 'undefined' && window.SUSISA_CFG) || {};
+    ['owner','repo','branch'].forEach(function(k){ if(d[k]) c[k] = d[k]; });
+    if(!c.owner){ var m = /^([^.]+)\.github\.io$/.exec(location.hostname); if(m) c.owner = m[1]; }
+    if(!c.repo){ var p = location.pathname.split('/').filter(Boolean)[0]; if(p && !/\.html?$/.test(p)) c.repo = p; }
+    try{ var u = JSON.parse(localStorage.getItem(GHK) || 'null'); if(u){ ['owner','repo','branch','token'].forEach(function(k){ if(u[k]) c[k] = u[k]; }); } }catch(e){}
+    return c;
   }
-  function loadScript(u){
-    return new Promise(function(res, rej){ var s = document.createElement('script'); s.src = u; s.onload = res; s.onerror = function(){ rej(new Error('load ' + u)); }; document.head.appendChild(s); });
+  function b64enc(str){ var b = new TextEncoder().encode(str), s = ''; for(var i = 0; i < b.length; i += 8192) s += String.fromCharCode.apply(null, b.subarray(i, i + 8192)); return btoa(s); }
+  function b64dec(b64){ var s = atob(b64.replace(/\s/g, '')), a = new Uint8Array(s.length); for(var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return new TextDecoder().decode(a); }
+  function serialize(docs){
+    var ids = Object.keys(docs).sort();
+    return '{"v":1,"docs":{' + (ids.length ? '\n' : '') + ids.map(function(id){ return JSON.stringify(id) + ':' + JSON.stringify(docs[id]); }).join(',\n') + (ids.length ? '\n' : '') + '}}\n';
   }
-  function normErr(e){ if(e && e.code && typeof e.code === 'string') e.code = e.code.replace(/^[a-z]+\//, '').replace(/-/g, '_'); return e; }
-  function wrapRef(r){
-    return {
-      set: function(d){ return r.set(d).catch(function(e){ throw normErr(e); }); },
-      update: function(d){ return r.update(d).catch(function(e){ throw normErr(e); }); },
-      delete: function(){ return r.delete().catch(function(e){ throw normErr(e); }); },
-      get: function(){ return r.get(); },
-      onSnapshot: function(a, b){ return r.onSnapshot(a, function(e){ b && b(normErr(e)); }); }
-    };
+  function ghErr(res, body){
+    var e = new Error((body && body.message) || ('HTTP ' + res.status)); e.status = res.status; e.body = body;
+    e.code = res.status === 404 ? 'not_found' : (res.status === 401 ? 'unauthenticated' : (res.status === 403 || res.status === 429) ? 'permission_denied' : (res.status === 409 || res.status === 422) ? 'conflict' : 'http');
+    return e;
   }
-  async function initFirebase(c){
-    var V = '10.12.2';
-    if(!window.firebase){
-      await loadScript('https://www.gstatic.com/firebasejs/' + V + '/firebase-app-compat.js');
-      await loadScript('https://www.gstatic.com/firebasejs/' + V + '/firebase-firestore-compat.js');
+  function initGitHub(c){
+    var API = 'https://api.github.com/repos/' + c.owner + '/' + c.repo, BR = c.branch, DIR = 'data';
+    var cache = {}, shas = {}, head = null, refEtag = null, loaded = false, syncedOnce = false;
+    var lst = {}, wq = {}, writing = false, mutex = Promise.resolve(), pollT = null, syncing = false, retryT = null, qpersist = [];
+    COLS.forEach(function(k){ cache[k] = {}; lst[k] = []; });
+    function hdrs(raw){
+      var h = {'Accept': raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'};
+      if(c.token) h['Authorization'] = 'Bearer ' + c.token;
+      return h;
     }
-    var app = firebase.apps.length ? firebase.app() : firebase.initializeApp({apiKey:c.apiKey, authDomain:c.authDomain || (c.projectId + '.firebaseapp.com'), projectId:c.projectId, appId:c.appId || undefined});
-    fbDb = firebase.firestore(app);
-    try{ await fbDb.enablePersistence({synchronizeTabs:true}); }catch(e){}
-    fbBoard = String(c.board).replace(/[^A-Za-z0-9_-]/g, '');
-    var base = 'boards/' + fbBoard + '/';
-    return {
-      doc: function(p){ return wrapRef(fbDb.doc(base + p)); },
-      collection: function(k){ var cr = fbDb.collection(base + k); return { onSnapshot: function(a, b){ return cr.onSnapshot(a, function(e){ b && b(normErr(e)); }); } }; }
+    async function call(method, path, body, o){
+      o = o || {};
+      var h = hdrs(o.raw); if(body) h['Content-Type'] = 'application/json'; if(o.etag) h['If-None-Match'] = o.etag;
+      var res;
+      try{ res = await fetch(o.abs ? path : API + path, {method:method, headers:h, body: body ? JSON.stringify(body) : undefined, cache:'no-store'}); }
+      catch(e){ var ne = new Error('offline'); ne.code = 'unavailable'; ne.net = true; throw ne; }
+      var rem = res.headers.get('x-ratelimit-remaining'); if(rem != null) ghMeta.rate = +rem;
+      if(res.status === 304) return {status:304, res:res};
+      if(o.blob && res.ok) return {status:res.status, res:res, blob:await res.blob()};
+      var data = null; try{ data = await res.json(); }catch(e){}
+      if(!res.ok){
+        var er = ghErr(res, data);
+        if(res.status === 403 && rem === '0') er.message = 'سقف درخواست GitHub پر شد؛ کمی بعد دوباره تلاش می‌کند';
+        throw er;
+      }
+      return {status:res.status, res:res, data:data};
+    }
+    function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+    function lock(fn){ var p = mutex.then(fn, fn); mutex = p.then(function(){}, function(){}); return p; }
+    function persistCache(){ try{ localStorage.setItem(GHC, JSON.stringify({k:BR + '@' + c.owner + '/' + c.repo, cache:cache, shas:shas})); }catch(e){} }
+    function loadCache(){
+      try{ var s = JSON.parse(localStorage.getItem(GHC) || 'null'); if(s && s.k === BR + '@' + c.owner + '/' + c.repo){ COLS.forEach(function(k){ cache[k] = (s.cache && s.cache[k]) || {}; }); shas = s.shas || {}; return Object.keys(s.cache || {}).length > 0; } }catch(e){}
+      return false;
+    }
+    function saveQueue(){
+      var all = [];
+      Object.keys(wq).forEach(function(col){ wq[col].forEach(function(b){ all.push({col:col, id:b.id, op:b.op}); }); });
+      if(inflight) inflight.forEach(function(b){ all.push({col:inflight.col, id:b.id, op:b.op}); });
+      try{ if(all.length) localStorage.setItem(GHQ, JSON.stringify(all)); else localStorage.removeItem(GHQ); }catch(e){}
+    }
+    var inflight = null;
+    function applyOp(docs, id, op){
+      if(op.t === 'del'){ if(!(id in docs)) return false; delete docs[id]; return true; }
+      if(op.t === 'set'){ var n = JSON.parse(JSON.stringify(op.data)); if(JSON.stringify(docs[id]) === JSON.stringify(n)) return false; docs[id] = n; return true; }
+      if(!(id in docs)){ var e = new Error('not found'); e.code = 'not_found'; throw e; }
+      var before = JSON.stringify(docs[id]), cur = docs[id];
+      Object.keys(op.data).forEach(function(k){ cur[k] = JSON.parse(JSON.stringify(op.data[k] === undefined ? null : op.data[k])); });
+      return JSON.stringify(cur) !== before;
+    }
+    /* ---- خواندن ---- */
+    async function readFileMeta(col){
+      try{
+        var r = await call('GET', '/contents/' + DIR + '/' + col + '.json?ref=' + encodeURIComponent(BR));
+        var d = r.data, txt;
+        if(d.content && d.encoding === 'base64') txt = b64dec(d.content);
+        else { var b = await call('GET', '/git/blobs/' + d.sha); txt = b64dec(b.data.content); }
+        var j = JSON.parse(txt);
+        return {docs:(j && j.docs) || {}, sha:d.sha};
+      }catch(e){ if(e.status === 404) return {docs:{}, sha:null}; throw e; }
+    }
+    async function readBlob(sha){
+      var b = await call('GET', '/git/blobs/' + sha), j = JSON.parse(b_txt(b));
+      return (j && j.docs) || {};
+    }
+    function b_txt(b){ return b64dec(b.data.content); }
+    function diff(oldD, newD){
+      var ch = [];
+      Object.keys(newD).forEach(function(id){
+        if(!(id in oldD)) ch.push({type:'added', id:id, data:newD[id]});
+        else if(JSON.stringify(oldD[id]) !== JSON.stringify(newD[id])) ch.push({type:'modified', id:id, data:newD[id]});
+      });
+      Object.keys(oldD).forEach(function(id){ if(!(id in newD)) ch.push({type:'removed', id:id, data:oldD[id]}); });
+      return ch;
+    }
+    function snapOf(col, changes, all){
+      return {
+        docChanges: function(){ return changes.map(function(x){ return {type:x.type, doc:{id:x.id, data:function(){ return x.data ? JSON.parse(JSON.stringify(x.data)) : null; }}}; }); },
+        metadata: {fromCache: !syncedOnce},
+        empty: all ? (Object.keys(cache.tasks).length === 0 && Object.keys(cache.cfg).length === 0) : false
+      };
+    }
+    function emit(col, changes){
+      if(!changes.length) return;
+      lst[col].forEach(function(l){ if(l.on) { try{ l.cb(snapOf(col, changes, false)); }catch(e){ console.error(e); } } });
+    }
+    async function ensureBranch(){
+      try{ await call('GET', '/git/ref/heads/' + BR); return; }catch(e){ if(e.status !== 404) throw e; }
+      if(!c.token) throw new Error('شاخهٔ داده پیدا نشد');
+      var rp = await call('GET', ''); var def = rp.data.default_branch;
+      var r = await call('GET', '/git/ref/heads/' + def);
+      await call('POST', '/git/refs', {ref:'refs/heads/' + BR, sha:r.data.object.sha});
+    }
+    async function sync(force){
+      if(syncing || writing) return false; syncing = true;
+      try{
+        var r = await call('GET', '/git/ref/heads/' + BR, null, {etag: force ? null : refEtag});
+        if(r.status === 304){ setStatus(c.token ? (ghMeta.push === false ? 'ro' : 'ok') : 'ro', null); syncedOnce = true; return false; }
+        var newHead = r.data.object.sha, et = r.res.headers.get('etag');
+        var ls;
+        try{ ls = await call('GET', '/contents/' + DIR + '?ref=' + newHead); }catch(e){ if(e.status === 404) ls = {data:[]}; else throw e; }
+        var remote = {}; (ls.data || []).forEach(function(f){ remote[f.name.replace(/\.json$/, '')] = f.sha; });
+        var any = false;
+        for(var i = 0; i < COLS.length; i++){
+          var col = COLS[i], sh = remote[col];
+          if(!sh){ if(shas[col]){ var chd = diff(cache[col], {}); cache[col] = {}; delete shas[col]; emit(col, chd); any = any || chd.length > 0; } continue; }
+          if(shas[col] === sh) continue;
+          var docs = await readBlob(sh), chg = diff(cache[col], docs);
+          cache[col] = docs; shas[col] = sh; if(chg.length){ any = true; emit(col, chg); }
+        }
+        head = newHead; refEtag = et; syncedOnce = true; persistCache();
+        setStatus(c.token ? (ghMeta.push === false ? 'ro' : 'ok') : 'ro', null);
+        return any;
+      }catch(e){
+        if(e.net) setStatus('offline'); else if(e.status === 401) setStatus('error', 'توکن معتبر نیست یا منقضی شده'); else if(e.status === 404) setStatus('error', 'مخزن یا شاخهٔ داده پیدا نشد (آدرس/توکن را در تنظیمات بررسی کنید)'); else setStatus('error', e.message);
+        return false;
+      }finally{ syncing = false; }
+    }
+    /* ---- نوشتن ---- */
+    async function commit(col, batch){
+      var attempt = 0;
+      for(;;){
+        try{
+          var f = await readFileMeta(col), docs = f.docs, changed = false, errs = {}, touched = [];
+          batch.forEach(function(b, i){ try{ if(applyOp(docs, b.id, b.op)){ changed = true; touched.push(b.id); } }catch(e){ errs[i] = e; } });
+          if(changed){
+            var by = batch.map(function(b){ return b.id; }).filter(function(x, i, a){ return a.indexOf(x) === i; }).slice(0, 4).join(',');
+            var body = {message:'board: ' + col + ' ' + by, content:b64enc(serialize(docs)), branch:BR};
+            if(f.sha) body.sha = f.sha;
+            var r = await call('PUT', '/contents/' + DIR + '/' + col + '.json', body);
+            var old = cache[col]; cache[col] = docs; shas[col] = r.data.content.sha; head = r.data.commit.sha; refEtag = null; persistCache();
+            ghMeta.lastCommit = Date.now();
+            await sleep(500);
+          }
+          batch.forEach(function(b, i){ if(errs[i]) b.rej(errs[i]); else b.res(); });
+          /* همان تغییرها را دوباره به شنونده‌ها بده تا با تغییرات هم‌زمان دیگران ادغام شود */
+          var ids = {}; batch.forEach(function(b){ ids[b.id] = 1; });
+          setTimeout(function(){ emit(col, Object.keys(ids).map(function(id){ return id in cache[col] ? {type:'modified', id:id, data:cache[col][id]} : {type:'removed', id:id, data:null}; })); }, 60);
+          return;
+        }catch(e){
+          attempt++;
+          if(e.net){ throw e; }
+          if(e.code === 'conflict' && attempt < 6){ await sleep(400 + Math.random() * 600 * attempt); continue; }
+          if(e.status === 404 && attempt < 2){ try{ await ensureBranch(); continue; }catch(e2){ throw e2; } }
+          if(e.status >= 500 && attempt < 4){ await sleep(1000 * attempt); continue; }
+          throw e;
+        }
+      }
+    }
+    async function pump(){
+      if(writing) return; writing = true;
+      try{
+        for(;;){
+          var col = Object.keys(wq).filter(function(k){ return wq[k].length; })[0];
+          if(!col) break;
+          var batch = wq[col]; wq[col] = []; inflight = batch; inflight.col = col;
+          try{ await lock(function(){ return commit(col, batch); }); inflight = null; saveQueue(); setStatus(ghMeta.push === false ? 'ro' : 'ok', null); }
+          catch(e){
+            inflight = null;
+            if(e.net){ wq[col] = batch.concat(wq[col]); saveQueue(); setStatus('offline'); clearTimeout(retryT); retryT = setTimeout(function(){ pump(); }, 8000); break; }
+            batch.forEach(function(b){ b.rej(e); }); saveQueue();
+            setStatus('error', e.message);
+          }
+        }
+      }finally{ writing = false; }
+      if(Object.keys(wq).some(function(k){ return wq[k].length; })) return pump();
+      sync(true);
+    }
+    function enqueue(col, id, op){
+      return new Promise(function(res, rej){
+        (wq[col] = wq[col] || []).push({id:id, op:op, res:res, rej:rej});
+        saveQueue(); if(!inflight) setStatus('pending'); pump();
+      });
+    }
+    function ref(path){
+      var p = path.split('/'), col = p[0], id = p[1];
+      return {
+        set: function(d){ return enqueue(col, id, {t:'set', data:d}); },
+        update: function(d){ return enqueue(col, id, {t:'upd', data:d}); },
+        delete: function(){ return enqueue(col, id, {t:'del'}); },
+        get: function(){ var d = cache[col][id]; return Promise.resolve({exists:!!d, data:function(){ return d; }}); },
+        onSnapshot: function(cb, eb){
+          var l = {cb:function(snap){ var ch = snap.docChanges().filter(function(x){ return x.doc.id === id; })[0]; if(!ch) return; cb({exists: ch.type !== 'removed', data: function(){ return ch.doc.data(); }, metadata: snap.metadata}); }, on:false};
+          lst[col].push(l);
+          readyP.then(function(){ var d = cache[col][id]; l.on = true; cb({exists:!!d, data:function(){ return d ? JSON.parse(JSON.stringify(d)) : null; }, metadata:{fromCache:!syncedOnce}}); });
+          return function(){ l.on = false; };
+        }
+      };
+    }
+    var readyP, api2 = {
+      doc: ref,
+      collection: function(col){
+        return {onSnapshot: function(cb, eb){
+          var l = {cb:cb, on:false}; lst[col].push(l);
+          readyP.then(function(){
+            l.on = true;
+            var all = Object.keys(cache[col]).map(function(id){ return {type:'added', id:id, data:cache[col][id]}; });
+            cb(snapOf(col, all, true));
+          });
+          return function(){ l.on = false; };
+        }};
+      },
+      meta: ghMeta,
+      get synced(){ return syncedOnce; },
+      sync: sync,
+      cfg: c,
+      pending: function(){ return writing || Object.keys(wq).some(function(k){ return wq[k].length; }); },
+      /* فایل‌ها داخل مخزن، شاخهٔ داده */
+      putFile: function(path, blob){
+        return lock(async function(){
+          var buf = new Uint8Array(await blob.arrayBuffer()), s = '';
+          for(var i = 0; i < buf.length; i += 8192) s += String.fromCharCode.apply(null, buf.subarray(i, i + 8192));
+          for(var a = 0; a < 4; a++){
+            try{ await call('PUT', '/contents/' + path, {message:'board: file ' + path, content:btoa(s), branch:BR}); await sleep(500); return; }
+            catch(e){ if(e.code === 'conflict' && a < 3){ await sleep(500 + a * 500); continue; } throw e; }
+          }
+        });
+      },
+      getFile: async function(path){
+        var r = await call('GET', '/contents/' + path.split('/').map(encodeURIComponent).join('/') + '?ref=' + encodeURIComponent(BR), null, {raw:true, blob:true});
+        return r.blob;
+      },
+      delFile: function(path){
+        return lock(async function(){
+          var r = await call('GET', '/contents/' + path.split('/').map(encodeURIComponent).join('/') + '?ref=' + encodeURIComponent(BR));
+          await call('DELETE', '/contents/' + path.split('/').map(encodeURIComponent).join('/'), {message:'board: rm ' + path, sha:r.data.sha, branch:BR});
+        });
+      },
+      startPolling: function(){
+        function tick(){
+          var hid = document.hidden;
+          if(!hid || Date.now() - (api2._last || 0) > 90000){ api2._last = Date.now(); sync(false); }
+          pollT = setTimeout(tick, c.token ? 15000 : 60000);
+        }
+        pollT = setTimeout(tick, c.token ? 15000 : 60000);
+        var kick2 = function(){ if(!document.hidden){ api2._last = Date.now(); if(Object.keys(wq).some(function(k){ return wq[k].length; })) pump(); else sync(true); } };
+        document.addEventListener('visibilitychange', kick2);
+        window.addEventListener('online', kick2); window.addEventListener('focus', kick2);
+      },
+      whoami: async function(){
+        if(!c.token) return null;
+        try{
+          var u2 = await call('GET', 'https://api.github.com/user', null, {abs:true});
+          ghMeta.login = u2.data.login; ghMeta.avatar = u2.data.avatar_url;
+          var rp = await call('GET', '');
+          ghMeta.push = !!(rp.data.permissions && (rp.data.permissions.push || rp.data.permissions.admin));
+          ghMeta.private = !!rp.data.private;
+          return ghMeta.login;
+        }catch(e){ if(e.status === 401) setStatus('error', 'توکن معتبر نیست یا منقضی شده'); return null; }
+      },
+      init: async function(){
+        var hadCache = loadCache();
+        /* تغییرهای ذخیره‌نشدهٔ قبلی (آفلاین) را دوباره در صف بگذار */
+        try{
+          var q = JSON.parse(localStorage.getItem(GHQ) || 'null') || [];
+          q.forEach(function(x){ try{ applyOp(cache[x.col], x.id, x.op); }catch(e){} (wq[x.col] = wq[x.col] || []).push({id:x.id, op:x.op, res:function(){}, rej:function(){}}); });
+        }catch(e){}
+        readyP = (async function(){
+          await api2.whoami();
+          if(c.token){ try{ await ensureBranch(); }catch(e){} }
+          var ok = await Promise.race([sync(true), sleep(hadCache ? 3500 : 9000).then(function(){ return 'timeout'; })]);
+          if(!syncedOnce && !hadCache) api2.unreachable = true;
+          if(Object.keys(wq).some(function(k){ return wq[k].length; }) && c.token) pump();
+        })();
+        await readyP;
+        api2.startPolling();
+        return api2;
+      }
     };
+    return api2;
   }
-  var FS_MAX = 700000;
-  function fsPut(id, file){
-    return toDataUrl(file).then(function(u){ return wrapRef(fbDb.doc('boards/' + fbBoard + '/blobs/' + id)).set({url:u, name:file.name || '', type:file.type || ''}); });
-  }
+  function slugName(n){ return String(n || 'file').replace(/[^\w.\-؀-ۿ]+/g, '_').slice(-60); }
+  var GH_MAX = 20 * 1024 * 1024;
 
   /* ---------- فایل‌های محلی (IndexedDB) ---------- */
   function idbOpen(){
@@ -744,11 +1005,10 @@ var Store = (function(){
   }
   var urlCache = {};
   function fileUrl(f){
-    if(f.kind === 'asset') return Promise.resolve('/_blob/' + f.id);
-    if(f.kind === 'fs'){
+    if(f.kind === 'gh'){
       if(urlCache[f.id]) return Promise.resolve(urlCache[f.id]);
-      if(!fbDb) return Promise.resolve('');
-      return fbDb.doc('boards/' + fbBoard + '/blobs/' + f.id).get().then(function(d){ var u = d.exists ? d.data().url : ''; if(u) urlCache[f.id] = u; return u; }).catch(function(){ return ''; });
+      if(!gh) return Promise.resolve('');
+      return gh.getFile(f.path).then(function(b){ return (urlCache[f.id] = URL.createObjectURL(b)); }).catch(function(){ return ''; });
     }
     if(f.kind === 'idb'){
       if(urlCache[f.id]) return Promise.resolve(urlCache[f.id]);
@@ -761,14 +1021,12 @@ var Store = (function(){
   }
   function upload(file){
     var base = {name:file.name || 'file', type:file.type || '', size:file.size || 0};
-    if(mode === 'cloud' && fbMode){
-      if(file.size > FS_MAX) return Promise.reject({code:'too_big', message:'حجم فایل بیشتر از ۷۰۰ کیلوبایت است. برای فایل بزرگ، لینک (Drive و…) بگذارید'});
-      var fid = 'b' + Date.now().toString(36) + Math.floor(Math.random() * 1e5).toString(36);
-      return fsPut(fid, file).then(function(){ return Object.assign(base, {kind:'fs', id:fid}); });
-    }
-    if(mode === 'cloud'){
-      if(!ass) return Promise.reject({code:'no_assets', message:'ذخیرهٔ فایل در این نمایش فعال نیست'});
-      return ass.upload(file).then(function(r){ return Object.assign(base, {kind:'asset', id:r.id, type:r.contentType || base.type, size:r.sizeBytes || base.size}); });
+    if(mode === 'cloud' && gh){
+      if(!canW) return Promise.reject({code:'ro', message:'برای افزودن فایل باید با توکن وصل باشید (تنظیمات ← اتصال GitHub)'});
+      if(file.size > GH_MAX) return Promise.reject({code:'too_big', message:'حجم فایل بیشتر از ۲۰ مگابایت است؛ برای فایل بزرگ لینک بگذارید'});
+      var fid = 'g' + Date.now().toString(36) + Math.floor(Math.random() * 1e5).toString(36);
+      var path = 'files/' + fid + '-' + slugName(file.name);
+      return gh.putFile(path, file).then(function(){ return Object.assign(base, {kind:'gh', id:fid, path:path}); });
     }
     var id = 'f' + Date.now().toString(36) + Math.floor(Math.random() * 1e5).toString(36);
     return idbPut(id, file).then(function(){ return Object.assign(base, {kind:'idb', id:id}); }).catch(function(){
@@ -778,8 +1036,7 @@ var Store = (function(){
   }
   function removeFile(f){
     if(f.kind === 'idb') return idbDel(f.id);
-    if(f.kind === 'fs' && fbDb) return fbDb.doc('boards/' + fbBoard + '/blobs/' + f.id).delete().catch(function(){});
-    if(f.kind === 'asset' && ass && ass.delete) return ass.delete(f.id).catch(function(){});
+    if(f.kind === 'gh' && gh && canW) return gh.delFile(f.path).catch(function(){});
     return Promise.resolve();
   }
 
@@ -904,29 +1161,28 @@ var Store = (function(){
     get canWrite(){ return canW; },
     get dl(){ return dl; },
     get fb(){ return fbMode; },
-    get board(){ return fbBoard; },
+    get gh(){ return gh; },
+    get meta(){ return ghMeta; },
     get unreachable(){ return unreachable; },
-    fbConfig: fbConfig,
-    saveFbConfig: function(c){ try{ if(c) localStorage.setItem(FBK, JSON.stringify(c)); else localStorage.removeItem(FBK); }catch(e){} },
+    ghConfig: ghConfig,
+    saveGh: function(c){ try{ if(c) localStorage.setItem(GHK, JSON.stringify(c)); else localStorage.removeItem(GHK); localStorage.removeItem(GHC); localStorage.removeItem(GHQ); }catch(e){} },
+    onStatus: function(f){ onStatus = f; },
     get usr(){ return usr; },
     onRemote: function(f){ onRemote = f; },
     onError: function(f){ onErr = f; },
     fileUrl: fileUrl, upload: upload, removeFile: removeFile,
     init: async function(seedFn){
-      var cl = (typeof window !== 'undefined') ? window.claude : null;
-      if(cl && cl.use){
-        try{ db = await cl.use('db'); }catch(e){ db = null; }
-        try{ ass = await cl.use('assets'); }catch(e){ ass = null; }
-        try{ dl = await cl.use('downloads'); }catch(e){ dl = null; }
-        try{ usr = await cl.use('user'); }catch(e){ usr = null; }
-      }
-      if(!db){
-        var fc = fbConfig();
-        if(fc){ try{ db = await initFirebase(fc); fbMode = true; }catch(e){ db = null; fbMode = false; onErr('اتصال به Firebase برقرار نشد؛ حالت محلی'); } }
+      var gc = ghConfig();
+      if(gc.owner && gc.repo){
+        try{ gh = await initGitHub(gc).init(); db = gh; fbMode = true; unreachable = !!gh.unreachable; }
+        catch(e){ db = null; gh = null; fbMode = false; onErr('اتصال به GitHub برقرار نشد؛ حالت محلی'); }
+        if(gh){
+          canW = !!gc.token && ghMeta.push !== false;
+          if(ghMeta.login) usr = {id: function(){ return Promise.resolve('gh:' + ghMeta.login); }};
+        }
       }
       if(db){
         mode = 'cloud';
-        try{ if(usr && usr.can){ var w = await usr.can('data.write'); if(w === false) canW = false; } }catch(e){}
         await Promise.all([subCfg(), subColl('tasks'), subColl('notes'), subColl('comments'), subColl('profiles')]);
         if(unreachable && !M.cfg){ canW = false; }
         if(!M.cfg && M.tasks.length === 0){
@@ -1072,7 +1328,7 @@ function syncGates(){
 }
 var debT = {};
 function touch(t, keys, quiet){
-  if(!canW()){ toast('این نسخه فقط‌خواندنی است'); return false; }
+  if(!canW()){ toast('فقط‌خواندنی: در تنظیمات توکن GitHub را وارد کنید'); return false; }
   t.upd = Date.now(); t.by = ui.me || null;
   var k = (keys||[]).concat(['upd','by']);
   if(quiet){
@@ -1205,7 +1461,7 @@ function commentHtml(c, showTask){
 }
 function meSelect(id){
   return '<select class="sel meSel" id="'+id+'" data-act="me" aria-label="من کی هستم">'+(ui.me?'':'<option value="">من: انتخاب کنید</option>')+
-    M.cfg.people.map(function(p){ return '<option value="'+p.id+'"'+(p.id===ui.me?' selected':'')+'>من: '+esc(p.name)+'</option>'; }).join('')+'</select>';
+    M.cfg.people.filter(function(p){ return !p.bot; }).map(function(p){ return '<option value="'+p.id+'"'+(p.id===ui.me?' selected':'')+'>من: '+esc(p.name)+'</option>'; }).join('')+'</select>';
 }
 function vToday(){
   var day = ui.day!=null ? ui.day : TODAY, jx = d2j(day), g = d2g(day);
@@ -1476,7 +1732,7 @@ function renderChrome(){
   $('top').innerHTML = '<div class="top-in"><div class="brand"><div class="mark"><img alt="" src="'+ICON_URL+'"></div><div><h1>برد پروژهٔ سوسیسا</h1><small>'+
     (left>0 ? fa(left)+' روز تا افتتاحیه' : left===0 ? 'امروز افتتاحیه است' : 'بعد از افتتاحیه')+'</small></div></div>'+
     '<div class="ready" title="درصد تسک‌های انجام‌شده"><b><span>انجام‌شده</span><span>'+fa(dn)+' از '+fa(tot.length)+(late?' · '+fa(late)+' عقب‌افتاده':'')+'</span></b><div class="bar"><i style="width:'+pc+'%"></i></div></div>'+
-    '<span class="net '+(online?'on':'off')+'" title="'+(online?'دادهٔ مشترک و آنلاین':'ذخیره فقط روی همین دستگاه')+'"><i></i>'+'<span class="nt">'+(online?'آنلاین · مشترک':'فقط این دستگاه')+(online&&!canW()?' · فقط‌خواندنی':'')+'</span></span>'+
+    '<span class="net '+netInfo()[0]+'" title="'+esc(netInfo()[2])+'"><i></i>'+'<span class="nt">'+esc(netInfo()[1])+'</span></span>'+
     '<div class="tools"><button class="ibtn" data-act="layout" title="نمای صفحه: خودکار / موبایل / لپ‌تاپ ('+({auto:'خودکار',phone:'موبایل',desktop:'لپ‌تاپ'})[ui.layout||'auto']+')" aria-label="نمای صفحه">'+ICON.layout+'</button><button class="ibtn" data-act="png" title="خروجی PNG از این صفحه" aria-label="خروجی PNG">'+ICON.png+'</button>'+
     '<button class="ibtn" data-act="theme" title="تم روشن/تیره" aria-label="تم">'+ICON.moon+'</button>'+
     '<button class="ibtn" data-act="settings" title="تنظیمات، خدمت‌ها، فازها و داده" aria-label="تنظیمات">'+ICON.gear+'</button></div></div>';
@@ -1554,6 +1810,36 @@ function openTask(id){
   var slot = n % cols;
   w = {key:key, type:'task', task:id, w:W, h:H, x:Math.max(8, window.innerWidth-W-16-slot*(W+12)), y:70+((n/cols|0)%3)*34, min:false, max:false, z:++zTop, draft:''};
   wins.push(w); buildWin(w); focusWin(w); renderTray();
+}
+
+var NETS = {ok:['on','آنلاین · همگام','همهٔ تغییرها روی GitHub ذخیره و برای همه نمایش داده می‌شود'], pending:['off','در حال ذخیره…','تغییرها در حال ثبت روی GitHub است'], offline:['off','آفلاین · در صف','اینترنت قطع است؛ تغییرها در دستگاه می‌ماند و بعداً ثبت می‌شود'], ro:['off','فقط‌خواندنی','بدون توکن نوشتن ممکن نیست: تنظیمات ← اتصال GitHub'], error:['err','خطا در اتصال','برای جزئیات تنظیمات را باز کنید'], init:['off','…','']};
+function netInfo(){
+  if(Store.mode!=='cloud') return ['off','فقط این دستگاه','ذخیره فقط روی همین دستگاه'];
+  var st = (Store.meta&&Store.meta.status)||'init';
+  if(st==='ok' && !canW()) st = 'ro';
+  var n = NETS[st]||NETS.init; var t = n[2]; if(st==='error' && Store.meta.err) t = Store.meta.err;
+  return [n[0], n[1], t];
+}
+function paintNet(){
+  var el = document.querySelector('.net'); if(!el) return; var n = netInfo();
+  el.className = 'net '+n[0]; el.title = n[2]; var nt = el.querySelector('.nt'); if(nt) nt.textContent = n[1];
+}
+function ghSection(){
+  var c = Store.ghConfig(), m = Store.meta||{}, h = '<div class="wsec"><h5>اتصال GitHub (همگام‌سازی)</h5>';
+  if(Store.mode!=='cloud'){
+    h += '<p class="muted">فعلاً فقط روی همین دستگاه ذخیره می‌شود (آدرس مخزن مشخص نیست). مالک و نام مخزن را زیر وارد کنید.</p>';
+  } else {
+    var n = netInfo();
+    h += '<p><b>'+esc(n[1])+'</b> — '+esc(n[2])+'</p>';
+    h += '<p class="muted" dir="ltr" style="text-align:left">'+esc(c.owner+'/'+c.repo+' @ '+c.branch)+(m.login?' · '+esc(m.login):'')+(m.private===false?' · repo: public':'')+'</p>';
+    if(!c.token) h += '<p class="muted">برای ویرایش، یک‌بار توکن GitHub را در همین دستگاه وارد کنید (راهنما پایین). توکن فقط در همین مرورگر می‌ماند.</p>';
+    else if(m.push===false) h += '<p class="muted">این توکن اجازهٔ نوشتن روی مخزن ندارد (Contents ← Read and write لازم است و باید عضو مخزن باشید).</p>';
+  }
+  h += '<input class="in" id="ghTok" dir="ltr" type="password" autocomplete="off" placeholder="'+(c.token?'توکن ذخیره شده است (برای تغییر، جدید را بنویسید)':'GitHub token (github_pat_… یا ghp_…)')+'">'+
+    '<details class="adv"><summary>مخزن و شاخهٔ داده</summary><input class="in" id="ghOwner" dir="ltr" placeholder="owner" value="'+esc(c.owner)+'"><input class="in" id="ghRepo" dir="ltr" placeholder="repo" value="'+esc(c.repo)+'"><input class="in" id="ghBranch" dir="ltr" placeholder="branch" value="'+esc(c.branch)+'"></details>'+
+    '<div class="qd"><button class="btn pri sm" data-sact="gh-save">ذخیره و اتصال</button>'+(Store.mode==='cloud'?'<button class="btn sm" data-sact="gh-sync">همگام‌سازی الان</button>':'')+(c.token?'<button class="btn sm danger" data-sact="gh-off">حذف توکن از این دستگاه</button>':'')+'</div>'+
+    '<details class="adv"><summary>راهنمای ساخت توکن</summary><ol class="muted"><li>GitHub ← Settings ← Developer settings ← Personal access tokens ← <b>Fine-grained tokens</b> ← Generate new token.</li><li>Repository access: فقط مخزن <b dir="ltr">Susisa-projectboard</b>.</li><li>Permissions ← Repository ← <b dir="ltr">Contents: Read and write</b>.</li><li>(اگر مخزن مال حساب دیگری است و فقط Collaborator هستید، توکن Classic با دسترسی <b dir="ltr">repo</b> بسازید.)</li><li>توکن را اینجا Paste کنید. روی هر دستگاه یک‌بار.</li></ol></details></div>';
+  return h;
 }
 function openSettings(){
   var w = wins.filter(function(x){ return x.key==='settings'; })[0];
@@ -1654,7 +1940,7 @@ function taskHtml(t, w){
         '<div class="wfi"><a target="_blank" rel="noopener" '+href+'>'+esc(f.name)+'</a><small>'+esc(person(f.by).name)+(f.at?' · '+tfmt(f.at):'')+(f.size?' · '+fa(Math.max(1,Math.round(f.size/1024)))+' KB':'')+'</small></div>'+
         '<button class="x" data-wact="wf-del" data-fid="'+esc(f.id)+'"'+dis+' aria-label="حذف">'+ICON.x+'</button></div>'; }).join('')+'</div>';
   if(!ro){
-    h += '<div class="drop"><label class="btn sm filebtn">'+ICON.plus+' افزودن فایل یا عکس<input type="file" multiple class="sr" data-wfile="1"></label><span class="muted">یا فایل را اینجا رها کنید'+(Store.mode==='cloud'?' (تصویر، PDF، متن و CSV؛ برای Word/Excel/ZIP لینک بگذارید)':'')+'</span></div>'+
+    h += '<div class="drop"><label class="btn sm filebtn">'+ICON.plus+' افزودن فایل یا عکس<input type="file" multiple class="sr" data-wfile="1"></label><span class="muted">یا فایل را اینجا رها کنید'+(Store.mode==='cloud'?' (تا ۲۰ مگابایت؛ فایل بزرگ‌تر را لینک کنید)':'')+'</span></div>'+
       '<div class="addr"><input class="in" data-wf="lname" placeholder="نام لینک"><input class="in" dir="ltr" data-wf="lurl" placeholder="https://…"><button class="btn sm" data-wact="wlink">افزودن لینک</button></div>';
   }
   h += '</div>';
@@ -1689,9 +1975,7 @@ function settingsHtml(){
       (imp?'<div class="impbox">'+esc(imp.msg)+'<div class="qd"><button class="btn pri sm" data-sact="imp-ok">تأیید و ترکیب</button><button class="btn sm" data-sact="imp-no">انصراف</button></div></div>':'')+
       '<p class="muted">فایل‌های JSON هم نسخهٔ قبلیِ برد و هم این نسخه پذیرفته می‌شود. ورود، با شناسه ترکیب می‌شود و چیزی را پاک نمی‌کند.</p>'+
       (Store.mode==='local'?'<button class="btn sm danger" data-sact="reset">'+(ui.resetArm?'مطمئنید؟ همه‌چیز پاک می‌شود، دوباره بزنید':'بازنشانی کامل این دستگاه')+'</button>':'')+'</div>';
-  h += '<div class="wsec"><h5>وضعیت اتصال</h5><p>'+(Store.mode==='cloud'?'آنلاین'+(Store.fb?' (Firebase، کد برد: <b dir="ltr">'+esc(Store.board)+'</b>)':'')+': تغییرات برای همهٔ دستگاه‌ها و اعضا ثبت و فوری نمایش داده می‌شود.'+(canW()?'':' الان فقط‌خواندنی هستید (اتصال برقرار نشد یا قوانین Firebase اجازه نمی‌دهد).'):'محلی: داده فقط در همین مرورگر ذخیره می‌شود. برای همگام‌سازی بین دستگاه‌ها، اتصال Firebase را وارد کنید.')+'</p>'+
-    (Store.mode==='local' || Store.fb ? (Store.fb && !(window.SUSISA_CFG&&window.SUSISA_CFG.apiKey) ? '<div class="qd"><button class="btn sm danger" data-sact="fb-off">قطع اتصال این دستگاه</button></div>' : '') : '')+
-    (Store.mode==='local' ? '<textarea class="in" id="fbCfg" dir="ltr" rows="5" placeholder="تنظیمات Firebase را همین‌جا Paste کنید (apiKey, projectId, …)"></textarea><input class="in" id="fbBoard" dir="ltr" placeholder="کد برد (مثلا susisa-xxxx؛ روی همهٔ دستگاه‌ها یکسان)"><div class="qd"><button class="btn pri sm" data-sact="fb-save">اتصال و همگام‌سازی</button></div>' : '')+'</div>';
+  h += ghSection();
   return h+'</div>';
 }
 
@@ -1848,7 +2132,7 @@ function gUp(e){
   g.bar.classList.remove('drag');
   if(!g.moved){ openTask(g.t.id); return; }
   lastDrop = Date.now();
-  if(!canW()){ renderView(); toast('این نسخه فقط‌خواندنی است'); return; }
+  if(!canW()){ renderView(); toast('فقط‌خواندنی: در تنظیمات توکن GitHub را وارد کنید'); return; }
   var t = g.t;
   if(t.start==null && g.mode==='m'){ t.due = g.nb; }
   else { t.start = g.na; t.due = g.nb; if(t.type==='gate'){ t.start = null; } }
@@ -1858,7 +2142,7 @@ function gUp(e){
 /* ---------- افزودن فایل ---------- */
 function attachFiles(t, files){
   if(!files || !files.length) return;
-  if(!canW()){ toast('این نسخه فقط‌خواندنی است'); return; }
+  if(!canW()){ toast('فقط‌خواندنی: در تنظیمات توکن GitHub را وارد کنید'); return; }
   var arr = Array.prototype.slice.call(files), n = 0, bad = 0;
   toast('در حال ذخیرهٔ فایل…');
   var chain = Promise.resolve();
@@ -1901,7 +2185,7 @@ function handleAct(a, e){
     case 'wk': ui.day = (ui.day!=null?ui.day:TODAY) + 7*(+v); renderView(); break;
     case 'dayopen': ui.dayOpen = (ui.dayOpen===+v ? null : +v); renderView(); break;
     case 'newtask':
-      if(!canW()){ toast('این نسخه فقط‌خواندنی است'); break; }
+      if(!canW()){ toast('فقط‌خواندنی: در تنظیمات توکن GitHub را وارد کنید'); break; }
       var o = {}; if(a.dataset.due){ o.due = +a.dataset.due; }
       var t = newTask(o); renderAll(); openTask(t.id); break;
     case 'qadd':
@@ -1934,7 +2218,7 @@ function handleAct(a, e){
 }
 function handleWinAct(b, w){
   var a = b.dataset.wact, t = w.type==='task' ? byId[w.task] : null;
-  if(t && !canW()){ toast('این نسخه فقط‌خواندنی است'); return; }
+  if(t && !canW()){ toast('فقط‌خواندنی: در تنظیمات توکن GitHub را وارد کنید'); return; }
   var refill = function(){ fillWin(w); renderSoon(); };
   switch(a){
     case 'ck-add': var inp = w.el.querySelector('[data-wf="ckadd"]'); var tx=(inp.value||'').trim(); if(!tx) return; t.check=(t.check||[]).concat([{x:tx,done:false}]); touch(t,['check']); refill(); var i2=w.el.querySelector('[data-wf="ckadd"]'); if(i2) i2.focus(); break;
@@ -1969,16 +2253,16 @@ function handleSettingsAct(b){
   if(a==='export'){ exportJson(); return; }
   if(a==='imp-ok'){ applyImport(); if(w) fillWin(w); return; }
   if(a==='imp-no'){ ui.imp = null; if(w) fillWin(w); return; }
-  if(a==='fb-off'){ Store.saveFbConfig(null); location.reload(); return; }
-  if(a==='fb-save'){
-    var txt = ($('fbCfg')||{}).value||'', bd = (($('fbBoard')||{}).value||'').trim(), g = function(k){ var m = txt.match(new RegExp('["\']?'+k+'["\']?\\s*:\\s*["\']([^"\']+)["\']')); return m?m[1]:''; };
-    var cfg = {apiKey:g('apiKey'), authDomain:g('authDomain'), projectId:g('projectId'), appId:g('appId'), board:bd};
-    if(!cfg.apiKey || !cfg.projectId){ toast('apiKey و projectId پیدا نشد؛ کل تنظیمات Firebase را Paste کنید'); return; }
-    if(!/^[A-Za-z0-9_-]{6,}$/.test(bd)){ toast('کد برد حداقل ۶ حرف/عدد انگلیسی باشد'); return; }
-    Store.saveFbConfig(cfg); location.reload(); return;
+  if(a==='gh-off'){ var c0 = Store.ghConfig(); Store.saveGh({owner:c0.owner, repo:c0.repo, branch:c0.branch, token:''}); location.reload(); return; }
+  if(a==='gh-sync'){ if(Store.gh){ toast('در حال همگام‌سازی…'); Store.gh.sync(true).then(function(){ toast('همگام شد'); }); } return; }
+  if(a==='gh-save'){
+    var c1 = Store.ghConfig(), tk = (($('ghTok')||{}).value||'').trim();
+    var o = (($('ghOwner')||{}).value||'').trim(), r = (($('ghRepo')||{}).value||'').trim(), br = (($('ghBranch')||{}).value||'').trim();
+    if(!o || !r){ toast('مالک و نام مخزن لازم است'); return; }
+    Store.saveGh({owner:o, repo:r, branch:br||'board-data', token: tk || c1.token || ''}); location.reload(); return;
   }
   if(a==='reset'){ if(!ui.resetArm){ ui.resetArm = true; if(w) fillWin(w); return; } Store.resetLocal(); location.reload(); return; }
-  if(!canW()){ toast('این نسخه فقط‌خواندنی است'); return; }
+  if(!canW()){ toast('فقط‌خواندنی: در تنظیمات توکن GitHub را وارد کنید'); return; }
   if(a==='pp-add'){ c.people.push({id:slug('P'), name:'عضو جدید', color:'#7A7068'}); done(); }
   else if(a==='pp-del'){ if(c.people.length<2){ toast('حداقل یک عضو لازم است'); return; } c.people = c.people.filter(function(x){ return x.id!==v; }); done(); }
   else if(a==='sv-add'){ c.services.push({id:slug('sv'), n:'خدمت جدید', s:'جدید', c:'#7A7068'}); done(); }
@@ -1996,7 +2280,7 @@ function handleSettingsAct(b){
   }
 }
 function handleSettingsInput(el){
-  if(!canW()){ toast('این نسخه فقط‌خواندنی است'); return; }
+  if(!canW()){ toast('فقط‌خواندنی: در تنظیمات توکن GitHub را وارد کنید'); return; }
   var c = M.cfg, k = ['pp','sv','ph','ss'].filter(function(x){ return el.dataset[x]; })[0]; if(!k) return;
   var p = el.dataset[k].split('|'), id = p[0], f = p[1];
   var list = k==='pp'?c.people:k==='sv'?c.services:k==='ph'?c.phases:c.statuses;
@@ -2053,7 +2337,7 @@ function bind(){
     if(!w) return;
     var t2 = byId[w.task]; if(!t2) return;
     if(el.dataset.wfile){ attachFiles(t2, el.files); el.value=''; return; }
-    if(!canW()){ toast('این نسخه فقط‌خواندنی است'); return; }
+    if(!canW()){ toast('فقط‌خواندنی: در تنظیمات توکن GitHub را وارد کنید'); return; }
     if(el.dataset.ck!=null){ t2.check[+el.dataset.ck].done = el.checked; touch(t2,['check']); renderAll(); fillWin(w); return; }
     if(el.dataset.bf){
       var b = t2.budget, f = el.dataset.bf;
@@ -2201,6 +2485,7 @@ async function boot(){
   if(!VIEWS[ui.tab]) ui.tab = 'today';
   if(ui.theme){ ui._themeSet = 1; applyTheme(); }
   Store.onError(function(m){ toast(m); });
+  Store.onStatus(function(){ paintNet(); });
   await Store.init(seedFn);
   M = Store.M; reindex();
   if(ui.me && !M.cfg.people.some(function(p){ return p.id===ui.me; })) ui.me = null;

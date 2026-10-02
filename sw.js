@@ -1,4 +1,4 @@
-const V='susisa-gh1';
+const V='susisa-v6';
 const SHELL=['./','index.html','config.js','manifest.webmanifest','icon-192.png','icon-512.png','icon-180.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL).catch(()=>{})).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('susisa-')&&k!==V&&k!=='susisa-ext').map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

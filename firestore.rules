@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // فقط داخل مسیر boards/{کد برد}/... ؛ فهرست‌کردن کدها ممکن نیست، پس کد برد مثل رمز عمل می‌کند.
+    match /boards/{board}/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

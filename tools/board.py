@@ -189,12 +189,16 @@ def cmd_note(a):
     commit_push('note %s' % fmt_j(day), mut); print('ok', nid)
 
 def cmd_svc(a):
-    """مدیریت دستهٔ خدمات: list | add | edit"""
+    """مدیریت دستهٔ خدمات: list | add | edit | rm"""
     if a.op == 'list':
         ensure(); [print(x['id'], x['n'], '[جانبی]' if x.get('side') else '') for x in load('cfg').get('main', {}).get('services', [])]; return
     def mut():
         C = load('cfg'); m = C['main']; S = m['services']
         cur = next((x for x in S if x['id'] == a.id), None)
+        if a.op == 'rm':
+            if not cur: sys.exit('دسته پیدا نشد: ' + a.id)
+            if any(t.get('svc') == a.id for t in load('tasks').values()): sys.exit('این دسته هنوز تسک دارد؛ اول جابه‌جایشان کن')
+            S.remove(cur); m['v'] = m.get('v', 1) + 1; dump('cfg', C); return
         if a.op == 'add':
             if cur: sys.exit('این شناسه وجود دارد: ' + a.id)
             cur = {'id': a.id, 'n': a.name, 's': a.short or a.name, 'c': a.color or '#7A7068'}
@@ -220,7 +224,7 @@ def main():
     s = sp.add_parser('set'); s.add_argument('id'); s.add_argument('kv', nargs='+'); s.set_defaults(f=cmd_set)
     s = sp.add_parser('status'); s.add_argument('id'); s.add_argument('status'); s.set_defaults(f=cmd_status)
     s = sp.add_parser('assign'); s.add_argument('id'); s.add_argument('owner'); s.set_defaults(f=cmd_assign)
-    s = sp.add_parser('svc'); s.add_argument('op', choices=['list', 'add', 'edit']); s.add_argument('id', nargs='?'); s.add_argument('--name'); s.add_argument('--short'); s.add_argument('--color'); s.add_argument('--after'); s.add_argument('--side', type=lambda v: v.lower() in ('1', 'true', 'yes'), default=None); s.set_defaults(f=cmd_svc)
+    s = sp.add_parser('svc'); s.add_argument('op', choices=['list', 'add', 'edit', 'rm']); s.add_argument('id', nargs='?'); s.add_argument('--name'); s.add_argument('--short'); s.add_argument('--color'); s.add_argument('--after'); s.add_argument('--side', type=lambda v: v.lower() in ('1', 'true', 'yes'), default=None); s.set_defaults(f=cmd_svc)
     s = sp.add_parser('add'); s.add_argument('title'); s.add_argument('--svc', default='sv2'); s.add_argument('--owner', default=AS); s.add_argument('--prio', default='p2'); s.add_argument('--start'); s.add_argument('--due'); s.add_argument('--notes'); s.set_defaults(f=cmd_add)
     s = sp.add_parser('rm'); s.add_argument('id'); s.set_defaults(f=cmd_rm)
     s = sp.add_parser('comment'); s.add_argument('id'); s.add_argument('text'); s.set_defaults(f=cmd_comment)

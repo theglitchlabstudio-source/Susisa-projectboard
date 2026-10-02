@@ -2,6 +2,6 @@
 "A":{"id":"A","name":"امیرحسین","color":"#2F6FD0","ord":1},
 "C":{"id":"C","name":"امیررضا","color":"#C98A12","ord":3},
 "CL":{"id":"CL","name":"Claude","color":"#D97757","bot":true,"photo":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj48cmVjdCB3aWR0aD0iMTYwIiBoZWlnaHQ9IjE2MCIgZmlsbD0iI0Q5Nzc1NyIvPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNODAgMjh2MTA0TTI4IDgwaDEwNE00MyA0M2w3NCA3NE0xMTcgNDNMNDMgMTE3Ii8+PC9nPjwvc3ZnPg==","ord":4},
-"M":{"id":"M","name":"ممضی","color":"#5a1579","uid":"gh:theglitchlabstudio-source","ord":0},
+"M":{"id":"M","name":"ممضی","color":"#6d0f99","uid":"gh:theglitchlabstudio-source","ord":0},
 "T":{"id":"T","name":"همکار گلیچ‌لب","color":"#2F8F86","ord":2}
 }}

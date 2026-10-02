@@ -19,6 +19,7 @@ python3 tools/board.py assign <id> CL
 python3 tools/board.py add "عنوان" --svc sv2 --due 1405/07/25 --owner M
 python3 tools/board.py comment <id> "پیام"
 python3 tools/board.py note "یادداشت امروز" [--day 1405/07/12]
+python3 tools/board.py svc list|add|edit [id] [--name ... --short ... --color ... --after ... --side true]
 python3 tools/board.py rm <id>
 ```
 اولین اجرا شاخهٔ داده را در `~/.cache/susisa-board-data` می‌گیرد (`BOARD_DIR` برای تغییر). نیاز: دسترسی push به این مخزن (در Claude Code با add_repo/ورود GitHub).

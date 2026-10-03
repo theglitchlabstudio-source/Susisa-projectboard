@@ -21,7 +21,11 @@ python3 tools/board.py comment <id> "پیام"
 python3 tools/board.py note "یادداشت امروز" [--day 1405/07/12]
 python3 tools/board.py svc list|add|edit [id] [--name ... --short ... --color ... --after ... --side true]
 python3 tools/board.py rm <id>
+
+# ولت خصوصی Obsidian (مخزن susisa-vault، clone در /home/claude/susisa-vault)
+python3 tools/vault.py scan | set <path> k=v… | link <task> <path> [نام] | render | save "پیام"
 ```
+محتوای ولت را هرگز در این مخزن یا board-data کپی نکن؛ در برد فقط لینک. راهنما: `agent/knowledge/12-vault-librarian.md`.
 اولین اجرا شاخهٔ داده را در `~/.cache/susisa-board-data` می‌گیرد (`BOARD_DIR` برای تغییر). نیاز: دسترسی push به این مخزن (در Claude Code با add_repo/ورود GitHub).
 
 ## رابط برد (نسخهٔ ۶)

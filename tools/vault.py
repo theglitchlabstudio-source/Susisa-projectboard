@@ -52,12 +52,14 @@ def cmd_scan():
 
 def cmd_set(path, kv):
     ix = load(); cur = files()
-    if path not in cur and path not in ix['files']: sys.exit('فایل در ولت نیست: ' + path)
+    ondisk = os.path.exists(os.path.join(VD, path))
+    if path not in cur and not ondisk and path not in ix['files']: sys.exit('فایل در ولت نیست: ' + path)
     e = ix['files'].setdefault(path, {})
     for x in kv:
         k, _, v = x.partition('=')
         e[k] = [s for s in v.split(',') if s] if k == 'tasks' else v
     if path in cur: e['sha'] = cur[path]; e.pop('gone', None)
+    elif ondisk: e.pop('gone', None)
     else: e['gone'] = True
     e['seen'] = B.fmt_j(B.today_j()); save_idx(ix); print('ok', path)
 

@@ -25,6 +25,10 @@ python3 tools/board.py rm <id>
 # ولت خصوصی Obsidian (مخزن susisa-vault، clone در /home/claude/susisa-vault)
 python3 tools/vault.py ingest [--dry] | scan | set <path> k=v… | link <task> <path> [نام] | render | save "پیام"
 ```
+# بستهٔ تسک برای دستیار تسک در Claude (agent/copilot/)
+python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
+بسته‌ها در ولت `_agent/briefs/<id>.md`. تحویل‌ها: کامنت‌های «@Claude تحویل تسک …» (قالب agent/copilot/HANDOFF.md).
+
 محتوای ولت را هرگز در این مخزن یا board-data کپی نکن؛ در برد فقط لینک. راهنما: `agent/knowledge/12-vault-librarian.md`.
 اولین اجرا شاخهٔ داده را در `~/.cache/susisa-board-data` می‌گیرد (`BOARD_DIR` برای تغییر). نیاز: دسترسی push به این مخزن (در Claude Code با add_repo/ورود GitHub).
 

@@ -896,15 +896,23 @@ var Store = (function(){
     }); }).catch(function(){});
   }
   var urlCache = {};
+  var MIMES = {html:'text/html', htm:'text/html', md:'text/plain', txt:'text/plain', csv:'text/csv', json:'application/json', pdf:'application/pdf', png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', gif:'image/gif', webp:'image/webp', svg:'image/svg+xml', mp4:'video/mp4', mp3:'audio/mpeg'};
+  /* GitHub فایل خام را با Content-Type نادرست می‌دهد؛ بدون نوع درست، مرورگر HTML را به‌صورت کد نشان می‌دهد */
+  function typedBlob(b, f){
+    var t = (f.type && f.type !== 'application/octet-stream') ? f.type : '';
+    if(!t){ var m = /\.([a-z0-9]+)$/i.exec(f.name || f.path || ''); t = (m && MIMES[m[1].toLowerCase()]) || b.type || 'application/octet-stream'; }
+    if(/^text\/|json$|svg/.test(t) && !/charset/i.test(t)) t += ';charset=utf-8';
+    return b.type === t ? b : new Blob([b], {type: t});
+  }
   function fileUrl(f){
     if(f.kind === 'gh'){
       if(urlCache[f.id]) return Promise.resolve(urlCache[f.id]);
       if(!gh) return Promise.resolve('');
-      return gh.getFile(f.path).then(function(b){ return (urlCache[f.id] = URL.createObjectURL(b)); }).catch(function(){ return ''; });
+      return gh.getFile(f.path).then(function(b){ return (urlCache[f.id] = URL.createObjectURL(typedBlob(b, f))); }).catch(function(){ return ''; });
     }
     if(f.kind === 'idb'){
       if(urlCache[f.id]) return Promise.resolve(urlCache[f.id]);
-      return idbGet(f.id).then(function(b){ if(!b) return ''; return (urlCache[f.id] = URL.createObjectURL(b)); }).catch(function(){ return ''; });
+      return idbGet(f.id).then(function(b){ if(!b) return ''; return (urlCache[f.id] = URL.createObjectURL(typedBlob(b, f))); }).catch(function(){ return ''; });
     }
     return Promise.resolve(f.url || '');
   }

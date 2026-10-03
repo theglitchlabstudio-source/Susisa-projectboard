@@ -7,6 +7,9 @@
   vault.py set <path> key=value ...  ثبت در فهرست: sum="خلاصه" tasks=s0l,e01 svc=sv2 type=سند sens=normal|private|secret|skip dup=<path>
                                      private = محتوا حساس، فقط لینک در برد · secret = هرگز در برد (مثل مالی) · skip = نادیده
   vault.py link <task> <path> [نام]  لینک فایل ولت روی تسک برد (اگر فایل عوض شده باشد، لینک به‌روز و کامنت ثبت می‌شود)
+  vault.py ingest [--dry]            فایل‌هایی که اعضا روی تسک‌های برد ضمیمه کرده‌اند و هنوز در ولت نیستند را به ولت می‌برد:
+                                     متن/سند (md,txt,csv,json,html,docx,pdf,xlsx,…) کپی کامل در tasks/<تسک>/ ؛ تصویر/حجیم (ignore ولت) فقط «کارت» .md با لینک فایل برد.
+                                     هر فایل یک بار؛ روی تسک کامنت ثبت می‌شود؛ بعدش با set خلاصه و sens بنویس.
   vault.py render                    ساخت _agent/INDEX.md از فهرست
   vault.py save "پیام"               commit و push فهرست در مخزن ولت
 محیط: VAULT_DIR (پیش‌فرض ~/susisa-vault یا /home/claude/susisa-vault)، VAULT_REPO (owner/repo)
@@ -84,6 +87,56 @@ def cmd_link(tid, path, name=None):
     if tid not in tl: tl.append(tid)
     e['sha'] = cur[path]; save_idx(ix); print(r or 'ok', tid, path)
 
+MAXCOPY = 20 * 1024 * 1024
+def ingest_key(fid): return 'board:' + fid
+def safe(n): return ''.join('_' if c in '/\\:*?"<>|\0' else c for c in n).strip() or 'file'
+
+def cmd_ingest(dry=False):
+    B.ensure(); T = B.load('tasks'); ix = load(); F = ix['files']
+    done = {e.get('boardId') for e in F.values() if e.get('boardId')}
+    owner_repo = B.remote_url().rstrip('/').removesuffix('.git').split('github.com/')[-1].split('github.com:')[-1]
+    todo = []
+    for tid, t in sorted(T.items()):
+        for f in t.get('files') or []:
+            if f.get('kind') == 'gh' and f.get('id') not in done: todo.append((tid, t, f))
+    out = []
+    for tid, t, f in todo:
+        src = os.path.join(B.DIR, f['path'])
+        name = safe(f.get('name') or os.path.basename(f['path']))
+        rel = 'tasks/%s/%s' % (tid, name)
+        if os.path.exists(os.path.join(VD, rel)) and F.get(rel, {}).get('boardId') != f['id']:
+            rel = 'tasks/%s/%s-%s' % (tid, f['id'][-4:], name)
+        ign = subprocess.run(['git', '-C', VD, 'check-ignore', '-q', rel]).returncode == 0
+        big = (not os.path.exists(src)) or os.path.getsize(src) > MAXCOPY
+        card = ign or big
+        if card: rel = rel + '.card.md'
+        rec = {'task': tid, 'by': f.get('by'), 'file': f.get('name'), 'vault': rel, 'mode': 'card' if card else 'copy'}
+        out.append(rec)
+        if dry: continue
+        os.makedirs(os.path.dirname(os.path.join(VD, rel)), exist_ok=True)
+        burl = 'https://github.com/%s/blob/%s/%s' % (owner_repo, B.BRANCH, '/'.join(__import__('urllib.parse').parse.quote(x) for x in f['path'].split('/')))
+        if card:
+            body = ['---', 'title: "%s"' % name, 'task: %s' % tid, 'by: %s' % f.get('by'), 'type: %s' % f.get('type'), 'size: %s' % f.get('size'),
+                    'board_file: %s' % burl, '---', '', '# کارت فایل: %s' % name, '',
+                    'این فایل (%s، %s بایت) توسط %s روی تسک «%s» در برد ضمیمه شده؛ چون تصویری/حجیم است نسخهٔ کامل در ولت نیست.' % (f.get('type'), f.get('size'), f.get('by'), t.get('title', tid)),
+                    '', 'لینک فایل روی برد: ' + burl, '', '> توضیح/خلاصه (کتابدار یا ممضی): ']
+            open(os.path.join(VD, rel), 'w', encoding='utf8').write('\n'.join(body) + '\n')
+        else:
+            import shutil; shutil.copyfile(src, os.path.join(VD, rel))
+        e = F.setdefault(rel, {}); e.update({'boardId': f['id'], 'tasks': [tid], 'by': f.get('by'), 'src': 'board', 'seen': B.fmt_j(B.today_j()), 'sum': ''})
+        if not card: e['sha'] = git('hash-object', rel).strip()
+    if dry or not out: print(json.dumps(out, ensure_ascii=False, indent=1)); return
+    save_idx(ix)
+    def mut():
+        C = B.load('comments')
+        for r in out:
+            fid = F[r['vault']]['boardId']; cid = 'c' + hashlib.sha1(('ing' + fid).encode()).hexdigest()[:10]
+            i = r['task']
+            C[cid] = {'id': cid, 'task': i, 'text': 'فایل «%s» (از %s) در ولت ذخیره شد: %s' % (r['file'], r['by'], ('کارت: ' if r['mode'] == 'card' else '') + r['vault']), 'by': B.AS, 'at': int(time.time() * 1000)}
+        B.dump('comments', C)
+    B.commit_push('comments ingest', mut)
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+
 def cmd_render():
     ix = load(); F = ix['files']
     rows = sorted(F.items(), key=lambda kv: kv[0])
@@ -102,8 +155,8 @@ def cmd_render():
     open(os.path.join(VD, '_agent', 'INDEX.md'), 'w', encoding='utf8').write('\n'.join(out) + '\n'); print('ok INDEX.md')
 
 def cmd_save(msg):
-    git('add', '_agent')
-    if not git('status', '--porcelain', '_agent').strip(): print('بدون تغییر'); return
+    git('add', '_agent', 'tasks')
+    if not git('status', '--porcelain', '_agent', 'tasks').strip(): print('بدون تغییر'); return
     git('commit', '-q', '-m', 'agent: ' + msg)
     for _ in range(4):
         r = subprocess.run(['git', '-C', VD, 'push', '-q', 'origin', 'HEAD:main'], capture_output=True, text=True)
@@ -118,6 +171,7 @@ if __name__ == '__main__':
     if c == 'scan': cmd_scan()
     elif c == 'set': cmd_set(a[1], a[2:])
     elif c == 'link': cmd_link(a[1], a[2], a[3] if len(a) > 3 else None)
+    elif c == 'ingest': cmd_ingest('--dry' in a)
     elif c == 'render': cmd_render()
     elif c == 'save': cmd_save(a[1] if len(a) > 1 else 'index')
     else: print(__doc__)

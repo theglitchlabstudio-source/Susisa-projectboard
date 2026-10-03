@@ -6,7 +6,8 @@
   vault.py scan                      فایل‌های تازه/تغییرکرده/حذف‌شده نسبت به فهرست (JSON)
   vault.py set <path> key=value ...  ثبت در فهرست: sum="خلاصه" tasks=s0l,e01 svc=sv2 type=سند sens=normal|private|secret|skip dup=<path>
                                      private = محتوا حساس، فقط لینک در برد · secret = هرگز در برد (مثل مالی) · skip = نادیده
-  vault.py link <task> <path> [نام]  لینک فایل ولت روی تسک برد (اگر فایل عوض شده باشد، لینک به‌روز و کامنت ثبت می‌شود)
+  vault.py link <task> <path> [نام]  فایل ولت روی تسک برد: عادی ≤۵MB ← کپی در files/ برد (kind:gh)، حساس/حجیم ← لینک؛ تغییر فایل = نسخهٔ جدید + کامنت
+  vault.py relink                    بازسازی همهٔ لینک‌های ولتِ برد با همین قاعده
   vault.py ingest [--dry]            فایل‌هایی که اعضا روی تسک‌های برد ضمیمه کرده‌اند و هنوز در ولت نیستند را به ولت می‌برد:
                                      متن/سند (md,txt,csv,json,html,docx,pdf,xlsx,…) کپی کامل در tasks/<تسک>/ ؛ تصویر/حجیم (ignore ولت) فقط «کارت» .md با لینک فایل برد.
                                      هر فایل یک بار؛ روی تسک کامنت ثبت می‌شود؛ بعدش با set خلاصه و sens بنویس.
@@ -63,31 +64,60 @@ def cmd_set(path, kv):
     else: e['gone'] = True
     e['seen'] = B.fmt_j(B.today_j()); save_idx(ix); print('ok', path)
 
+LINKCOPY = 5 * 1024 * 1024
+def _mime(n):
+    import mimetypes; m = {'md': 'text/plain', 'txt': 'text/plain', 'csv': 'text/csv', 'json': 'application/json', 'html': 'text/html', 'htm': 'text/html'}
+    e = n.rsplit('.', 1)[-1].lower() if '.' in n else ''
+    return m.get(e) or mimetypes.guess_type(n)[0] or 'application/octet-stream'
+
 def cmd_link(tid, path, name=None):
+    """sens=normal و ≤۵MB: نسخهٔ فایل داخل board-data/files کپی می‌شود (kind:gh) تا مثل فایل‌های ممضی/امیرحسین در برد باز، دانلود و نسخه‌دار شود.
+    sens=private یا حجیم: فقط لینک به ولت (برد با توکن همان دستگاه باز می‌کند). secret/skip: هرگز."""
     cur = files()
     if path not in cur: sys.exit('فایل در ولت نیست: ' + path)
     ix = load(); ent = ix['files'].get(path, {})
     if ent.get('sens') in ('secret', 'skip'): sys.exit('این فایل محرمانه/نادیده است و روی برد لینک نمی‌شود: ' + path)
     lid = 'v' + hashlib.sha1(path.encode()).hexdigest()[:10]
     nm = name or os.path.basename(path)
+    src = os.path.join(VD, path); sha = cur[path]
+    copy = ent.get('sens') != 'private' and os.path.isfile(src) and os.path.getsize(src) <= LINKCOPY
+    now = int(time.time() * 1000)
     def mut():
         T = B.load('tasks'); i = B.find(T, tid); t = T[i]; fs = t.get('files') or []
         ex = next((f for f in fs if f.get('id') == lid), None); note = None
-        if ex:
-            if ex.get('sha') == cur[path] and ex.get('name') == nm: return 'same'
-            if ex.get('sha') != cur[path]: note = 'سند ولت به‌روز شد: «%s»' % nm
-            ex.update({'name': nm, 'url': url(path), 'sha': cur[path], 'at': int(time.time() * 1000), 'by': B.AS})
+        if ex and ex.get('sha') == sha and ex.get('name') == nm and (ex.get('kind') == 'gh') == copy: return 'same'
+        if ex and ex.get('sha') != sha: note = 'سند ولت به‌روز شد: «%s»' % nm
+        if copy:
+            import shutil
+            rel = 'files/vault-%s-%s%s' % (lid[1:], sha[:8], os.path.splitext(path)[1].lower())
+            os.makedirs(os.path.join(B.DIR, 'files'), exist_ok=True); shutil.copyfile(src, os.path.join(B.DIR, rel))
+            nf = {'id': lid, 'kind': 'gh', 'name': nm, 'type': _mime(path), 'size': os.path.getsize(src), 'path': rel, 'vault': path, 'sha': sha, 'at': now, 'by': B.AS}
+            if ex and ex.get('kind') == 'gh' and ex.get('path') != rel:
+                old = {k: v for k, v in ex.items() if k != 'vers'}; nf['vers'] = [old] + (ex.get('vers') or [])
+            elif ex and ex.get('vers'): nf['vers'] = ex['vers']
         else:
-            fs.append({'id': lid, 'kind': 'link', 'name': nm, 'url': url(path), 'vault': path, 'sha': cur[path], 'at': int(time.time() * 1000), 'by': B.AS})
+            nf = {'id': lid, 'kind': 'link', 'name': nm, 'url': url(path), 'vault': path, 'sha': sha, 'at': now, 'by': B.AS}
+        if ex: fs[fs.index(ex)] = nf
+        else: fs.append(nf)
         t['files'] = fs; B.stamp(t); B.dump('tasks', T)
         if note:
-            C = B.load('comments'); cid = 'c' + hashlib.sha1((lid + cur[path]).encode()).hexdigest()[:10]
-            C[cid] = {'id': cid, 'task': i, 'text': note, 'by': B.AS, 'at': int(time.time() * 1000)}; B.dump('comments', C)
+            C = B.load('comments'); cid = 'c' + hashlib.sha1((lid + sha).encode()).hexdigest()[:10]
+            C[cid] = {'id': cid, 'task': i, 'text': note, 'by': B.AS, 'at': now}; B.dump('comments', C)
         return 'ok'
     r = B.commit_push('tasks %s vault-link' % tid, mut)
     e = ix['files'].setdefault(path, {}); tl = e.setdefault('tasks', [])
     if tid not in tl: tl.append(tid)
-    e['sha'] = cur[path]; save_idx(ix); print(r or 'ok', tid, path)
+    e['sha'] = sha; save_idx(ix); print(r or 'ok', tid, path, '(کپی روی برد)' if copy else '(فقط لینک)')
+
+def cmd_relink():
+    """همهٔ لینک‌های ولتِ فعلی روی برد را دوباره می‌سازد (عادی ← کپی روی برد؛ حساس ← لینک)."""
+    B.ensure(); T = B.load('tasks'); ix = load(); n = 0
+    for tid, t in sorted(T.items()):
+        for f in list(t.get('files') or []):
+            v = f.get('vault')
+            if v and f.get('id', '').startswith('v') and v in files() and ix['files'].get(v, {}).get('sens') not in ('secret', 'skip'):
+                cmd_link(tid, v, f.get('name')); n += 1
+    print('relink', n)
 
 MAXCOPY = 20 * 1024 * 1024
 def ingest_key(fid): return 'board:' + fid
@@ -100,7 +130,7 @@ def cmd_ingest(dry=False):
     todo = []
     for tid, t in sorted(T.items()):
         for f in t.get('files') or []:
-            if f.get('kind') == 'gh' and f.get('id') not in done: todo.append((tid, t, f))
+            if f.get('kind') == 'gh' and not f.get('vault') and f.get('id') not in done: todo.append((tid, t, f))
     out = []
     for tid, t, f in todo:
         src = os.path.join(B.DIR, f['path'])
@@ -172,6 +202,7 @@ if __name__ == '__main__':
     c = a[0]
     if c == 'scan': cmd_scan()
     elif c == 'set': cmd_set(a[1], a[2:])
+    elif c == 'relink': cmd_relink()
     elif c == 'link': cmd_link(a[1], a[2], a[3] if len(a) > 3 else None)
     elif c == 'ingest': cmd_ingest('--dry' in a)
     elif c == 'render': cmd_render()

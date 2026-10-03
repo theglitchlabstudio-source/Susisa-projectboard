@@ -55,8 +55,9 @@ def commit_push(msg, mutate):
     for attempt in range(6):
         ensure() if attempt == 0 else pull()
         res = mutate()
-        sh('git', 'add', '-A', 'data')
-        if not sh('git', 'status', '--porcelain', 'data'):
+        pth = ['data'] + (['files'] if os.path.isdir(os.path.join(DIR, 'files')) else [])
+        sh('git', 'add', '-A', *pth)
+        if not sh('git', 'status', '--porcelain', *pth):
             print('بدون تغییر'); return res
         sh('git', 'commit', '--quiet', '-m', 'board: ' + msg + ' (by Claude)')
         r = subprocess.run(['git', 'push', '--quiet', 'origin', 'HEAD:' + BRANCH], cwd=DIR, capture_output=True, text=True)

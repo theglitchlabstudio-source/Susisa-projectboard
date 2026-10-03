@@ -23,13 +23,13 @@ python3 tools/board.py svc list|add|edit [id] [--name ... --short ... --color ..
 python3 tools/board.py rm <id>
 
 # ولت خصوصی Obsidian (مخزن susisa-vault، clone در /home/claude/susisa-vault)
-python3 tools/vault.py ingest [--dry] | scan | set <path> k=v… | link <task> <path> [نام] | render | save "پیام"
+python3 tools/vault.py ingest [--dry] | scan | set <path> k=v… | link <task> <path> [نام] | relink | render | save "پیام"
 ```
 # بستهٔ تسک برای دستیار تسک در Claude (agent/copilot/)
 python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
 بریف‌ها در board-data: `data/briefs.json` (زیر هر تسک در برد دیده می‌شود)؛ متن دستی agent: `board.py set <id> briefNote="…"`؛ `--vault` نسخهٔ کامل در ولت. تحویل‌ها: کامنت‌های «@Claude تحویل تسک …» (قالب agent/copilot/HANDOFF.md).
 
-محتوای ولت را هرگز در این مخزن یا board-data کپی نکن؛ در برد فقط لینک. راهنما: `agent/knowledge/12-vault-librarian.md`.
+از ولت فقط اسناد `sens=normal` (≤۵MB) و فقط با `vault.py link` در board-data کپی می‌شوند؛ حساس فقط لینک، محرمانه هرگز. راهنما: `agent/knowledge/12-vault-librarian.md`.
 اولین اجرا شاخهٔ داده را در `~/.cache/susisa-board-data` می‌گیرد (`BOARD_DIR` برای تغییر). نیاز: دسترسی push به این مخزن (در Claude Code با add_repo/ورود GitHub).
 
 ## رابط برد (نسخهٔ ۹)
@@ -39,3 +39,5 @@ python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
 - اولویت‌ها و سه دسته‌بندی مستقل: نوع خدمت (`svc`)، فاز (`phase`/از روی موعد)، وضعیت (`status`).
 - قرارداد و پرداخت داخل برد/رودمپ نیست.
 - فایل ضمیمه روی `files/` شاخهٔ داده می‌رود؛ اگر Claude فایل اضافه کرد، آن را با commit به `files/` بگذار و در `files` تسک `{kind:"gh",id,path,name,type,size}` ثبت کن (نسخهٔ جدید: آرایهٔ `vers` از نسخه‌های قبلی).
+
+- سند ولتِ عادی (≤۵MB) با `vault.py link` در `files/` برد کپی می‌شود (`kind:gh` + فیلد `vault`/`sha`)؛ حساس فقط `kind:link` است و برد (v10) با توکن همان دستگاهِ کاربر از مخزن خصوصی ولت می‌خواند. هیچ توکنی در داده/پروفایل برد ذخیره نمی‌شود.

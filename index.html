@@ -825,6 +825,12 @@ var Store = (function(){
         var r = await call('GET', '/contents/' + path.split('/').map(encodeURIComponent).join('/') + '?ref=' + encodeURIComponent(BR), null, {raw:true, blob:true});
         return r.blob;
       },
+      getVault: async function(u){
+        var m = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/.exec(u || ''); if(!m) throw new Error('bad');
+        if(!c.token){ var e0 = new Error('token'); e0.code = 'notoken'; throw e0; }
+        var r = await call('GET', 'https://api.github.com/repos/' + m[1] + '/' + m[2] + '/contents/' + m[4].split('/').map(function(x){ return encodeURIComponent(decodeURIComponent(x)); }).join('/') + '?ref=' + encodeURIComponent(m[3]), null, {raw:true, blob:true, abs:true});
+        return r.blob;
+      },
       delFile: function(path){
         return lock(async function(){
           var r = await call('GET', '/contents/' + path.split('/').map(encodeURIComponent).join('/') + '?ref=' + encodeURIComponent(BR));
@@ -911,7 +917,7 @@ var Store = (function(){
   /* GitHub فایل خام را با Content-Type نادرست می‌دهد؛ بدون نوع درست، مرورگر HTML را به‌صورت کد نشان می‌دهد */
   function typedBlob(b, f){
     var t = (f.type && f.type !== 'application/octet-stream') ? f.type : '';
-    if(!t){ var m = /\.([a-z0-9]+)$/i.exec(f.name || f.path || ''); t = (m && MIMES[m[1].toLowerCase()]) || b.type || 'application/octet-stream'; }
+    if(!t){ var m = /\.([a-z0-9]+)$/i.exec(f.vault || f.name || f.path || ''); t = (m && MIMES[m[1].toLowerCase()]) || b.type || 'application/octet-stream'; }
     if(/^text\/|json$|svg/.test(t) && !/charset/i.test(t)) t += ';charset=utf-8';
     return b.type === t ? b : new Blob([b], {type: t});
   }
@@ -925,8 +931,14 @@ var Store = (function(){
       if(urlCache[f.id]) return Promise.resolve(urlCache[f.id]);
       return idbGet(f.id).then(function(b){ if(!b) return ''; return (urlCache[f.id] = URL.createObjectURL(typedBlob(b, f))); }).catch(function(){ return ''; });
     }
+    if(f.kind === 'link' && f.vault){
+      if(urlCache[f.id + f.sha]) return Promise.resolve(urlCache[f.id + f.sha]);
+      if(!gh || !gh.getVault) return Promise.resolve('');
+      return gh.getVault(f.url).then(function(b){ return (urlCache[f.id + f.sha] = URL.createObjectURL(typedBlob(b, f))); }).catch(function(e){ vaultErr = (e && e.code === 'notoken') ? 'notoken' : 'denied'; return ''; });
+    }
     return Promise.resolve(f.url || '');
   }
+  var vaultErr = '';
   function toDataUrl(file){
     return new Promise(function(res, rej){ var r = new FileReader(); r.onload = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; r.readAsDataURL(file); });
   }
@@ -1081,7 +1093,7 @@ var Store = (function(){
     get usr(){ return usr; },
     onRemote: function(f){ onRemote = f; },
     onError: function(f){ onErr = f; },
-    fileUrl: fileUrl, upload: upload, removeFile: removeFile,
+    fileUrl: fileUrl, vaultErr: function(){ return vaultErr; }, upload: upload, removeFile: removeFile,
     init: async function(seedFn){
       var gc = ghConfig();
       if(gc.owner && gc.repo){
@@ -1496,7 +1508,7 @@ function fillSheet(first){
     (rdeps.length?'<h5 style="margin-top:10px">این کارها منتظر این تسک‌اند</h5>'+rdeps.map(function(d){ return '<div class="dep"><span class="s'+(isDone(d)?' ok':'')+'">'+esc(stt(d.status).n)+'</span><button class="lnk" style="flex:1;font-size:13px;color:var(--ink)" data-open="'+esc(d.id)+'">'+esc(d.t)+'</button>'+dueHtml(d)+'</div>'; }).join(''):'')+'</div>';
   var bf=(M.briefs||[]).filter(function(x){ return x.id===t.id; })[0];
   h+='<div class="blk"><details class="bfd"'+(ui.bfOpen===t.id?' open':'')+'><summary><b>بریف دستیار تسک</b> <small class="muted">'+(bf?('به‌روز شده '+tfmt(bf.at)):'هنوز ساخته نشده')+'</small></summary>'+(bf?'<div class="row" style="margin:6px 0"><button class="btn sm" data-act="bfcopy" data-id="'+esc(t.id)+'">کپی بریف</button><span class="muted small">آن را در چت پروژهٔ «دستیار تسک» پیست کنید</span></div><div class="bftx">'+esc(bf.text||'')+'</div>':'<div class="muted small" style="padding:6px 0">با اجرای بعدی ایجنت ساخته می‌شود.</div>')+'</details></div>';
-  var fs=t.files||[]; h+='<div class="blk"><h5>فایل‌ها و لینک‌ها</h5><div class="flist">'+fs.map(function(f){ var lk=f.kind==='link'; return '<div class="fl">'+(lk?'<a href="'+esc(f.url)+'" target="_blank" rel="noopener" style="flex:1;min-width:0">'+esc(f.name)+'</a>':'<a href="#" data-act="fopen" data-t="'+esc(t.id)+'" data-f="'+esc(f.id)+'" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">'+esc(f.name)+(fver(f)>1?'<span class="vbadge">نسخهٔ '+fa(fver(f))+'</span>':'')+'</a>')+'<span class="muted small">'+(f.by?esc(person(f.by).name):'')+'</span>'+(lk?'':'<button class="ib" style="width:30px;height:30px" data-act="fdl" data-t="'+esc(t.id)+'" data-f="'+esc(f.id)+'" aria-label="دانلود" title="دانلود">'+IC.dl+'</button><button class="ib" style="width:30px;height:30px" data-act="fnew" data-t="'+esc(t.id)+'" data-f="'+esc(f.id)+'" aria-label="نسخهٔ جدید" title="نسخهٔ جدید">'+IC.up+'</button>')+'<button class="ib" style="width:30px;height:30px" data-act="fdel" data-f="'+esc(f.id)+'" aria-label="حذف">'+IC.x+'</button></div>'; }).join('')+'</div>'+
+  var fs=t.files||[]; h+='<div class="blk"><h5>فایل‌ها و لینک‌ها</h5><div class="flist">'+fs.map(function(f){ var lk=f.kind==='link'&&!f.vault; return '<div class="fl">'+(lk?'<a href="'+esc(f.url)+'" target="_blank" rel="noopener" style="flex:1;min-width:0">'+esc(f.name)+'</a>':'<a href="#" data-act="fopen" data-t="'+esc(t.id)+'" data-f="'+esc(f.id)+'" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">'+esc(f.name)+(fver(f)>1?'<span class="vbadge">نسخهٔ '+fa(fver(f))+'</span>':'')+'</a>')+'<span class="muted small">'+(f.by?esc(person(f.by).name):'')+'</span>'+(lk?'':'<button class="ib" style="width:30px;height:30px" data-act="fdl" data-t="'+esc(t.id)+'" data-f="'+esc(f.id)+'" aria-label="دانلود" title="دانلود">'+IC.dl+'</button><button class="ib" style="width:30px;height:30px" data-act="fnew" data-t="'+esc(t.id)+'" data-f="'+esc(f.id)+'" aria-label="نسخهٔ جدید" title="نسخهٔ جدید">'+IC.up+'</button>')+'<button class="ib" style="width:30px;height:30px" data-act="fdel" data-f="'+esc(f.id)+'" aria-label="حذف">'+IC.x+'</button></div>'; }).join('')+'</div>'+
     '<div class="row" style="margin-top:6px"><label class="btn sm">'+IC.plus+'فایل<input type="file" id="fUp" multiple hidden'+ro+'></label><input class="in" id="lnName" style="flex:1;min-width:110px" placeholder="نام لینک"><input class="in" id="lnUrl" dir="ltr" style="flex:2;min-width:150px" placeholder="https://"><button class="btn sm" data-act="lnadd">لینک</button></div></div>';
   var cs=M.comments.filter(function(c){ return c.task===t.id; }).sort(function(a,b){ return (a.at||0)-(b.at||0); });
   h+='<div class="blk"><h5>گفتگو <small class="muted">'+fa(cs.length)+'</small></h5><ul class="feed">'+cs.map(function(c){ return '<li class="fi'+(c.by==='CL'?' cl':'')+'"><div>'+who(c.by)+'</div><div class="fb"><div class="fh"><b>'+esc(person(c.by).name)+'</b>'+tfmt(c.at)+(c.by===ui.me?'<button class="lnk" style="color:var(--mute)" data-act="cdel" data-id="'+esc(c.id)+'">حذف</button>':'')+'</div><div class="fx">'+esc(c.text)+'</div></div></li>'; }).join('')+'</ul>'+
@@ -1534,7 +1546,8 @@ function attachFiles(t, files){
   chain.then(function(){ if(n){ touch(t,['files']); render(); toast(fa(n)+' فایل اضافه شد'); } });
 }
 var FTYPES=[['all','همه'],['img','تصویر'],['pdf','PDF'],['web','صفحهٔ وب'],['doc','متن و سند'],['vid','ویدیو و صدا'],['link','لینک'],['other','سایر']];
-function ftype(f){ if(f.kind==='link') return 'link'; var n=f.name||'', ty=f.type||''; if(/^image\//.test(ty)||EXT_IMG.test(n)) return 'img'; if(/pdf/.test(ty)||/\.pdf$/i.test(n)) return 'pdf'; if(/html/.test(ty)||/\.html?$/i.test(n)) return 'web'; if(/^(video|audio)\//.test(ty)||/\.(mp4|mov|webm|mp3|wav|m4a)$/i.test(n)) return 'vid'; if(/^text\//.test(ty)||/json|msword|officedocument|spreadsheet|presentation/.test(ty)||/\.(md|txt|csv|json|docx?|xlsx?|pptx?)$/i.test(n)) return 'doc'; return 'other'; }
+function isVault(f){ return f.kind==='link'&&!!f.vault; }
+function ftype(f){ if(f.kind==='link'&&!f.vault) return 'link'; var n=(f.vault||f.name||''), ty=f.type||''; if(/^image\//.test(ty)||EXT_IMG.test(n)) return 'img'; if(/pdf/.test(ty)||/\.pdf$/i.test(n)) return 'pdf'; if(/html/.test(ty)||/\.html?$/i.test(n)) return 'web'; if(/^(video|audio)\//.test(ty)||/\.(mp4|mov|webm|mp3|wav|m4a)$/i.test(n)) return 'vid'; if(/^text\//.test(ty)||/json|msword|officedocument|spreadsheet|presentation/.test(ty)||/\.(md|txt|csv|json|docx?|xlsx?|pptx?)$/i.test(n)) return 'doc'; return 'other'; }
 function ftypeName(k){ return (FTYPES.filter(function(x){ return x[0]===k; })[0]||[0,'سایر'])[1]; }
 function fsz(b){ b=+b||0; if(!b) return ''; if(b<1024) return fa(b)+' بایت'; if(b<1048576) return fa(Math.round(b/1024))+' کیلوبایت'; return fa((b/1048576).toFixed(1).replace('.','٫'))+' مگابایت'; }
 function fver(f){ return (f.vers&&f.vers.length)?f.vers.length+1:1; }
@@ -1543,13 +1556,14 @@ function taskFromInput(v){ v=(v||'').trim(); if(!v) return null; if(byId[v]) ret
 function pickTarget(tid,fid,vi){ var r=findFile(tid,fid); if(!r) return null; var has=(vi!=null&&vi!==''&&r.f.vers&&r.f.vers[+vi]); return {t:r.t,f:r.f,tgt:has?r.f.vers[+vi]:r.f,cur:!has}; }
 function downloadFile(tid,fid,vi){
   var r=pickTarget(tid,fid,vi); if(!r) return; var g=r.tgt;
-  if(g.kind==='link'){ window.open(g.url,'_blank','noopener'); return; }
-  Promise.resolve(Store.fileUrl(g)).then(function(u){ if(!u){ toast('فایل در دسترس نیست'); return; } var a=document.createElement('a'); a.href=u; a.download=g.name||'file'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); },500); }).catch(function(){ toast('دانلود ناموفق بود'); });
+  if(g.kind==='link'&&!g.vault){ window.open(g.url,'_blank','noopener'); return; }
+  Promise.resolve(Store.fileUrl(g)).then(function(u){ if(!u){ vaultFail(g); return; } var a=document.createElement('a'); a.href=u; a.download=g.name||'file'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); },500); }).catch(function(){ toast('دانلود ناموفق بود'); });
 }
+function vaultFail(g){ if(g&&g.vault){ toast(Store.vaultErr&&Store.vaultErr()==='notoken'?'برای دیدن سند ولت اول در «بیشتر» توکن GitHub بگذارید':'توکن این دستگاه به ولت (susisa-vault) دسترسی خواندن ندارد'); if(g.url) window.open(g.url,'_blank','noopener'); } else toast('فایل در دسترس نیست'); }
 function closeViewer(){ var v=$('fview'); if(!v) return; v.hidden=true; v.innerHTML=''; ui.fv=null; }
 function showFile(tid,fid,vi){
   var r=pickTarget(tid,fid,vi); if(!r) return; var g=r.tgt, f=r.f;
-  if(g.kind==='link'){ window.open(g.url,'_blank','noopener'); return; }
+  if(g.kind==='link'&&!g.vault){ window.open(g.url,'_blank','noopener'); return; }
   ui.fv={t:tid,f:fid,i:(r.cur?'':String(vi))};
   var v=$('fview'); v.hidden=false;
   var vn=r.cur?fver(f):(f.vers.length-(+vi)), curKey=r.cur?'':String(vi);
@@ -1562,8 +1576,8 @@ function showFile(tid,fid,vi){
   v.innerHTML=head+'<div class="fvbody"><div class="fvmsg">در حال بارگذاری…</div></div>';
   Promise.resolve(Store.fileUrl(g)).then(function(u){
     var box=v.querySelector('.fvbody'); if(!box||!ui.fv||ui.fv.f!==fid) return;
-    if(!u){ box.innerHTML='<div class="fvmsg">فایل در دسترس نیست. اگر تازه آپلود شده، چند ثانیه بعد دوباره امتحان کنید.</div>'; return; }
-    var ty=ftype(g), nm=g.name||'';
+    if(!u){ box.innerHTML=g.vault?'<div class="fvmsg">این سند در ولت خصوصی است. '+(Store.vaultErr&&Store.vaultErr()==='notoken'?'در «بیشتر» توکن GitHub بگذارید.':'توکن این دستگاه باید دسترسی <b>Contents: Read</b> به مخزن susisa-vault داشته باشد.')+'<br><a href="'+esc(g.url)+'" target="_blank" rel="noopener">بازکردن در GitHub</a></div>':'<div class="fvmsg">فایل در دسترس نیست. اگر تازه آپلود شده، چند ثانیه بعد دوباره امتحان کنید.</div>'; return; }
+    var ty=ftype(g), nm=g.vault||g.name||'';
     if(ty==='img') box.innerHTML='<img class="fvimg" alt="" src="'+esc(u)+'">';
     else if(ty==='pdf') box.innerHTML='<iframe class="fvfr" src="'+esc(u)+'" title="'+esc(nm)+'"></iframe>';
     else if(ty==='web') box.innerHTML='<iframe class="fvfr" sandbox="allow-scripts allow-popups allow-forms" src="'+esc(u)+'" title="'+esc(nm)+'"></iframe>';
@@ -1573,7 +1587,7 @@ function showFile(tid,fid,vi){
   }).catch(function(){ var box=v.querySelector('.fvbody'); if(box) box.innerHTML='<div class="fvmsg">بازکردن فایل ناموفق بود.</div>'; });
 }
 function replaceFile(t,f,file){
-  if(!canW()){ toast('فقط‌خواندنی'); return; } if(f.kind==='link'){ toast('لینک نسخه ندارد؛ لینک تازه بگذارید'); return; }
+  if(!canW()){ toast('فقط‌خواندنی'); return; } if(f.kind==='link'&&!f.vault){ toast('لینک نسخه ندارد؛ لینک تازه بگذارید'); return; }
   toast('در حال ذخیرهٔ نسخهٔ جدید…');
   Store.upload(file).then(function(nf){
     var old=Object.assign({},f); delete old.vers; var vers=[old].concat(f.vers||[]);
@@ -1600,8 +1614,8 @@ VIEWS.files=function(){
   list.forEach(function(x){ var k,l,c; if(fl.g==='svc'){ var sv=svc(x.t.svc); k=x.t.svc||'-'; l=sv.n; c=sv.c; } else if(fl.g==='ty'){ k=x.ty; l=ftypeName(x.ty); } else if(fl.g==='task'){ k=x.t.id; l=x.t.t; } else { k='all'; l=''; } if(!gi[k]){ gi[k]={k:k,l:l,c:c,items:[]}; groups.push(gi[k]); } gi[k].items.push(x); });
   groups.forEach(function(g){
     if(g.l) h+='<div class="grp">'+(g.c?'<i style="background:'+esc(g.c)+'"></i>':'')+esc(g.l)+' <small>'+fa(g.items.length)+'</small></div>';
-    h+='<div class="files">'+g.items.map(function(x){ var f=x.f, link=f.kind==='link', ext=link?'لینک':((/\.([a-z0-9]+)$/i.exec(f.name||'')||[0,'فایل'])[1]).toUpperCase(), tid=esc(x.t.id), fid=esc(f.id);
-      return '<div class="fc"><button class="th" style="border:0;cursor:pointer" data-act="fopen" data-t="'+tid+'" data-f="'+fid+'" aria-label="باز کردن '+esc(f.name)+'">'+(x.ty==='img'&&!link?'<img alt="" data-fimg="'+tid+'|'+fid+'">':esc(ext))+'</button>'+
+    h+='<div class="files">'+g.items.map(function(x){ var f=x.f, link=f.kind==='link'&&!f.vault, ext=link?'لینک':((/\.([a-z0-9]+)$/i.exec(f.name||'')||[0,'فایل'])[1]).toUpperCase(), tid=esc(x.t.id), fid=esc(f.id);
+      return '<div class="fc"><button class="th" style="border:0;cursor:pointer" data-act="fopen" data-t="'+tid+'" data-f="'+fid+'" aria-label="باز کردن '+esc(f.name)+'">'+(x.ty==='img'&&!link&&!isVault(f)?'<img alt="" data-fimg="'+tid+'|'+fid+'">':esc(ext))+'</button>'+
         '<div class="fm"><b title="'+esc(f.name)+'">'+esc(f.name)+(fver(f)>1?'<span class="vbadge">نسخهٔ '+fa(fver(f))+'</span>':'')+'</b><button class="lnk" data-open="'+tid+'" style="text-align:start">'+esc(x.t.t)+'</button><span class="sub">'+esc((f.by?person(f.by).name+' · ':'')+tfmt(f.at)+(f.size?' · '+fsz(f.size):''))+'</span></div>'+
         '<div class="fa"><button class="btn" data-act="fopen" data-t="'+tid+'" data-f="'+fid+'">'+(link?'باز':'دیدن')+'</button>'+(link?'':'<button class="btn" data-act="fdl" data-t="'+tid+'" data-f="'+fid+'" aria-label="دانلود" title="دانلود">'+IC.dl+'</button><button class="btn" data-act="fnew" data-t="'+tid+'" data-f="'+fid+'" aria-label="نسخهٔ جدید" title="نسخهٔ جدید">'+IC.up+'</button>')+'</div></div>'; }).join('')+'</div>';
   });

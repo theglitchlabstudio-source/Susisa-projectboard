@@ -27,7 +27,7 @@ python3 tools/vault.py ingest [--dry] | scan | set <path> k=v… | link <task> <
 ```
 # بستهٔ تسک برای دستیار تسک در Claude (agent/copilot/)
 python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
-بسته‌ها در ولت `_agent/briefs/<id>.md`. تحویل‌ها: کامنت‌های «@Claude تحویل تسک …» (قالب agent/copilot/HANDOFF.md).
+بریف‌ها در board-data: `data/briefs.json` (زیر هر تسک در برد دیده می‌شود)؛ متن دستی agent: `board.py set <id> briefNote="…"`؛ `--vault` نسخهٔ کامل در ولت. تحویل‌ها: کامنت‌های «@Claude تحویل تسک …» (قالب agent/copilot/HANDOFF.md).
 
 محتوای ولت را هرگز در این مخزن یا board-data کپی نکن؛ در برد فقط لینک. راهنما: `agent/knowledge/12-vault-librarian.md`.
 اولین اجرا شاخهٔ داده را در `~/.cache/susisa-board-data` می‌گیرد (`BOARD_DIR` برای تغییر). نیاز: دسترسی push به این مخزن (در Claude Code با add_repo/ورود GitHub).

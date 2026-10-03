@@ -179,6 +179,7 @@ textarea.in{resize:vertical;line-height:1.7}
 .compose{display:flex;gap:8px;align-items:flex-end;margin-bottom:12px}
 .compose textarea{flex:1}
 /* فایل‌ها و تنظیمات */
+.bfd summary{cursor:pointer;padding:4px 0}.bftx{white-space:pre-wrap;font-size:12.5px;line-height:1.9;background:var(--card2,rgba(127,127,127,.08));border-radius:10px;padding:10px 12px;max-height:340px;overflow:auto;direction:rtl}
 .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
 .fc{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
 .fc .th{aspect-ratio:4/3;background:var(--card2);display:grid;place-items:center;font:400 22px var(--fd);color:var(--mute);overflow:hidden}
@@ -550,7 +551,7 @@ var ICON_URL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocK
 var Store = (function(){
   var mode = 'local', db = null, dl = null, usr = null, gh = null;
   var canW = true, onRemote = function(){}, onErr = function(m){ try{console.warn(m);}catch(e){} };
-  var M = {cfg:null, tasks:[], notes:[], comments:[]};
+  var M = {cfg:null, tasks:[], notes:[], comments:[], briefs:[]};
   var LSK = 'susisa-board-v4', LEG = 'susisa-board-v1';
   var pend = {}, busy = {}, saveT = null;
   var ready = false, fbMode = false, unreachable = false;
@@ -568,7 +569,7 @@ var Store = (function(){
 
   /* ---------- GitHub به‌عنوان پایگاه‌داده (بدون Claude و بدون سرویس دیگر) ---------- */
   var GHK = 'susisa-gh', GHC = 'susisa-ghcache', GHQ = 'susisa-ghqueue';
-  var COLS = ['cfg','tasks','notes','comments','profiles'];
+  var COLS = ['cfg','tasks','notes','comments','profiles','briefs'];
   var ghMeta = {status:'init', login:null, avatar:null, push:null, rate:null, err:null};
   var onStatus = function(){};
   function setStatus(st, err){ if(ghMeta.status !== st || (err && ghMeta.err !== err)){ ghMeta.status = st; if(err !== undefined) ghMeta.err = err; try{ onStatus(st); }catch(e){} } }
@@ -992,7 +993,7 @@ var Store = (function(){
 
   /* ---------- دریافت ابری ---------- */
   function sameJSON(a, b){ try{ return JSON.stringify(a) === JSON.stringify(b); }catch(e){ return false; } }
-  function listFor(kind){ return kind === 'tasks' ? M.tasks : kind === 'notes' ? M.notes : kind === 'profiles' ? P : M.comments; }
+  function listFor(kind){ return kind === 'tasks' ? M.tasks : kind === 'notes' ? M.notes : kind === 'profiles' ? P : kind === 'briefs' ? (M.briefs || (M.briefs = [])) : M.comments; }
   function applyDoc(kind, id, data){
     var list = listFor(kind), i = -1;
     for(var k = 0; k < list.length; k++) if(list[k].id === id){ i = k; break; }
@@ -1074,7 +1075,7 @@ var Store = (function(){
       }
       if(db){
         mode = 'cloud';
-        await Promise.all([subCfg(), subColl('tasks'), subColl('notes'), subColl('comments'), subColl('profiles')]);
+        await Promise.all([subCfg(), subColl('tasks'), subColl('notes'), subColl('comments'), subColl('profiles'), subColl('briefs')]);
         if(unreachable && !M.cfg){ canW = false; }
         if(!M.cfg && M.tasks.length === 0){
           var s = seedFn();
@@ -1099,7 +1100,7 @@ var Store = (function(){
       else {
         var leg = readLegacy();
         var s2 = seedFn(leg);
-        M = {cfg:s2.cfg, tasks:s2.tasks, notes:s2.notes || [], comments:[]};
+        M = {cfg:s2.cfg, tasks:s2.tasks, notes:s2.notes || [], comments:[], briefs:[]};
         saveLocal();
       }
       ready = true; return M;
@@ -1143,6 +1144,7 @@ var WDS=['ش','ی','د','س','چ','پ','ج'];
 var OPEN=j2d(1405,8,1);
 var M, byId={}, TODAY, UIK='susisa-ui-v6';
 var ui={tab:'desk', me:null, theme:null, plan:{g:'svc', own:'all', st:'open', q:''}, cal:{mode:null, y:null, m:null}, feed:'all', open:{}, sheet:null, draft:{}};
+document.addEventListener('toggle',function(e){ var d=e.target; if(d&&d.classList&&d.classList.contains('bfd')) ui.bfOpen=d.open?ui.sheet:null; },true);
 var KIND={G:'گیت',S:'استراتژی',D:'تصمیم',E:'اجرا',I:'ورودی کارفرما',M:'مدیریت'};
 var PRIO={p0:'P0 · مسیر بحرانی',p1:'P1 · مهم',p2:'P2 · عادی',p3:'P3 · اگر وقت شد'};
 
@@ -1472,6 +1474,8 @@ function fillSheet(first){
   h+='<div class="blk"><h5>'+(gate?'شرط‌های گیت':'بعد از این کارها')+'</h5>'+deps.map(function(d){ return '<div class="dep"><span class="s'+(isDone(d)?' ok':'')+'">'+esc(stt(d.status).n)+'</span><button class="lnk" style="flex:1;font-size:13px;color:var(--ink)" data-open="'+esc(d.id)+'">'+esc(d.t)+'</button>'+dueHtml(d)+'<button class="ib" style="width:28px;height:28px" data-act="depdel" data-id="'+esc(d.id)+'" aria-label="حذف">'+IC.x+'</button></div>'; }).join('')+
     '<div class="row"><input class="in" id="depIn" list="depList" style="flex:1" placeholder="افزودن پیش‌نیاز: عنوان یا شناسه"'+ro+'><button class="btn sm" data-act="depadd">افزودن</button></div><datalist id="depList">'+M.tasks.filter(function(x){ return x.id!==t.id; }).map(function(x){ return '<option value="'+esc(x.id)+' · '+esc(x.t)+'">'; }).join('')+'</datalist>'+
     (rdeps.length?'<h5 style="margin-top:10px">این کارها منتظر این تسک‌اند</h5>'+rdeps.map(function(d){ return '<div class="dep"><span class="s'+(isDone(d)?' ok':'')+'">'+esc(stt(d.status).n)+'</span><button class="lnk" style="flex:1;font-size:13px;color:var(--ink)" data-open="'+esc(d.id)+'">'+esc(d.t)+'</button>'+dueHtml(d)+'</div>'; }).join(''):'')+'</div>';
+  var bf=(M.briefs||[]).filter(function(x){ return x.id===t.id; })[0];
+  h+='<div class="blk"><details class="bfd"'+(ui.bfOpen===t.id?' open':'')+'><summary><b>بریف دستیار تسک</b> <small class="muted">'+(bf?('به‌روز شده '+tfmt(bf.at)):'هنوز ساخته نشده')+'</small></summary>'+(bf?'<div class="row" style="margin:6px 0"><button class="btn sm" data-act="bfcopy" data-id="'+esc(t.id)+'">کپی بریف</button><span class="muted small">آن را در چت پروژهٔ «دستیار تسک» پیست کنید</span></div><div class="bftx">'+esc(bf.text||'')+'</div>':'<div class="muted small" style="padding:6px 0">با اجرای بعدی ایجنت ساخته می‌شود.</div>')+'</details></div>';
   var fs=t.files||[]; h+='<div class="blk"><h5>فایل‌ها و لینک‌ها</h5><div class="flist">'+fs.map(function(f){ return '<div class="fl">'+(f.kind==='link'?'<a href="'+esc(f.url)+'" target="_blank" rel="noopener">'+esc(f.name)+'</a>':'<a href="#" data-act="fopen" data-t="'+esc(t.id)+'" data-f="'+esc(f.id)+'">'+esc(f.name)+'</a>')+'<span class="muted small">'+(f.by?esc(person(f.by).name):'')+'</span><button class="ib" style="width:28px;height:28px" data-act="fdel" data-f="'+esc(f.id)+'" aria-label="حذف">'+IC.x+'</button></div>'; }).join('')+'</div>'+
     '<div class="row" style="margin-top:6px"><label class="btn sm">'+IC.plus+'فایل<input type="file" id="fUp" multiple hidden'+ro+'></label><input class="in" id="lnName" style="flex:1;min-width:110px" placeholder="نام لینک"><input class="in" id="lnUrl" dir="ltr" style="flex:2;min-width:150px" placeholder="https://"><button class="btn sm" data-act="lnadd">لینک</button></div></div>';
   var cs=M.comments.filter(function(c){ return c.task===t.id; }).sort(function(a,b){ return (a.at||0)-(b.at||0); });
@@ -1546,6 +1550,7 @@ function act(a,e){
     case 'approve': decide(a.dataset.id,true); break;
     case 'reject': decide(a.dataset.id,false); break;
     case 'ndel': M.notes=M.notes.filter(function(n){ if(n.id===a.dataset.id){ Store.del('notes',n); return false; } return true; }); render(); break;
+    case 'bfcopy': { var bb=(M.briefs||[]).filter(function(x){ return x.id===a.dataset.id; })[0]; if(bb){ ui.bfOpen=a.dataset.id; var tx=bb.text||''; (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(tx):Promise.reject()).then(function(){ toast('بریف کپی شد'); },function(){ var ta=document.createElement('textarea'); ta.value=tx; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); toast('بریف کپی شد'); }catch(e){ toast('کپی نشد؛ متن را دستی انتخاب کنید'); } ta.remove(); }); } break; }
     case 'cdel': M.comments=M.comments.filter(function(c){ if(c.id===a.dataset.id){ Store.del('comments',c); return false; } return true; }); render(); break;
     case 'close': closeSheet(); break;
     case 'cadd': if(!t) return; var ct=($('cIn').value||'').trim(); if(!ct) return; if(addComment(t.id,ct)){ ui.draft['c'+t.id]=''; render(); } break;

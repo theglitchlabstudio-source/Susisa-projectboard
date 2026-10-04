@@ -4,7 +4,7 @@
 خروجی پیش‌فرض: مجموعهٔ `briefs` در board-data (data/briefs.json، برد زیر هر تسک «بریف دستیار تسک» + دکمهٔ کپی نشان می‌دهد
 و دستیار از آدرس raw همان فایل می‌خواند). فقط وقتی متن عوض شده باشد نوشته می‌شود (هش، بدون تاریخ). چون برد عمومی است،
 اسناد sens=private/secret/skip در بستهٔ برد نمی‌آیند (فقط تعدادشان). --vault: نسخهٔ کامل (با لینک اسناد حساس) هم در ولت خصوصی.
-«یادداشت مدیر پروژه» از فیلد briefNote تسک می‌آید (ایجنت: board.py set <id> briefNote="…").
+«یادداشت مدیر پروژه» از فیلد briefNote، «پرامپت پیشنهادی» از promptNote و «ایده‌ها» از ideaNote تسک می‌آید (ایجنت: board.py set <id> briefNote="…").
 --stdout فقط چاپ؛ --open تسک‌های باز را می‌سازد و بستهٔ تسک‌های تمام‌شده/حذف‌شده را پاک می‌کند.
 
   brief.py <id> [<id>…]          ساخت/به‌روز بستهٔ این تسک‌ها (در برد: مجموعهٔ briefs؛ هر تسک یک سند)
@@ -19,6 +19,7 @@ import vault as V
 
 OPEN = ('todo', 'doing', 'review', 'replan', 'budget')
 
+_LOG = None
 def build(tid, T, C, svc, prof, ix, full=False):
     t = T[tid]; st = {s['id']: s['n'] for s in B.load('cfg').get('main', {}).get('statuses', [])}
     nm = lambda i: prof.get(i, {}).get('name', i or '—')
@@ -41,6 +42,12 @@ def build(tid, T, C, svc, prof, ix, full=False):
          '- شروع: %s · موعد: %s' % (B.fmt_j(t.get('start')), B.fmt_j(t.get('due'))), '',
          '## یادداشت مدیر پروژه (ایجنت)', (t.get('briefNote') or '(هنوز ندارد؛ تعریف «تمام‌شده» و هشدارها را دستیار در بریف پیشنهاد دهد)'), '',
          '## شرح و مراحل (از برد)', (t.get('notes') or '(ندارد)'), '']
+    if t.get('promptNote'): o += ['## پرامپت پیشنهادی اجرای تسک (ایجنت)', 'این را به‌عنوان نقطهٔ شروع کار با دستیار تسک استفاده کن:', '', t['promptNote'], '']
+    if t.get('ideaNote'): o += ['## ایده‌ها، میان‌برها و درس‌های مرتبط (ایجنت)', t['ideaNote'], '']
+    global _LOG
+    if _LOG is None: _LOG = B.load('log')
+    lg = sorted([e for e in _LOG.values() if e.get('task') == tid], key=lambda e: e.get('at', 0))[-6:]
+    if lg: o += ['## آخرین تغییرهای تسک (تاریخچهٔ برد)'] + ['- %s · %s: %s' % (B.fmt_j(int(e['at'] / 86400000 + 0.146) + B.g2d(1970, 1, 1)), nm(e.get('by')), e.get('text', '')) for e in lg] + ['']
     if t.get('check'): o += ['## چک‌لیست'] + ['- [%s] %s' % ('x' if (c.get('done') if isinstance(c, dict) else False) else ' ', c.get('t') if isinstance(c, dict) else c) for c in t['check']] + ['']
     o += ['## پیش‌نیازها (باید تمام باشند)'] + ([line(i) for i in deps] or ['- ندارد']) + ['', '## بعد از این تسک (منتظرش هستند)'] + ([line(i) for i in after] or ['- ندارد']) + ['']
     o += ['## اسناد مرتبط در ولت']

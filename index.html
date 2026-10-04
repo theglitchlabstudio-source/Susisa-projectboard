@@ -183,6 +183,11 @@ textarea.in{resize:vertical;line-height:1.7}
 .fpage .grp{margin:16px 0 8px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}.fpage .grp i{width:10px;height:10px;border-radius:50%;display:inline-block}.fpage .grp small{font-weight:500;color:var(--mute)}
 .fpage .fc .fa{display:flex;gap:4px;padding:0 6px 8px;flex-wrap:wrap}.fpage .fc .fa .btn{flex:1;min-width:0;padding:3px 4px;font-size:12px;min-height:32px;justify-content:center}.fpage .fc .fa .btn svg{width:14px;height:14px}
 .fpage .fc .fm .sub{display:block;font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vbadge{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:0 7px;font-size:11px;font-weight:700;color:var(--mute);margin-inline-start:4px}
+.lg .day{margin:18px 0 6px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.lg .day b{font-size:15px}.lg .day small{color:var(--mute)}
+.lg .ev{display:flex;gap:10px;padding:9px 10px;border-bottom:1px solid var(--line);align-items:flex-start}.lg .ev:last-child{border-bottom:0}.lg .ev.new{background:color-mix(in srgb,var(--claude) 9%,transparent)}
+.lg .ev .k{flex:none;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-top:2px;background:var(--card2);border:1px solid var(--line);color:var(--mute)}.lg .ev .k.done{color:#1a7f37;border-color:#1a7f37}.lg .ev .k.cl{color:var(--claude);border-color:var(--claude)}
+.lg .ev .b{flex:1;min-width:0}.lg .ev .x{white-space:pre-wrap;word-break:break-word;font-size:13.5px;line-height:1.8;unicode-bidi:plaintext}.lg .ev .m{font-size:12px;color:var(--mute);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.newbox{border:1px solid var(--claude);border-radius:14px;padding:10px 12px;margin:10px 0;background:color-mix(in srgb,var(--claude) 6%,var(--card))}.newbox .row{gap:6px}
 .fview{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column}.fview[hidden]{display:none}
 .fvh{display:flex;gap:6px;align-items:center;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top,0px));border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap}.fvh b{flex:1;min-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}.fvh .btn{min-height:34px;padding:3px 10px;font-size:13px}
 .fvv{display:flex;gap:6px;padding:6px 12px;overflow-x:auto;border-bottom:1px solid var(--line);background:var(--card2)}
@@ -562,7 +567,7 @@ var ICON_URL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocK
 var Store = (function(){
   var mode = 'local', db = null, dl = null, usr = null, gh = null;
   var canW = true, onRemote = function(){}, onErr = function(m){ try{console.warn(m);}catch(e){} };
-  var M = {cfg:null, tasks:[], notes:[], comments:[], briefs:[]};
+  var M = {cfg:null, tasks:[], notes:[], comments:[], briefs:[], log:[]};
   var LSK = 'susisa-board-v4', LEG = 'susisa-board-v1';
   var pend = {}, busy = {}, saveT = null;
   var ready = false, fbMode = false, unreachable = false;
@@ -580,7 +585,7 @@ var Store = (function(){
 
   /* ---------- GitHub به‌عنوان پایگاه‌داده (بدون Claude و بدون سرویس دیگر) ---------- */
   var GHK = 'susisa-gh', GHC = 'susisa-ghcache', GHQ = 'susisa-ghqueue';
-  var COLS = ['cfg','tasks','notes','comments','profiles','briefs'];
+  var COLS = ['cfg','tasks','notes','comments','profiles','briefs','log'];
   var ghMeta = {status:'init', login:null, avatar:null, push:null, rate:null, err:null};
   var onStatus = function(){};
   function setStatus(st, err){ if(ghMeta.status !== st || (err && ghMeta.err !== err)){ ghMeta.status = st; if(err !== undefined) ghMeta.err = err; try{ onStatus(st); }catch(e){} } }
@@ -1024,7 +1029,7 @@ var Store = (function(){
 
   /* ---------- دریافت ابری ---------- */
   function sameJSON(a, b){ try{ return JSON.stringify(a) === JSON.stringify(b); }catch(e){ return false; } }
-  function listFor(kind){ return kind === 'tasks' ? M.tasks : kind === 'notes' ? M.notes : kind === 'profiles' ? P : kind === 'briefs' ? (M.briefs || (M.briefs = [])) : M.comments; }
+  function listFor(kind){ return kind === 'tasks' ? M.tasks : kind === 'notes' ? M.notes : kind === 'profiles' ? P : kind === 'briefs' ? (M.briefs || (M.briefs = [])) : kind === 'log' ? (M.log || (M.log = [])) : M.comments; }
   function applyDoc(kind, id, data){
     var list = listFor(kind), i = -1;
     for(var k = 0; k < list.length; k++) if(list[k].id === id){ i = k; break; }
@@ -1106,7 +1111,7 @@ var Store = (function(){
       }
       if(db){
         mode = 'cloud';
-        await Promise.all([subCfg(), subColl('tasks'), subColl('notes'), subColl('comments'), subColl('profiles'), subColl('briefs')]);
+        await Promise.all([subCfg(), subColl('tasks'), subColl('notes'), subColl('comments'), subColl('profiles'), subColl('briefs'), subColl('log')]);
         if(unreachable && !M.cfg){ canW = false; }
         if(!M.cfg && M.tasks.length === 0){
           var s = seedFn();
@@ -1131,7 +1136,7 @@ var Store = (function(){
       else {
         var leg = readLegacy();
         var s2 = seedFn(leg);
-        M = {cfg:s2.cfg, tasks:s2.tasks, notes:s2.notes || [], comments:[], briefs:[]};
+        M = {cfg:s2.cfg, tasks:s2.tasks, notes:s2.notes || [], comments:[], briefs:[], log:[]};
         saveLocal();
       }
       ready = true; return M;
@@ -1218,6 +1223,7 @@ var IC={
  plan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
  talk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>',
+ log:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
  files:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
  dl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v13M5 12l7 7 7-7M5 21h14"/></svg>',
@@ -1254,7 +1260,7 @@ function touch(t, keys, quiet){
   var k=(keys||[]).concat(['upd','by']);
   if(quiet){ var e=debT[t.id]||(debT[t.id]={keys:[],tm:null}); k.forEach(function(x){ if(e.keys.indexOf(x)<0) e.keys.push(x); }); clearTimeout(e.tm); e.tm=setTimeout(function(){ var kk=e.keys; e.keys=[]; Store.put('tasks',t,kk); },500); return true; }
   var d=debT[t.id]; if(d){ clearTimeout(d.tm); k=k.concat(d.keys); d.keys=[]; }
-  Store.put('tasks',t,k); syncGates(); return true;
+  Store.put('tasks',t,k); syncGates(); logTouch(t,keys||[]); return true;
 }
 function syncGates(){
   if(!canW()) return;
@@ -1267,6 +1273,7 @@ function setStatus(t,s){
   var warn=(stt(s).done||s==='doing')?unmet(t):[];
   var prev=t.status; t.status=s; t.doneAt=stt(s).done?TODAY:null;
   if(!touch(t,['status','doneAt'])){ t.status=prev; return; }
+  logEv(t.id,stt(s).done?'done':'status','«'+t.t+'»: '+stt(prev).n+' ← '+stt(s).n);
   render(); if(warn.length) toast('هشدار: '+fa(warn.length)+' پیش‌نیاز هنوز تمام نشده');
 }
 function addComment(taskId, text){
@@ -1281,12 +1288,12 @@ function newTask(o){
   if(!canW()){ toast('فقط‌خواندنی'); return null; }
   var t={id:'n'+uid(), t:'تسک جدید', svc:'sv2', phase:null, bb:null, owner:ui.me||'M', prio:'p2', status:'todo', start:null, due:null, deps:[], notes:'', check:[], type:'task', kind:'S', stage:'', early:false, doneAt:null, budget:null, urgent:false, files:[], lane:'main'};
   Object.keys(o||{}).forEach(function(k){ t[k]=o[k]; }); t.upd=Date.now(); t.by=ui.me||null;
-  M.tasks.push(t); byId[t.id]=t; Store.put('tasks',t); return t;
+  M.tasks.push(t); byId[t.id]=t; Store.put('tasks',t); logEv(t.id,'new','تسک تازه: «'+t.t+'»'); return t;
 }
 function needMe(){ toast('اول بگویید کی هستید'); ui.tab='more'; render(); return true; }
 
 /* ---------- چارچوب ---------- */
-var TABS=[['desk','میز کار'],['plan','برنامه'],['cal','تقویم'],['talk','گفتگو'],['files','فایل‌ها'],['more','بیشتر']];
+var TABS=[['desk','میز کار'],['plan','برنامه'],['cal','تقویم'],['talk','گفتگو'],['log','تازه‌ها'],['files','فایل‌ها'],['more','بیشتر']];
 function netInfo(){
   if(Store.mode!=='cloud') return ['off','فقط همین دستگاه'];
   var st=(Store.meta&&Store.meta.status)||'init'; if(st==='ok'&&!canW()) st='ro';
@@ -1303,8 +1310,9 @@ function renderChrome(){
     '<button class="ib" data-act="theme" aria-label="تم روشن یا تیره" title="تم">'+IC.moon+'</button>'+
     '<button class="me" data-act="tab" data-v="more" aria-label="پروفایل"><span class="mn">'+(me?esc(me.name):'من کی هستم؟')+'</span>'+(me?who(me.id):'')+'</button></div>'+
     (canW()?'':'<div class="ro">فقط‌خواندنی است. برای ویرایش، یک‌بار توکن GitHub بدهید. <button data-act="tab" data-v="more">اتصال</button></div>');
-  var n=inboxCount();
-  $('nav').innerHTML=TABS.map(function(x){ return '<button data-act="tab" data-v="'+x[0]+'"'+(ui.tab===x[0]?' aria-current="page"':'')+'>'+IC[x[0]]+'<span>'+x[1]+'</span>'+(x[0]==='desk'&&n?'<span class="dot">'+fa(n)+'</span>':'')+'</button>'; }).join('');
+  if(ui.tab==='log') ls(SEENK,Date.now());
+  var n=inboxCount(), un=unread().length; notifyNew(); try{ document.title=(un?'('+fa(un)+') ':'')+'سوسیسا · برد پروژه'; if(navigator.setAppBadge){ if(un) navigator.setAppBadge(un); else navigator.clearAppBadge(); } }catch(e){}
+  $('nav').innerHTML=TABS.map(function(x){ return '<button data-act="tab" data-v="'+x[0]+'"'+(ui.tab===x[0]?' aria-current="page"':'')+'>'+IC[x[0]]+'<span>'+x[1]+'</span>'+(x[0]==='desk'&&n?'<span class="dot">'+fa(n)+'</span>':'')+(x[0]==='log'&&un?'<span class="dot">'+fa(un)+'</span>':'')+'</button>'; }).join('');
   paintNet();
 }
 var VIEWS={};
@@ -1318,6 +1326,7 @@ VIEWS.desk=function(){
   var me=ui.me, p=me?person(me):null, h='';
   var hour=new Date().getHours(), greet=hour<12?'صبح بخیر':hour<17?'روز بخیر':'عصر بخیر';
   h+='<div class="hello"><h1 class="h1">'+(p?greet+'، <span>'+esc(p.name)+'</span>':'میز کار تیم')+'</h1><div class="d">'+jfull(TODAY)+'</div></div>';
+  h+=newBox();
   /* گیت‌ها */
   var gates=M.tasks.filter(function(t){ return t.type==='gate'; }).sort(cmp), nextG=gates.filter(function(g){ return !isDone(g); })[0];
   h+='<div class="gates" aria-label="گیت‌ها">'+gates.map(function(g){ var ds=(g.deps||[]).map(function(i){ return byId[i]; }).filter(Boolean), dn=ds.filter(isDone).length;
@@ -1428,6 +1437,74 @@ VIEWS.cal=function(){
 };
 
 /* ---------- گفتگو ---------- */
+/* ---------- تازه‌ها و تاریخچه (log) ---------- */
+var LOGK={due:'موعد',start:'شروع',owner:'مسئول',prio:'اولویت',urgent:'فوری',deps:'پیش‌نیاز',t:'عنوان',svc:'خدمت',files:'فایل‌ها',stage:'مرحله',kind:'نوع',budget:'بودجه'};
+var logBuf={};
+function logEv(task,k,text){
+  if(!canW()||!ui.me||!Store.put) return;
+  var ev={id:'l'+uid(), at:Date.now(), by:ui.me, task:task||null, k:k, text:String(text||'').slice(0,400)};
+  (M.log||(M.log=[])).push(ev); try{ Store.put('log',ev); }catch(e){}
+}
+function logVal(t,k){ var v=t[k]; if(k==='due'||k==='start') return v==null?'—':jinput(v); if(k==='owner') return person(v).name||'—'; if(k==='urgent') return v?'بله':'نه'; if(k==='files') return fa((v||[]).length)+' فایل'; if(k==='deps') return fa((v||[]).length)+' مورد'; if(k==='t') return v; return v==null?'—':String(v); }
+function logTouch(t,keys){
+  var ks=keys.filter(function(k){ return LOGK[k]; }); if(!ks.length) return;
+  /* تغییرهای پشت‌سرهم یک تسک (مثلاً کشیدن در تقویم) در یک رویداد جمع می‌شود */
+  var b=logBuf[t.id]||(logBuf[t.id]={ks:[],tm:null}); ks.forEach(function(k){ if(b.ks.indexOf(k)<0) b.ks.push(k); });
+  clearTimeout(b.tm); b.tm=setTimeout(function(){ var kk=b.ks; delete logBuf[t.id]; var tt=byId[t.id]||t; logEv(tt.id,kk.indexOf('files')>=0?'file':'edit','«'+tt.t+'»: '+kk.map(function(k){ return LOGK[k]+' ← '+logVal(tt,k); }).join('، ')); },2500);
+}
+var SEENK='susisa-seen-v1';
+function seenAt(){ var v=ls(SEENK); if(!v){ v=Date.now(); ls(SEENK,v); } return v; }
+function msDay(ms){ var d=new Date(ms); return g2d(d.getFullYear(),d.getMonth()+1,d.getDate()); }
+function feedAll(){
+  var a=[];
+  (M.log||[]).forEach(function(e){ a.push({id:e.id,at:e.at,by:e.by,task:e.task,k:e.k||'edit',text:e.text}); });
+  M.comments.forEach(function(c){ a.push({id:c.id,at:c.at,by:c.by,task:c.task,k:'comment',text:c.text}); });
+  M.notes.forEach(function(n){ a.push({id:n.id,at:n.at,by:n.by,task:null,k:'note',text:n.text}); });
+  return a.filter(function(x){ return x.at; }).sort(function(x,y){ return y.at-x.at; });
+}
+function unread(){ var s=seenAt(); return feedAll().filter(function(x){ return x.at>s&&x.by!==ui.me; }); }
+var KN={done:'تمام شد',status:'وضعیت',edit:'تغییر',file:'فایل',new:'تسک تازه',del:'حذف',comment:'کامنت',note:'یادداشت',brief:'بریف',vault:'ولت',report:'گزارش'};
+var notifAt=0;
+function notifyNew(){
+  if(!notifAt){ notifAt=Date.now(); return; }
+  var fresh=unread().filter(function(x){ return x.at>notifAt; }); if(!fresh.length) return; notifAt=Date.now();
+  try{ if(!('Notification' in window)||Notification.permission!=='granted'||!document.hidden) return;
+    var x=fresh[0], t=x.task&&byId[x.task]; var title=(fresh.length>1?fa(fresh.length)+' تغییر تازه در برد':person(x.by).name+' · '+(KN[x.k]||''));
+    var body=fresh.length>1?fresh.slice(0,3).map(function(y){ return person(y.by).name+': '+(y.text||'').slice(0,60); }).join('\n'):((t?'«'+t.t+'» ':'')+(x.text||'')).slice(0,160);
+    if(navigator.serviceWorker&&navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(function(r){ r.showNotification(title,{body:body,tag:'susisa',renotify:true,icon:'icon-192.png',data:{tab:'log'}}); }).catch(function(){ new Notification(title,{body:body}); });
+    else new Notification(title,{body:body});
+  }catch(e){}
+}
+function evRow(x,isNew){
+  var t=x.task?byId[x.task]:null, kc=x.k==='done'?' done':(x.by==='CL'?' cl':'');
+  return '<div class="ev'+(isNew?' new':'')+'"><div>'+who(x.by)+'</div><div class="b"><div class="m"><b>'+esc(person(x.by).name)+'</b><span class="k'+kc+'">'+esc(KN[x.k]||x.k)+'</span><span>'+tfmt(x.at)+'</span>'+(t?'<button class="lnk" data-open="'+esc(t.id)+'">'+esc(t.t)+'</button>':'')+'</div><div class="x">'+esc(x.k==='note'||x.k==='comment'?(x.text||'').slice(0,700):(t&&(x.text||'').indexOf('«'+t.t+'»: ')===0?x.text.slice(t.t.length+4):x.text))+'</div></div></div>';
+}
+function newBox(){
+  var u=unread(); if(!u.length) return '';
+  var by={}; u.forEach(function(x){ by[x.by]=(by[x.by]||0)+1; });
+  return '<div class="newbox"><div class="row"><b style="flex:1">'+fa(u.length)+' مورد تازه از آخرین بازدید</b><button class="btn sm pri" data-act="tab" data-v="log">دیدن تازه‌ها</button><button class="btn sm" data-act="seen">دیدم</button></div><div class="muted small" style="margin-top:4px">'+Object.keys(by).map(function(k){ return esc(person(k).name)+' '+fa(by[k]); }).join(' · ')+'</div>'+
+    '<div class="lg" style="margin-top:6px">'+u.slice(0,3).map(function(x){ return evRow(x,true); }).join('')+'</div></div>';
+}
+VIEWS.log=function(){
+  var f=ui.lgf||'all', s=seenAt(); ui.lgSeen=ui.lgSeen||s;
+  var all=feedAll(), mine=ui.me;
+  var list=all.filter(function(x){ if(f==='new') return x.at>ui.lgSeen&&x.by!==mine; if(f==='CL') return x.by==='CL'; if(f==='st') return x.k==='done'||x.k==='status'||x.k==='new'||x.k==='del'; if(f==='msg') return x.k==='comment'||x.k==='note'; if(f==='me'){ var t=x.task&&byId[x.task]; return (t&&t.owner===mine)||(x.text||'').indexOf('@'+(person(mine).name||'~'))>=0; } return true; });
+  var h='<div class="bar2"><h1 class="h1" style="margin-inline-end:auto">تازه‌ها و گزارش روزانه</h1>'+(('Notification' in window)&&Notification.permission!=='granted'?'<button class="btn sm" data-act="notifon">'+IC.log+'اعلان روی این دستگاه</button>':'')+'<button class="btn sm" data-act="seen">همه را دیدم</button></div>';
+  h+='<p class="muted small">هر تغییر وضعیت، موعد، مسئول، فایل، تسک تازه، کامنت و یادداشت (از همه و از Claude) اینجا ثبت می‌شود. موارد تازه از آخرین بازدید شما رنگی‌اند. Claude هم همین تاریخچه را در هر اجرا می‌خواند.</p>';
+  h+='<div class="chips" style="margin:8px 0">'+[['all','همه'],['new','تازه برای من'],['me','کارهای من'],['st','وضعیت‌ها'],['msg','پیام‌ها'],['CL','Claude']].map(function(o){ return '<button class="chip" data-act="lgf" data-v="'+o[0]+'" aria-pressed="'+(f===o[0])+'">'+o[1]+'</button>'; }).join('')+'</div>';
+  if(!list.length) return h+'<div class="empty">چیزی برای نمایش نیست.</div>';
+  var lim=ui.open.lgAll?list.length:150, days=[], di={};
+  list.slice(0,lim).forEach(function(x){ var d=msDay(x.at); if(!di[d]){ di[d]={d:d,items:[]}; days.push(di[d]); } di[d].items.push(x); });
+  h+='<div class="lg">'+days.map(function(g){
+    var dn=g.items.filter(function(x){ return x.k==='done'; }).length, cm=g.items.filter(function(x){ return x.k==='comment'||x.k==='note'; }).length, ch=g.items.length-dn-cm;
+    var rep=M.notes.filter(function(n){ return n.by==='CL'&&n.day===g.d; }).length;
+    return '<div class="day"><b>'+(g.d===TODAY?'امروز':g.d===TODAY-1?'دیروز':jfull(g.d))+'</b><small>'+[dn?fa(dn)+' تمام‌شده':'',ch?fa(ch)+' تغییر':'',cm?fa(cm)+' پیام':'',rep?'گزارش Claude دارد':''].filter(Boolean).join(' · ')+'</small></div><div class="panel" style="padding:0">'+g.items.map(function(x){ return evRow(x,x.at>ui.lgSeen&&x.by!==mine); }).join('')+'</div>';
+  }).join('')+'</div>';
+  if(list.length>lim) h+='<button class="btn" data-act="more" data-v="lgAll">نمایش همه</button>';
+  ls(SEENK,Date.now());
+  return h;
+};
+
 VIEWS.talk=function(){
   var f=ui.feed, h='<div class="bar2"><h1 class="h1" style="margin-inline-end:auto">گفتگو</h1></div>';
   h+='<div class="compose"><textarea class="in" id="talkIn" rows="2" placeholder="پیام به تیم… (برای کار دادن به Claude با «@Claude» شروع کنید)">'+esc(ui.draft.talk||'')+'</textarea><button class="btn pri" data-act="talk">بفرست</button></div>';
@@ -1637,7 +1714,7 @@ function dUp(e){ if(!drag) return; var d=drag; drag=null; if(!d.on) return; if(d
 function act(a,e){
   var A=a.dataset.act, v=a.dataset.v, t=ui.sheet?byId[ui.sheet]:null;
   switch(A){
-    case 'tab': ui.tab=v; saveUI(); render(); window.scrollTo(0,0); break;
+    case 'tab': if(v==='log'){ ui.lgSeen=seenAt(); ls(SEENK,Date.now()); } ui.tab=v; saveUI(); render(); window.scrollTo(0,0); break;
     case 'more': ui.open[v]=!ui.open[v]; render(); break;
     case 'setme': ui.me=v; saveUI(); bindUid(); render(); toast('سلام '+person(v).name); break;
     case 'theme': var dark=document.documentElement.getAttribute('data-theme')==='dark'||(!document.documentElement.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches); ui.theme=dark?'light':'dark'; applyTheme(); saveUI(); break;
@@ -1646,6 +1723,9 @@ function act(a,e){
     case 'done': e.stopPropagation(); var x=byId[a.dataset.id]; if(x) setStatus(x, isDone(x)?'todo':'done'); break;
     case 'newtask': var nt=newTask(ui.tab==='plan'&&ui.plan.own!=='all'?{owner:ui.plan.own}:{}); if(nt){ render(); openSheet(nt.id); setTimeout(function(){ var f=$('fT'); if(f){ f.focus(); f.select(); } },260); } break;
     case 'note': var tx=($('noteIn').value||'').trim(); if(!tx) return; addNote(tx); ui.draft.note=''; render(); break;
+    case 'seen': ls(SEENK,Date.now()); ui.lgSeen=Date.now(); render(); toast('همه دیده شد'); break;
+    case 'lgf': ui.lgf=v; render(); break;
+    case 'notifon': try{ Notification.requestPermission().then(function(r){ toast(r==='granted'?'اعلان روی این دستگاه فعال شد (وقتی برد باز است یا در پس‌زمینه)':'اجازهٔ اعلان داده نشد'); render(); }); }catch(e){ toast('این مرورگر اعلان ندارد'); } break;
     case 'talk': var tx2=($('talkIn').value||'').trim(); if(!tx2) return; if(addComment(null,tx2)){ ui.draft.talk=''; render(); } break;
     case 'feed': ui.feed=v; saveUI(); render(); break;
     case 'pf': ui.plan[a.dataset.k]=v; saveUI(); render(); break;
@@ -1679,7 +1759,7 @@ function act(a,e){
     case 'fdel': if(!t) return; var f=(t.files||[]).filter(function(x){ return x.id===a.dataset.f; })[0]; if(!f) return; t.files=t.files.filter(function(x){ return x!==f; }); if(touch(t,['files'])){ try{ Store.removeFile(f); (f.vers||[]).forEach(function(vv){ Store.removeFile(vv); }); }catch(er){} render(); } break;
     case 'tdel': ui.confirmDel=true; fillSheet(true); break;
     case 'tdel0': ui.confirmDel=false; fillSheet(true); break;
-    case 'tdel2': if(!t||!canW()) return; var id=t.id; M.tasks=M.tasks.filter(function(x){ return x.id!==id; }); Store.del('tasks',t);
+    case 'tdel2': if(!t||!canW()) return; var id=t.id; logEv(null,'del','تسک حذف شد: «'+t.t+'»'); M.tasks=M.tasks.filter(function(x){ return x.id!==id; }); Store.del('tasks',t);
       M.tasks.forEach(function(x){ if((x.deps||[]).indexOf(id)>=0){ x.deps=x.deps.filter(function(y){ return y!==id; }); Store.put('tasks',x,['deps']); } });
       M.comments=M.comments.filter(function(c){ if(c.task===id){ Store.del('comments',c); return false; } return true; }); reindex(); closeSheet(); render(); toast('تسک حذف شد'); break;
     case 'ghsave': var c=Store.ghConfig(), tok=($('ghTok').value||'').trim(); var o=$('ghOwner'), r=$('ghRepo'), b=$('ghBranch');
@@ -1747,6 +1827,7 @@ function seedFn(){ return {cfg:seedCfg(), tasks:seedAll(), notes:[]}; }
 async function boot(){
   TODAY=todayJ();
   var s=ls(UIK)||{}; if(s.tab&&VIEWS[s.tab]) ui.tab=s.tab; if(s.me) ui.me=s.me; if(s.theme) ui.theme=s.theme; if(s.plan) ui.plan=Object.assign(ui.plan,s.plan); if(s.feed) ui.feed=s.feed; if(s.calmode) ui.cal.mode=s.calmode;
+  ui.lgSeen=seenAt();
   if(!s.me){ var old=ls('susisa-ui-v4'); if(old&&old.me) ui.me=old.me; }
   applyTheme();
   Store.onError(function(m){ toast(m); }); Store.onStatus(function(){ paintNet(); });
@@ -1762,7 +1843,7 @@ async function boot(){
 }
 var booted=false; function boot1(){ if(booted) return; booted=true; boot().catch(function(e){ var b=$('boot'); if(b) b.textContent='خطا در بارگذاری: '+(e&&e.message); }); }
 window.addEventListener('DOMContentLoaded',boot1); if(document.readyState!=='loading') boot1();
-window.__susisa={get M(){ return M; }, open:function(id){ openSheet(id); }, ui:ui};
+window.__susisa={get M(){ return M; }, open:function(id){ openSheet(id); }, ui:ui, render:function(){ render(); }};
 })();
 
 </script>
@@ -1770,6 +1851,7 @@ window.__susisa={get M(){ return M; }, open:function(id){ openSheet(id); }, ui:u
 (function(){
   if(!('serviceWorker' in navigator)) return;
   var had = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('message', function(e){ if(e.data&&e.data.tab&&window.__susisa){ var u=window.__susisa.ui; u.lgSeen=+(localStorage.getItem('susisa-seen-v1')||0); u.tab=e.data.tab; if(window.__susisa.render) window.__susisa.render(); } });
   navigator.serviceWorker.register('sw.js').then(function(r){
     function bar(){ var d=document.createElement('div'); d.style.cssText='position:fixed;z-index:99999;bottom:14px;left:50%;transform:translateX(-50%);background:#CC0212;color:#fff;padding:10px 16px;border-radius:12px;font:600 14px Vazirmatn,Tahoma,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.3);cursor:pointer'; d.textContent='نسخهٔ جدید برد آماده است · برای به‌روزرسانی بزنید'; d.onclick=function(){ location.reload(); }; document.body.appendChild(d); }
     r.addEventListener('updatefound', function(){ var w=r.installing; if(!w) return; w.addEventListener('statechange', function(){ if(w.state==='installed' && navigator.serviceWorker.controller) bar(); }); });

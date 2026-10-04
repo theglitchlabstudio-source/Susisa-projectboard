@@ -7,6 +7,7 @@
   board.py add "عنوان تسک" --svc sv2 --due 1405/07/25 --owner M
   board.py comment s1k "متن پیام"      board.py note "یادداشت امروز" [--day 1405/07/12]
   board.py rm n123abc                 board.py assign s1k CL
+  board.py log --hours 24 [--others] [--task s1k] [--by M] [--json]   تاریخچهٔ تغییرها/کامنت‌ها/یادداشت‌ها
 محیط: BOARD_DIR (پوشهٔ checkout، پیش‌فرض ~/.cache/susisa-board-data)، BOARD_REMOTE (آدرس مخزن)، BOARD_BRANCH (board-data)، BOARD_AS (شناسهٔ پروفایل، پیش‌فرض CL).
 """
 import json, os, subprocess, sys, time, random, argparse
@@ -50,11 +51,49 @@ def dump(col, docs):
     os.makedirs(os.path.join(DIR, 'data'), exist_ok=True)
     open(os.path.join(DIR, 'data', col + '.json'), 'w', encoding='utf8').write(body)
 
+LOGK = {'due': 'موعد', 'start': 'شروع', 'owner': 'مسئول', 'prio': 'اولویت', 'urgent': 'فوری', 'deps': 'پیش‌نیاز', 't': 'عنوان', 'svc': 'خدمت', 'files': 'فایل‌ها', 'stage': 'مرحله', 'kind': 'نوع', 'briefNote': 'یادداشت بریف', 'promptNote': 'پرامپت اجرا', 'ideaNote': 'ایده‌ها', 'notes': 'توضیح'}
+LOG_KEEP_DAYS, LOG_MAX = 60, 1500
+
+def _lv(k, v):
+    if k in ('due', 'start'): return fmt_j(v) if v is not None else '—'
+    if k == 'files': return '%d فایل' % len(v or [])
+    if k == 'deps': return '%d مورد' % len(v or [])
+    if k in ('briefNote', 'notes'): return (v or '')[:80].replace('\n', ' ')
+    return '—' if v is None else str(v)
+
+def log_diff(before, after, msg=''):
+    """تاریخچهٔ برد (data/log.json): هر تغییر Claude روی تسک‌ها خودکار ثبت می‌شود تا تیم در «تازه‌ها» ببیند."""
+    st = {x['id']: x['n'] for x in load('cfg').get('main', {}).get('statuses', [])}
+    done = {x['id'] for x in load('cfg').get('main', {}).get('statuses', []) if x.get('done')} or {'done'}
+    now = int(time.time() * 1000); evs = []
+    for i, t in after.items():
+        o = before.get(i); nm = t.get('t', i)
+        if o is None: evs.append((i, 'new', 'تسک تازه: «%s»' % nm)); continue
+        if o.get('status') != t.get('status'):
+            evs.append((i, 'done' if t.get('status') in done else 'status', '«%s»: %s ← %s' % (nm, st.get(o.get('status'), o.get('status')), st.get(t.get('status'), t.get('status')))))
+        ch = [k for k in LOGK if json.dumps(o.get(k), sort_keys=True) != json.dumps(t.get(k), sort_keys=True)]
+        if ch:
+            k = 'brief' if set(ch) <= {'briefNote', 'promptNote', 'ideaNote'} else ('file' if 'files' in ch else 'edit')
+            evs.append((i, k, '«%s»: %s' % (nm, '، '.join(LOGK[c] + ' ← ' + _lv(c, t.get(c)) for c in ch))))
+    for i, o in before.items():
+        if i not in after: evs.append((None, 'del', 'تسک حذف شد: «%s»' % o.get('t', i)))
+    L = load('log')
+    for n, (tid, k, text) in enumerate(evs):
+        lid = 'l%x%03d%s' % (now, n, AS)
+        L[lid] = {'id': lid, 'at': now + n, 'by': AS, 'task': tid, 'k': k, 'text': text[:400]}
+    cut = now - LOG_KEEP_DAYS * 86400000
+    keep = sorted((v for v in L.values() if (v.get('at') or 0) >= cut), key=lambda v: v.get('at') or 0)[-LOG_MAX:]
+    L2 = {v['id']: v for v in keep}
+    if evs or len(L2) != len(L): dump('log', L2)
+
 def commit_push(msg, mutate):
-    """mutate() روی آخرین نسخهٔ سرور اعمال می‌شود؛ اگر push رد شد دوباره از نو."""
+    """mutate() روی آخرین نسخهٔ سرور اعمال می‌شود؛ اگر push رد شد دوباره از نو. تغییر تسک‌ها خودکار در log ثبت می‌شود."""
     for attempt in range(6):
         ensure() if attempt == 0 else pull()
+        before = load('tasks')
         res = mutate()
+        try: log_diff(before, load('tasks'), msg)
+        except Exception as e: print('هشدار log:', e, file=sys.stderr)
         pth = ['data'] + (['files'] if os.path.isdir(os.path.join(DIR, 'files')) else [])
         sh('git', 'add', '-A', *pth)
         if not sh('git', 'status', '--porcelain', *pth):
@@ -218,6 +257,26 @@ def cmd_svc(a):
         m['v'] = m.get('v', 1) + 1; dump('cfg', C)
     commit_push('svc %s %s' % (a.op, a.id), mut); print('ok', a.id)
 
+def cmd_now(a): print(int(time.time() * 1000))
+
+def cmd_log(a):
+    """خواندن تاریخچه: تغییرها + کامنت‌ها + یادداشت‌ها، جدیدترین آخر."""
+    ensure(); T = load('tasks'); now = time.time() * 1000
+    since = now - float(a.hours) * 3600000 if a.hours else 0
+    if a.after: since = float(a.after)
+    if a.since: since = (parse_j(a.since) - g2d(1970, 1, 1)) * 86400000 - 3.5 * 3600000
+    items = []
+    for e in load('log').values(): items.append((e.get('at') or 0, e.get('by'), e.get('task'), e.get('k'), e.get('text', '')))
+    for c in load('comments').values(): items.append((c.get('at') or 0, c.get('by'), c.get('task'), 'comment', c.get('text', '')))
+    for n in load('notes').values(): items.append((n.get('at') or 0, n.get('by'), None, 'note', n.get('text', '')))
+    items = [x for x in items if x[0] >= since and (not a.task or x[2] == a.task) and (not a.by or x[1] == a.by) and (not a.others or x[1] != 'CL')]
+    items.sort(key=lambda x: x[0])
+    if a.json: print(json.dumps([dict(zip(('at', 'by', 'task', 'k', 'text'), x)) for x in items], ensure_ascii=False, indent=1)); return
+    for at, by, tid, k, text in items[-int(a.limit):]:
+        lt = time.localtime(at / 1000); tt = T.get(tid, {}).get('t', '') if tid else ''
+        txt = text if k not in ('comment', 'note') else text[:a.width]
+        print('%s %02d:%02d  %-3s %-7s %s%s' % (fmt_j(g2d(lt.tm_year, lt.tm_mon, lt.tm_mday)), lt.tm_hour, lt.tm_min, by or '-', k, ('[%s «%s»] ' % (tid, tt)) if tid else '', txt.replace('\n', ' ⏎ ')))
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = p.add_subparsers(dest='cmd', required=True)
     s = sp.add_parser('list'); s.add_argument('--status'); s.add_argument('--svc'); s.add_argument('--owner'); s.add_argument('--q'); s.set_defaults(f=cmd_list)
@@ -229,6 +288,8 @@ def main():
     s = sp.add_parser('add'); s.add_argument('title'); s.add_argument('--svc', default='sv2'); s.add_argument('--owner', default=AS); s.add_argument('--prio', default='p2'); s.add_argument('--start'); s.add_argument('--due'); s.add_argument('--notes'); s.set_defaults(f=cmd_add)
     s = sp.add_parser('rm'); s.add_argument('id'); s.set_defaults(f=cmd_rm)
     s = sp.add_parser('comment'); s.add_argument('id'); s.add_argument('text'); s.set_defaults(f=cmd_comment)
+    s = sp.add_parser('log'); s.add_argument('--hours'); s.add_argument('--since'); s.add_argument('--after', help='میلی‌ثانیه (از STATUS: last_run_ms)'); s.add_argument('--task'); s.add_argument('--by'); s.add_argument('--others', action='store_true'); s.add_argument('--limit', default=400); s.add_argument('--width', type=int, default=600); s.add_argument('--json', action='store_true'); s.set_defaults(f=cmd_log)
+    s = sp.add_parser('now'); s.set_defaults(f=cmd_now)
     s = sp.add_parser('note'); s.add_argument('text'); s.add_argument('--day'); s.set_defaults(f=cmd_note)
     a = p.parse_args(); a.f(a)
 

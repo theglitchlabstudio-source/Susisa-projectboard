@@ -56,7 +56,9 @@ LOG_KEEP_DAYS, LOG_MAX = 60, 1500
 
 def _lv(k, v):
     if k in ('due', 'start'): return fmt_j(v) if v is not None else '—'
-    if k == 'with': return '، '.join(v or []) or '—'
+    if k in ('with', 'owner'):
+        P = load('profiles'); n = lambda i: P.get(i, {}).get('name', i)
+        return ('، '.join(n(x) for x in (v or [])) or '—') if k == 'with' else n(v)
     if k == 'files': return '%d فایل' % len(v or [])
     if k == 'deps': return '%d مورد' % len(v or [])
     if k in ('briefNote', 'notes'): return (v or '')[:80].replace('\n', ' ')

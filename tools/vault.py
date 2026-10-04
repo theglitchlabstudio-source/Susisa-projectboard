@@ -86,7 +86,7 @@ def cmd_link(tid, path, name=None):
         T = B.load('tasks'); i = B.find(T, tid); t = T[i]; fs = t.get('files') or []
         ex = next((f for f in fs if f.get('id') == lid), None); note = None
         if ex and ex.get('sha') == sha and ex.get('name') == nm and (ex.get('kind') == 'gh') == copy: return 'same'
-        if ex and ex.get('sha') != sha: note = 'سند ولت به‌روز شد: «%s»' % nm
+        if ex and ex.get('sha') != sha: note = 'نسخهٔ تازهٔ «%s» از ولت اومد روی برد.' % nm
         if copy:
             import shutil
             rel = 'files/vault-%s-%s%s' % (lid[1:], sha[:8], os.path.splitext(path)[1].lower())
@@ -164,7 +164,7 @@ def cmd_ingest(dry=False):
         for r in out:
             fid = F[r['vault']]['boardId']; cid = 'c' + hashlib.sha1(('ing' + fid).encode()).hexdigest()[:10]
             i = r['task']
-            C[cid] = {'id': cid, 'task': i, 'text': 'فایل «%s» (از %s) در ولت ذخیره شد: %s' % (r['file'], r['by'], ('کارت: ' if r['mode'] == 'card' else '') + r['vault']), 'by': B.AS, 'at': int(time.time() * 1000)}
+            C[cid] = {'id': cid, 'task': i, 'text': 'فایل «%s» (از %s) رو توی ولت هم گذاشتم%s.' % (r['file'], B.load('profiles').get(r['by'] or '', {}).get('name', r['by'] or '—'), ' (فقط کارت معرفی، چون تصویری یا حجیمه)' if r['mode'] == 'card' else ''), 'by': B.AS, 'at': int(time.time() * 1000)}
         B.dump('comments', C)
     B.commit_push('comments ingest', mut)
     print(json.dumps(out, ensure_ascii=False, indent=1))

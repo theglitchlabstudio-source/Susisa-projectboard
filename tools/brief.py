@@ -25,20 +25,20 @@ def build(tid, T, C, svc, prof, ix, full=False):
     nm = lambda i: prof.get(i, {}).get('name', i or '—')
     def line(i):
         x = T.get(i)
-        return '- `%s` %s — %s، مالک %s، موعد %s' % (i, x.get('t'), st.get(x.get('status'), x.get('status')), nm(x.get('owner')), B.fmt_j(x.get('due'))) if x else '- `%s` (پیدا نشد)' % i
+        return '- %s — %s، مسئول %s، موعد %s' % (x.get('t'), st.get(x.get('status'), x.get('status')), nm(x.get('owner')), B.fmt_j(x.get('due'))) if x else '- (تسک حذف‌شده)'
     deps = t.get('deps') or []
     after = sorted(k for k, x in T.items() if tid in (x.get('deps') or []))
     allowed = ('secret', 'skip') if full else ('secret', 'skip', 'private')
     docs = [(p, e) for p, e in ix['files'].items() if tid in (e.get('tasks') or []) and e.get('sens') not in ('secret', 'skip') and not e.get('gone') and (full or e.get('sens') != 'private')]
     hidden = len([1 for p, e in ix['files'].items() if tid in (e.get('tasks') or []) and e.get('sens') == 'private' and not e.get('gone')]) if not full else 0
     com = sorted([c for c in C.values() if c.get('task') == tid], key=lambda c: c.get('at', 0))[-10:]
-    o = ['# بستهٔ تسک `%s` — %s' % (tid, t.get('t')), '',
-         '> ساخته‌شده خودکار از برد در %s (امروز همین تاریخ است). دستیار تسک: اول این را کامل بخوان، بعد طبق دستورالعمل پروژه عمل کن. مبلغ ننویس.' % B.fmt_j(B.today_j()), '',
+    o = ['# بستهٔ تسک: %s' % t.get('t'), '', '(شناسه فقط برای بلوک تحویل: %s. توی حرف‌زدن با تیم از عنوان تسک استفاده کن، نه شناسه.)' % tid, '',
+         '> ساخته‌شده خودکار از برد در %s (امروز همین تاریخ است). دستیار تسک: اول این را کامل بخوان، بعد طبق دستورالعمل پروژه عمل کن. مثل یه همکار، محاوره‌ای و کوتاه حرف بزن. مبلغ ننویس.' % B.fmt_j(B.today_j()), '',
          '## خلاصه',
          '- خدمت: %s' % svc.get(t.get('svc'), t.get('svc')),
          '- مرحله: %s · نوع: %s' % (t.get('stage') or '—', t.get('kind') or '—'),
          '- وضعیت: %s · اولویت: %s%s' % (st.get(t.get('status'), t.get('status')), t.get('prio'), ' · فوری' if t.get('urgent') else ''),
-         '- **مالک (فقط او روی این تسک کار می‌کند):** %s' % nm(t.get('owner')),
+         '- **مسئول (فقط او روی این تسک کار می‌کند):** %s%s' % (nm(t.get('owner')), (' · همکاران: ' + '، '.join(nm(x) for x in t['with'])) if t.get('with') else ''),
          '- شروع: %s · موعد: %s' % (B.fmt_j(t.get('start')), B.fmt_j(t.get('due'))), '',
          '## یادداشت مدیر پروژه (ایجنت)', (t.get('briefNote') or '(هنوز ندارد؛ تعریف «تمام‌شده» و هشدارها را دستیار در بریف پیشنهاد دهد)'), '',
          '## شرح و مراحل (از برد)', (t.get('notes') or '(ندارد)'), '']

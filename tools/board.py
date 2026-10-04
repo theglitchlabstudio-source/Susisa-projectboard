@@ -51,11 +51,12 @@ def dump(col, docs):
     os.makedirs(os.path.join(DIR, 'data'), exist_ok=True)
     open(os.path.join(DIR, 'data', col + '.json'), 'w', encoding='utf8').write(body)
 
-LOGK = {'due': 'موعد', 'start': 'شروع', 'owner': 'مسئول', 'prio': 'اولویت', 'urgent': 'فوری', 'deps': 'پیش‌نیاز', 't': 'عنوان', 'svc': 'خدمت', 'files': 'فایل‌ها', 'stage': 'مرحله', 'kind': 'نوع', 'briefNote': 'یادداشت بریف', 'promptNote': 'پرامپت اجرا', 'ideaNote': 'ایده‌ها', 'notes': 'توضیح'}
+LOGK = {'with': 'همکاران', 'due': 'موعد', 'start': 'شروع', 'owner': 'مسئول', 'prio': 'اولویت', 'urgent': 'فوری', 'deps': 'پیش‌نیاز', 't': 'عنوان', 'svc': 'خدمت', 'files': 'فایل‌ها', 'stage': 'مرحله', 'kind': 'نوع', 'briefNote': 'یادداشت بریف', 'promptNote': 'پرامپت اجرا', 'ideaNote': 'ایده‌ها', 'notes': 'توضیح'}
 LOG_KEEP_DAYS, LOG_MAX = 60, 1500
 
 def _lv(k, v):
     if k in ('due', 'start'): return fmt_j(v) if v is not None else '—'
+    if k == 'with': return '، '.join(v or []) or '—'
     if k == 'files': return '%d فایل' % len(v or [])
     if k == 'deps': return '%d مورد' % len(v or [])
     if k in ('briefNote', 'notes'): return (v or '')[:80].replace('\n', ' ')
@@ -154,7 +155,9 @@ def today_j():
 
 INT_F = {'start': parse_j, 'due': parse_j}
 BOOL_F = {'urgent'}
+LIST_F = {'with', 'deps'}
 def conv(k, v):
+    if k in LIST_F: return [x for x in v.replace('،', ',').split(',') if x.strip()] if v not in ('', 'null', 'none') else []
     if k in INT_F: return INT_F[k](v)
     if k in BOOL_F: return v.lower() in ('1', 'true', 'yes', 'y')
     if v in ('null', 'none'): return None

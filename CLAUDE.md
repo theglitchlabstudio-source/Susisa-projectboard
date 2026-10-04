@@ -16,6 +16,7 @@ python3 tools/board.py show <id>
 python3 tools/board.py status <id> done|doing|review|budget|paused|replan|todo
 python3 tools/board.py set <id> due=1405/07/20 prio=p1 owner=A notes="متن" urgent=true
 python3 tools/board.py assign <id> CL
+python3 tools/board.py set <id> with=A,M      # همکاران: تسک روی میز کار آن‌ها هم دیده می‌شود
 python3 tools/board.py add "عنوان" --svc sv2 --due 1405/07/25 --owner M
 python3 tools/board.py comment <id> "پیام"
 python3 tools/board.py note "یادداشت امروز" [--day 1405/07/12]
@@ -44,3 +45,5 @@ python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
 
 - سند ولتِ عادی (≤۵MB) با `vault.py link` در `files/` برد کپی می‌شود (`kind:gh` + فیلد `vault`/`sha`)؛ حساس فقط `kind:link` است و برد (v10) با توکن همان دستگاهِ کاربر از مخزن خصوصی ولت می‌خواند. هیچ توکنی در داده/پروفایل برد ذخیره نمی‌شود.
 - تاریخچه (`data/log.json`): برد و `board.py` هر تغییر تسک را خودکار ثبت می‌کنند (`{id,at,by,task,k,text}`، k: done/status/edit/file/new/del/brief)؛ ۶۰ روز / ۱۵۰۰ رویداد نگه داشته می‌شود. چرخهٔ روزانهٔ ایجنت (سه اجرا، اجرای دستورهای ممضی، یادگیری و تحقیق): `agent/knowledge/13-daily-cycle-and-learning.md`؛ دفتر درس‌ها: `14-learnings.md`.
+- هر تسک **همیشه مسئول دارد** (`owner`). `with` = همکاران (آرایهٔ شناسه)؛ تسک روی میز کار مسئول و همکاران دیده می‌شود. مسئول `T` («همکار گلیچ‌لب») یعنی کار همکاری تیم و روی میز کار **همه** دیده می‌شود. ایجنت: تسک بدون مسئول نساز (`board.py add --owner`)؛ برای کار مشترک `with` را تنظیم کن.
+- تقویم (v12): کلیک روی هر روز ← صفحهٔ روز (کارت بزرگ هر تسک زیر هم با وضعیت قابل تغییر، مسئول/همکار، بازه، پیش‌نیاز باز، توضیح؛ تسک‌های در جریان؛ یادداشت‌های روز؛ اتفاق‌های برد آن روز) با دکمهٔ روز قبل/بعد و «روز بعدی با تسک».

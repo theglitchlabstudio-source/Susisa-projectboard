@@ -106,7 +106,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .sv{display:inline-flex;align-items:center;gap:4px}
 .sv::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
 .tag{font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;border:1px solid currentColor;line-height:18px}
-.tag.late{color:var(--late)} .tag.soon{color:var(--soon)} .tag.blocked{color:var(--violet)} .tag.urgent{background:var(--late);color:#fff;border-color:var(--late)}
+.tag.late{color:var(--late)} .tag.soon{color:var(--soon)} .tag.blocked{color:var(--violet)} .tag.missed{color:var(--soon);border-color:var(--soon)} .tag.rise{color:var(--late)} .tag.urgent{background:var(--late);color:#fff;border-color:var(--late)}
 .tag.kG{color:var(--ink)} .tag.kD{color:var(--soon)} .tag.kE{color:var(--red)} .tag.kI{color:var(--blue)}
 .who{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:var(--c);overflow:hidden}
 .who img{width:100%;height:100%;object-fit:cover}
@@ -1381,10 +1381,23 @@ function unmet(t){ return (t.deps||[]).map(function(i){ return byId[i]; }).filte
 function kindOf(t){ var k=t.kind; return KIND[k]?k:(t.type==='gate'?'G':t.type==='decision'?'D':'S'); }
 function safeUrl(u){ return /^https?:\/\//i.test(u||'')?u:'#'; }
 function isProp(t){ return /^(پیشنهاد\s*:|درخواست خدمت جانبی)/.test(t.t||''); }
-function flags(t){ var f=[]; if(isClosed(t)||t.type==='gate') return f; if(t.due!=null&&t.due<TODAY) f.push('late'); else if(t.due!=null&&t.due-TODAY<=2) f.push('soon'); if(t.urgent) f.push('urgent'); if(unmet(t).length) f.push('blocked'); return f; }
-var FL={late:'عقب‌افتاده',soon:'نزدیک',urgent:'فوری',blocked:'منتظر پیش‌نیاز'};
+function flags(t){ var f=[]; if(isClosed(t)||t.type==='gate') return f; if(t.due!=null&&t.due<TODAY) f.push('late'); else if(t.due!=null&&t.due-TODAY<=2) f.push('soon'); if(t.urgent) f.push('urgent'); if(unmet(t).length) f.push('blocked'); if(stageOf(t)==='missed') f.push('missed'); else if(effRank(t)<(t.prio in PR?PR[t.prio]:2)&&f.indexOf('late')<0) f.push('rise'); return f; }
+var FL={late:'عقب‌افتاده',soon:'نزدیک',urgent:'فوری',blocked:'منتظر پیش‌نیاز',missed:'باید شروع می‌شد',rise:'اولویتش بالا رفته'};
 var PR={p0:0,p1:1,p2:2,p3:3};
 function cmp(a,b){ var da=a.due==null?9e9:a.due, db=b.due==null?9e9:b.due; if(da!==db) return da-db; var pa=a.prio in PR?PR[a.prio]:2, pb=b.prio in PR?PR[b.prio]:2; return pa-pb; }
+/* ---------- اولویت پویا و تاریخ شروع (v14) ---------- */
+var LEAD={p0:5,p1:4,p2:3,p3:2};
+function startOf(t){ if(t.start!=null) return t.start; if(t.due==null) return null; return t.due-(LEAD[t.prio]||3); }
+function effRank(t){ var base=t.prio in PR?PR[t.prio]:2; if(isClosed(t)||t.type==='gate'||t.due==null) return base;
+  var days=t.due-TODAY, span=Math.max(1,t.due-startOf(t)), used=(TODAY-startOf(t))/span, bump=0;
+  if(days<0) bump=3; else if(days<=1) bump=2; else if(days<=3) bump=1; else if(used>=0.6&&days<=7) bump=1;
+  if(t.urgent) bump=Math.max(bump,2);
+  if(t.status==='todo'&&startOf(t)<TODAY&&days>=0) bump=Math.max(bump,1);
+  return Math.max(0,base-bump); }
+function cmpEff(a,b){ var ra=effRank(a), rb=effRank(b); if(ra!==rb) return ra-rb; return cmp(a,b); }
+function stageOf(t){ if(isClosed(t)||t.type==='gate') return ''; var s=startOf(t); if(t.due==null&&s==null) return ''; if(t.due!=null&&t.due<TODAY) return 'late';
+  if(t.due!=null&&t.due-TODAY<=1) return 'final'; if(s!=null&&s<TODAY&&t.status==='todo') return 'missed'; if(s!=null&&s<=TODAY) return 'active'; return 'ahead'; }
+var STG={late:'عقب‌افتاده',final:'ضرب‌الاجل',missed:'باید شروع می‌شد',active:'در بازهٔ اجرا',ahead:'هنوز شروع نشده'};
 function toast(m){ var t=$('toast'); if(!t) return; t.textContent=m; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(function(){ t.classList.remove('on'); },2800); }
 function decisionOf(t){ var cs=M.comments.filter(function(c){ return c.task===t.id && /^(تأیید|تایید|رد)/.test((c.text||'').trim()) && c.by!=='CL'; }).sort(function(a,b){ return (b.at||0)-(a.at||0); }); return cs[0]||null; }
 
@@ -1432,7 +1445,7 @@ function trow(t, o){
     '<div class="tb"><div class="tt">'+esc(t.t)+'</div><div class="tm">'+(o.nosvc?'':svTag(t))+
     (k!=='S'?'<span class="tag k'+k+'">'+KIND[k]+'</span>':'')+
     (t.status!=='todo'&&!isDone(t)?'<span>'+esc(stt(t.status).n)+'</span>':'')+
-    fl.map(function(f){ return '<span class="tag '+f+'">'+FL[f]+'</span>'; }).join('')+(o.shared?'<span class="tag sh">'+(t.owner==='T'?'همکاری تیم':'همکار')+'</span>':'')+'</div></div>'+
+    (o.stage&&stageOf(t)==='ahead'?'<span class="tag">شروع '+jd(startOf(t))+'</span>':'')+fl.map(function(f){ return '<span class="tag '+f+'">'+FL[f]+'</span>'; }).join('')+(o.shared?'<span class="tag sh">'+(t.owner==='T'?'همکاری تیم':'همکار')+'</span>':'')+'</div></div>'+
     dueHtml(t)+(o.nowho?'':who(t.owner))+'</li>';
 }
 
@@ -1523,17 +1536,17 @@ VIEWS.desk=function(){
   if(!me){
     main+='<div class="panel"><h2 class="h2">شما کدام هستید؟</h2><p class="muted small">تا کارهای خودتان را ببینید و کامنت‌ها به اسم شما ثبت شود. روی هر دستگاه یک‌بار.</p><div class="pick">'+humans().map(function(x){ return '<button data-act="setme" data-v="'+esc(x.id)+'">'+who(x.id,1)+esc(x.name)+'</button>'; }).join('')+'</div></div>';
   }
-  var mine=M.tasks.filter(function(t){ return t.type!=='gate' && !isClosed(t) && (!me || t.owner===me || isShared(t,me)) && !isProp(t); }).sort(cmp);
+  var mine=M.tasks.filter(function(t){ return t.type!=='gate' && !isClosed(t) && (!me || t.owner===me || isShared(t,me)) && !isProp(t); }).sort(cmpEff);
   var late=mine.filter(function(t){ return t.due!=null&&t.due<TODAY; }),
-      week=mine.filter(function(t){ return t.due!=null&&t.due>=TODAY&&t.due<=TODAY+7; }),
-      doing=mine.filter(function(t){ return t.status==='doing'&&late.indexOf(t)<0&&week.indexOf(t)<0; });
-  function sec(title,list,cls,max){ if(!list.length) return ''; var more=list.length>(max||99); var L=more&&!ui.open[title]?list.slice(0,max):list;
-    return '<div class="sec '+(cls||'')+'"><h4>'+title+' <span class="n">'+fa(list.length)+'</span></h4><ul class="tl">'+L.map(function(t){ var sh=isShared(t,me); return trow(t,{nowho:!!me&&!sh,shared:sh}); }).join('')+'</ul>'+(more?'<button class="btn sm ghost" data-act="more" data-v="'+esc(title)+'">'+(ui.open[title]?'کمتر':'نمایش بیشتر ('+fa(list.length)+')')+'</button>':'')+'</div>'; }
+      act=mine.filter(function(t){ if(late.indexOf(t)>=0) return false; var s0=startOf(t); return t.status==='doing'||(s0!=null&&s0<=TODAY); }),
+      ahead=mine.filter(function(t){ if(late.indexOf(t)>=0||act.indexOf(t)>=0) return false; var s0=startOf(t); return s0!=null&&s0>TODAY&&s0<=TODAY+7; });
+  function sec(title,list,cls,max,hint){ if(!list.length) return ''; var more=list.length>(max||99); var L=more&&!ui.open[title]?list.slice(0,max):list;
+    return '<div class="sec '+(cls||'')+'"><h4>'+title+' <span class="n">'+fa(list.length)+'</span></h4>'+(hint?'<p class="muted small" style="margin:0 0 6px">'+hint+'</p>':'')+'<ul class="tl">'+L.map(function(t){ var sh=isShared(t,me); return trow(t,{nowho:!!me&&!sh,shared:sh,stage:1}); }).join('')+'</ul>'+(more?'<button class="btn sm ghost" data-act="more" data-v="'+esc(title)+'">'+(ui.open[title]?'کمتر':'نمایش بیشتر ('+fa(list.length)+')')+'</button>':'')+'</div>'; }
   main+='<div class="panel"><h2 class="h2">'+(me?'کارهای من':'کارهای تیم')+' <small>'+fa(mine.length)+' باز</small><span class="sp"></span><button class="btn sm" data-act="newtask">'+IC.plus+'تسک</button></h2>'+
-    (late.length+week.length+doing.length?'':'<div class="empty">برای این هفته کاری ندارید. از «برنامه» کار بعدی را بردارید.</div>')+
-    sec('عقب‌افتاده',late,'late',6)+sec('امروز تا هفتهٔ بعد',week,'',8)+sec('در جریان',doing,'',6)+'</div>';
+    (late.length+act.length+ahead.length?'':'<div class="empty">فعلاً کاری در بازهٔ اجرا ندارید. از «برنامه» کار بعدی را بردارید.</div>')+
+    sec('عقب‌افتاده',late,'late',6)+sec('الان در بازهٔ اجرا',act,'',8,'از تاریخ شروع هر کار دیده می‌شود؛ هرچه به موعد نزدیک‌تر، بالاتر می‌آید.')+sec('شروع تا ۷ روز آینده',ahead,'',6)+'</div>';
   /* مسیر بحرانی افتتاحیه */
-  var crit=M.tasks.filter(function(t){ return t.prio==='p0'&&t.type!=='gate'&&!isClosed(t)&&t.due!=null&&t.due<=OPEN; }).sort(cmp);
+  var crit=M.tasks.filter(function(t){ return t.prio==='p0'&&t.type!=='gate'&&!isClosed(t)&&t.due!=null&&t.due<=OPEN; }).sort(cmpEff);
   if(crit.length){ var cl=crit.filter(function(t){ return t.due<TODAY; }).length;
     main+='<div class="panel"><h2 class="h2">مسیر بحرانی تا افتتاحیه <small>'+fa(crit.length)+' کار'+(cl?' · '+fa(cl)+' عقب':'')+'</small></h2><ul class="tl">'+(ui.open.crit?crit:crit.slice(0,7)).map(function(t){ return trow(t); }).join('')+'</ul>'+(crit.length>7?'<button class="btn sm ghost" data-act="more" data-v="crit">'+(ui.open.crit?'کمتر':'همه ('+fa(crit.length)+')')+'</button>':'')+'</div>'; }
   /* ستون کناری */

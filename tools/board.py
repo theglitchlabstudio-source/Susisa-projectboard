@@ -10,7 +10,7 @@
   board.py log --hours 24 [--others] [--task s1k] [--by M] [--json]   تاریخچهٔ تغییرها/کامنت‌ها/یادداشت‌ها
 محیط: BOARD_DIR (پوشهٔ checkout، پیش‌فرض ~/.cache/susisa-board-data)، BOARD_REMOTE (آدرس مخزن)، BOARD_BRANCH (board-data)، BOARD_AS (شناسهٔ پروفایل، پیش‌فرض CL).
 """
-import json, os, subprocess, sys, time, random, argparse
+import json, os, re, subprocess, sys, time, random, argparse
 
 BRANCH = os.environ.get('BOARD_BRANCH', 'board-data')
 AS = os.environ.get('BOARD_AS', 'CL')
@@ -194,6 +194,7 @@ def cmd_set(a):
         for kv in a.kv:
             k, _, v = kv.partition('=')
             if k in ('id',): sys.exit('id قابل تغییر نیست')
+            if k == 'kind' and v not in ('G', 'S', 'D', 'E', 'I', 'M'): sys.exit('kind فقط یکی از G S D E I M')
             t[k] = conv(k, v)
         if t.get('status') == 'done' and not t.get('doneAt'): t['doneAt'] = today_j()
         if t.get('status') != 'done': t['doneAt'] = None
@@ -232,6 +233,79 @@ def cmd_note(a):
     def mut():
         N = load('notes'); N[nid] = {'id': nid, 'day': day, 'text': a.text, 'by': AS, 'at': int(time.time() * 1000), 'kind': 'note'}; dump('notes', N)
     commit_push('note %s' % fmt_j(day), mut); print('ok', nid)
+
+import mimetypes, shutil, hashlib as _hl
+BB_STEP = 'افزودن به برندبوک (Claude)'
+def _safe(n): return ''.join('_' if c in '/\\:*?"<>|\0' else c for c in n).strip() or 'file'
+def _mime(n):
+    e = n.rsplit('.', 1)[-1].lower() if '.' in n else ''
+    return {'md': 'text/markdown', 'txt': 'text/plain', 'csv': 'text/csv', 'json': 'application/json', 'html': 'text/html', 'htm': 'text/html'}.get(e) or mimetypes.guess_type(n)[0] or 'application/octet-stream'
+def _put_file(src, name, sub='files'):
+    fid = 'f' + format(int(time.time() * 1000), 'x')[-8:] + format(random.randrange(46656), 'x')
+    rel = '%s/%s-%s' % (sub, fid, _safe(name).replace(' ', '_'))
+    os.makedirs(os.path.join(DIR, os.path.dirname(rel)), exist_ok=True); shutil.copyfile(src, os.path.join(DIR, rel))
+    return {'id': fid, 'kind': 'gh', 'name': name, 'type': _mime(name), 'size': os.path.getsize(src), 'path': rel, 'by': AS, 'at': int(time.time() * 1000)}
+def _attach_entry(t, ent):
+    fs = t.get('files') or []
+    ex = next((f for f in fs if f.get('name') == ent['name'] and f.get('kind') == 'gh'), None)
+    if ex:
+        old = {k: v for k, v in ex.items() if k != 'vers'}; ent['vers'] = [old] + (ex.get('vers') or []); fs[fs.index(ex)] = ent
+    else: fs.append(ent)
+    t['files'] = fs; return 'نسخهٔ %d' % (len(ent.get('vers') or []) + 1)
+
+def cmd_attach(a):
+    """فایل روی تسک (با نسخه). برای .md نسخهٔ خوانای HTML هم ساخته و ضمیمه می‌شود."""
+    if not os.path.isfile(a.path): sys.exit('فایل نیست: ' + a.path)
+    name = a.name or os.path.basename(a.path); out = []
+    extra = None
+    if a.path.lower().endswith('.md') and not a.no_html:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import render
+        hp = os.path.join('/tmp', 'r-' + format(int(time.time()), 'x') + '.html')
+        open(hp, 'w', encoding='utf8').write(render.render(open(a.path, encoding='utf8').read(), None, a.path))
+        extra = (hp, os.path.splitext(name)[0] + ' (نسخهٔ خوانا).html')
+    def mut():
+        T = load('tasks'); i = find(T, a.id); t = T[i]
+        out.clear(); out.append(_attach_entry(t, _put_file(a.path, name)))
+        if extra: out.append(_attach_entry(t, _put_file(extra[0], extra[1])))
+        stamp(t); dump('tasks', T)
+    commit_push('tasks %s attach %s' % (a.id, name), mut); print('ok', name, '، '.join(out))
+
+def cmd_check(a):
+    """چک‌لیست: check <id> add|done|undo "متن" ؛ check bbstep (گام «افزودن به برندبوک» برای همهٔ تسک‌های برندبوک)"""
+    if a.id == 'bbstep': a.op = 'bbstep'
+    def mut():
+        T = load('tasks'); n = 0
+        if a.op == 'bbstep':
+            for t in T.values():
+                if t.get('bb') is None or t.get('type') == 'gate' or (t.get('t') or '').startswith('پیشنهاد'): continue
+                ck = t.get('check') or []
+                if not any((c.get('x') if isinstance(c, dict) else c) == BB_STEP for c in ck):
+                    ck.append({'x': BB_STEP, 'done': False}); t['check'] = ck; stamp(t); n += 1
+            dump('tasks', T); return n
+        i = find(T, a.id); t = T[i]; ck = t.get('check') or []
+        if a.op == 'add': ck.append({'x': a.text, 'done': False})
+        else:
+            hit = [c for c in ck if isinstance(c, dict) and (c.get('x') == a.text or (a.text and a.text in c.get('x', '')))]
+            if not hit: sys.exit('مورد چک‌لیست پیدا نشد: ' + a.text)
+            hit[0]['done'] = (a.op == 'done')
+        t['check'] = ck; stamp(t); dump('tasks', T); return 1
+    r = commit_push('tasks %s check %s' % (a.id or 'all', a.op), mut); print('ok', r)
+
+def cmd_report(a):
+    """گزارش: report add <file.md> [--title] [--kind weekly] ← فایل md + نسخهٔ خوانا در files/reports و ثبت در مجموعهٔ reports (دکمهٔ «گزارش‌ها» در برد)."""
+    if a.op == 'list':
+        ensure(); [print(r['id'], r.get('title'), fmt_j(r.get('day'))) for r in sorted(load('reports').values(), key=lambda r: r.get('at', 0))]; return
+    if not a.path or not os.path.isfile(a.path): sys.exit('فایل md لازم است')
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import render
+    md = open(a.path, encoding='utf8').read()
+    title = a.title or (re.search(r'^#\s+(.+)$', md, re.M).group(1).strip() if re.search(r'^#\s+(.+)$', md, re.M) else 'گزارش')
+    hp = '/tmp/rep-%x.html' % int(time.time()); open(hp, 'w', encoding='utf8').write(render.render(md, title, a.path))
+    rid = 'r' + format(int(time.time() * 1000), 'x')[-8:]
+    def mut():
+        mdf = _put_file(a.path, _safe(title) + '.md', 'files/reports'); hf = _put_file(hp, _safe(title) + '.html', 'files/reports')
+        R = load('reports'); R[rid] = {'id': rid, 'kind': a.kind, 'title': title, 'day': today_j(), 'at': int(time.time() * 1000), 'by': AS, 'md': mdf, 'html': hf}
+        dump('reports', R)
+    commit_push('reports %s' % rid, mut); print('ok', rid, title)
 
 def cmd_svc(a):
     """مدیریت دستهٔ خدمات: list | add | edit | rm"""
@@ -294,6 +368,9 @@ def main():
     s = sp.add_parser('rm'); s.add_argument('id'); s.set_defaults(f=cmd_rm)
     s = sp.add_parser('comment'); s.add_argument('id'); s.add_argument('text'); s.set_defaults(f=cmd_comment)
     s = sp.add_parser('log'); s.add_argument('--hours'); s.add_argument('--since'); s.add_argument('--after', help='میلی‌ثانیه (از STATUS: last_run_ms)'); s.add_argument('--task'); s.add_argument('--by'); s.add_argument('--others', action='store_true'); s.add_argument('--limit', default=400); s.add_argument('--width', type=int, default=600); s.add_argument('--json', action='store_true'); s.set_defaults(f=cmd_log)
+    s = sp.add_parser('attach'); s.add_argument('id'); s.add_argument('path'); s.add_argument('--name'); s.add_argument('--no-html', action='store_true'); s.set_defaults(f=cmd_attach)
+    s = sp.add_parser('check'); s.add_argument('id', nargs='?'); s.add_argument('op', nargs='?', default='add'); s.add_argument('text', nargs='?', default=''); s.set_defaults(f=cmd_check)
+    s = sp.add_parser('report'); s.add_argument('op', choices=['add', 'list']); s.add_argument('path', nargs='?'); s.add_argument('--title'); s.add_argument('--kind', default='weekly'); s.set_defaults(f=cmd_report)
     s = sp.add_parser('now'); s.set_defaults(f=cmd_now)
     s = sp.add_parser('note'); s.add_argument('text'); s.add_argument('--day'); s.set_defaults(f=cmd_note)
     a = p.parse_args(); a.f(a)

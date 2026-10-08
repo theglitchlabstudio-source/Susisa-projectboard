@@ -1,0 +1,69 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>نقشهٔ توسعهٔ Kitchen OS</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet"><style>
+:root{--red:#CC0212;--cream:#FDF0D7;--ink:#22140F;--mute:#7C6658;--line:#EEDDC6;--bg:#FFFBF4}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/2 Vazirmatn,Tahoma,sans-serif;direction:rtl}
+.doc{max-width:860px;margin:0 auto;padding:28px 20px 60px}
+.hd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:3px solid var(--red);padding-bottom:10px;margin-bottom:24px;flex-wrap:wrap}
+.hd b{font:400 28px/1 Lalezar,Vazirmatn,sans-serif;color:var(--red)}.hd span{color:var(--mute);font-size:13px}
+h1{font:400 34px/1.35 Lalezar,Vazirmatn,sans-serif;margin:.2em 0 .6em}h2{font:400 25px/1.4 Lalezar,Vazirmatn,sans-serif;color:var(--red);margin:1.6em 0 .5em;border-bottom:1px solid var(--line);padding-bottom:4px}
+h3{font-size:19px;margin:1.3em 0 .4em}p,li{unicode-bidi:plaintext}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:right;vertical-align:top}th{background:var(--cream)}
+blockquote{margin:14px 0;padding:8px 16px;border-inline-start:4px solid var(--red);background:#fff;border-radius:8px}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:#fff;border:1px solid var(--line);border-radius:5px;padding:0 5px;direction:ltr;unicode-bidi:embed}
+pre{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;direction:ltr;text-align:left}pre code{border:0;padding:0}
+a{color:var(--red)}hr{border:0;border-top:1px dashed var(--line);margin:24px 0}
+.sw{display:inline-block;width:.95em;height:.95em;border-radius:3px;border:1px solid rgba(0,0,0,.15);margin-inline-end:4px;vertical-align:-2px}
+.palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:16px 0}
+.pal{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 8px 20px -14px rgba(60,20,0,.5)}
+.pal .chip{height:120px;display:flex;align-items:flex-end;padding:10px 14px;font:400 30px Lalezar,sans-serif}
+.pal .pi{padding:10px 14px;display:flex;flex-direction:column;gap:2px}.pal .pi b{font-size:17px}.pal .pi code{align-self:flex-start}
+.pal small{color:var(--mute);font-size:13px;line-height:1.7}.ct{font-size:12.5px;margin:6px 0}.ct th,.ct td{padding:2px 6px}
+.ft{margin-top:40px;color:var(--mute);font-size:12px;border-top:1px solid var(--line);padding-top:8px}
+@media print{body{background:#fff}.doc{max-width:none;padding:0}@page{size:A4;margin:16mm 14mm}h2{break-after:avoid}.pal,table,blockquote{break-inside:avoid}}
+</style></head><body><div class="doc"><div class="hd"><b>سوسیسا</b><span>گلیچ‌لب · نسخهٔ خوانا · 2026-10-08</span></div><h1>نقشهٔ توسعهٔ Kitchen OS</h1>
+<p>هدف: از «دفترچهٔ رسپی» به «سیستم کنترل آشپزخانه» برسیم، و در ادامه به <strong>ابزار لاگ دورریز و چک‌لیست‌های عملیاتی</strong> (خدمت ابزارهای سوسیسا) و <strong>ابزار کنترل کاست</strong>. ثبت‌ها باید ≤۱۰ ثانیه طول بکشند وگرنه پرسنل انجامش نمی‌دهند.</p>
+<h2>نسخهٔ ۳ (انجام شد، ۱۶ مهر)</h2>
+<p>آفلاین (سرویس‌ورکر)، بخش «کنترل»: سلامت داده، بهای رسپی، چک‌لیست و دما، گزارش هفتگی؛ دلیل دورریز؛ قیمت کالا؛ اصلاح «زیر حد».</p>
+<h2>نسخهٔ ۳٫۱ — ثبت روزانه جا بیفتد (تا ۱ آبان)</h2>
+<ul>
+<li>پاک‌سازی داده با پرسنل و رسپی‌های بدون مرحله (با همکار)</li>
+<li>آموزش ۱۵ دقیقه‌ای و برگهٔ یک‌صفحه‌ای کنار پاس</li>
+<li>شمارش اولیهٔ انبار (نان، سوسیس، سس‌ها)</li>
+<li>معیار: هر روز حداقل یک ثبت یا «بدون دورریز»</li>
+</ul>
+<h2>نسخهٔ ۳٫۲ — لاگ دورریز واقعی (آبان)</h2>
+<ul>
+<li>دکمهٔ «بدون دورریز امروز» (ثبت صفر)</li>
+<li>دلیل‌ها و آستانه‌های هشدار با امیررضا</li>
+<li>ثبت سریع: کالا ← مقدار ← دلیل در سه لمس</li>
+<li>هشدار وقتی دورریز یک دلیل از آستانه گذشت</li>
+<li>گزارش هفتگی داخل جلسهٔ هفتگی (دکمهٔ «کپی خلاصه» حاضر است)</li>
+</ul>
+<h2>نسخهٔ ۴ — بها و کاست (آبان تا آذر)</h2>
+<ul>
+<li>مدل بها از بازدهٔ واقعی (تست بازده) نه وزن خام</li>
+<li>هشدار تغییر قیمت ماده &gt;۱۰٪ و آیتم‌های متأثر</li>
+<li>درصد بهای مواد هر آیتم منو و پیشنهاد اصلاح (طبق قاعدهٔ «بودجهٔ تمایز اول سس و نان»)</li>
+<li>اتصال به ابزار کنترل کاست (خدمت جداگانه)</li>
+</ul>
+<h2>نسخهٔ ۴٫۱ — عملیات (آذر)</h2>
+<ul>
+<li>پار لول و لیست آماده‌سازی روزانه از روی فروش واقعی</li>
+<li>سفارش خرید پیشنهادی از حد سفارش و مصرف</li>
+<li>برچسب پرپ (تاریخ تولید و انقضا) قابل چاپ</li>
+<li>ثبت دمای هر ظرف حمل (بیرون‌بر)</li>
+</ul>
+<h2>نسخهٔ ۵ — اتصال‌ها (دی)</h2>
+<ul>
+<li>خروجی خودکار به برد پروژه (خلاصهٔ هفتگی)</li>
+<li>منبع واحد منو ← قیمت و بها</li>
+<li>نقش‌ها (سرآشپز، کمک، مدیر) و تأیید تغییر رسپی نهایی</li>
+<li>بکاپ خودکار ماهانه</li>
+</ul>
+<h2>قواعد توسعه</h2>
+<ol>
+<li>هر قابلیت اول با دادهٔ واقعی تیم سنجیده شود؛ اگر پرسنل ثبتش نکردند، ساده‌ترش کن.</li>
+<li>بدون تغییر اسکریپت شیت تا جایی که ممکن است (جدول <code>settings</code> JSON می‌پذیرد).</li>
+<li>هیچ قیمت یا داده‌ٔ مالی در مخزن عمومی نمی‌رود.</li>
+</ol><div class="ft">ساخته‌شده از نقشه-توسعه-Kitchen-OS.md با tools/render.py · برای PDF: چاپ ← ذخیره به‌صورت PDF</div></div></body></html>

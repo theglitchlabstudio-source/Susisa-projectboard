@@ -123,6 +123,22 @@ MAXCOPY = 20 * 1024 * 1024
 def ingest_key(fid): return 'board:' + fid
 def safe(n): return ''.join('_' if c in '/\\:*?"<>|\0' else c for c in n).strip() or 'file'
 
+# ضمیمه‌های برد پسوند ندارند، پس gitignore ولت (*.png، *.jpg…) آن‌ها را نمی‌گیرد.
+# نوع را از امضای خود فایل تشخیص بده تا تصویر/صوت/ویدیو کامل در ولت کپی نشود (فقط کارت).
+MEDIA_MAGIC = (b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff', b'GIF87a', b'GIF88a', b'GIF89a',
+               b'BM', b'II*\x00', b'MM\x00*', b'\x00\x00\x01\x00', b'ID3', b'OggS',
+               b'\x1aE\xdf\xa3', b'fLaC', b'8BPS')
+def is_media(src):
+    try:
+        h = open(src, 'rb').read(16)
+    except OSError:
+        return False
+    if h.startswith(MEDIA_MAGIC): return True
+    if h[:4] == b'RIFF' and h[8:12] in (b'WEBP', b'WAVE', b'AVI '): return True
+    if h[4:8] == b'ftyp': return True          # mp4/mov/heic
+    if h[:3] == b'\xff\xfb' or h[:3] == b'\xff\xf3': return True  # mp3
+    return False
+
 def cmd_ingest(dry=False):
     B.ensure(); T = B.load('tasks'); ix = load(); F = ix['files']
     done = {e.get('boardId') for e in F.values() if e.get('boardId')}
@@ -140,7 +156,7 @@ def cmd_ingest(dry=False):
             rel = 'tasks/%s/%s-%s' % (tid, f['id'][-4:], name)
         ign = subprocess.run(['git', '-C', VD, 'check-ignore', '-q', rel]).returncode == 0
         big = (not os.path.exists(src)) or os.path.getsize(src) > MAXCOPY
-        card = ign or big
+        card = ign or big or is_media(src)
         if card: rel = rel + '.card.md'
         rec = {'task': tid, 'by': f.get('by'), 'file': f.get('name'), 'vault': rel, 'mode': 'card' if card else 'copy'}
         out.append(rec)

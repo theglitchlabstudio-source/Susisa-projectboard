@@ -249,6 +249,11 @@ textarea.in{resize:vertical;line-height:1.7}
 .ro button{border:0;background:none;text-decoration:underline;font-weight:800}
 @media (max-width:560px){.brand span,.count .cx,.top [data-act=png]{display:none}.me{padding:3px}.me .mn{display:none}.me:not(:has(.who)) .mn{display:inline;padding:0 8px}.brand b{font-size:24px}.top .wrap{gap:6px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.wl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.wi{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:var(--card2,rgba(127,127,127,.08));cursor:pointer;border-inline-start:4px solid var(--soon)}
+.wi.s3{border-inline-start-color:var(--late)} .wi.s1{border-inline-start-color:var(--muted,#999)}
+.wi .ws{flex:none;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:rgba(127,127,127,.15);margin-top:2px}
+.wi.s3 .ws{background:var(--late);color:#fff} .wt{font-size:13.5px;line-height:1.7} .wf{font-size:12.5px;color:var(--muted)}
 /* ===== v13: ظاهر اپ، عمق، آیکن‌ها ===== */
 :root{--hl:rgba(255,255,255,.75);--sh1:inset 0 1px 0 var(--hl),0 1px 2px rgba(60,20,0,.07),0 6px 14px -9px rgba(60,20,0,.35);--sh2:inset 0 1px 0 var(--hl),0 2px 4px rgba(60,20,0,.05),0 16px 32px -20px rgba(60,20,0,.5);--edge:color-mix(in srgb,var(--line) 85%,var(--mute))}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--hl:rgba(255,255,255,.06);--sh1:inset 0 1px 0 var(--hl),0 6px 14px -8px rgba(0,0,0,.9);--sh2:inset 0 1px 0 var(--hl),0 18px 34px -20px rgba(0,0,0,1)}}
@@ -1519,6 +1524,76 @@ var soonT=null; function renderSoon(){ clearTimeout(soonT); soonT=setTimeout(ren
 function saveUI(){ ls(UIK,{tab:ui.tab==='reports'?'desk':ui.tab, me:ui.me, theme:ui.theme, plan:{g:ui.plan.g, view:ui.plan.view}, feed:ui.feed, calmode:ui.cal.mode}); }
 function applyTheme(){ var r=document.documentElement; if(ui.theme) r.setAttribute('data-theme',ui.theme); else r.removeAttribute('data-theme'); var m=document.querySelector('meta[name=theme-color]'); }
 
+/* ---------- ناظر پروژه (v14): همان قاعده‌های R1…R15 ماژول ۲۴ و tools/watch.py ---------- */
+var WSEV={3:'بحرانی',2:'مهم',1:'جزئی'};
+var MONEYRE=/(\d[\d,٬٫.۰-۹]*\s*(میلیون|هزار|تومان|ریال))/;
+function watchdog(){
+  var out=[], T=M.tasks, done=function(t){ return isDone(t); };
+  var opn=T.filter(function(t){ return !isClosed(t)&&t.type!=='gate'&&!isProp(t); });
+  var wst=function(d){ return d-wd(d); };
+  var nmw=function(i){ return person(i).name||i; };
+  function add(sev,k,text,ids,who,fix){ out.push({sev:sev,k:k,text:text,ids:ids||[],who:(who||[]).filter(function(x,i,a){ return x&&a.indexOf(x)===i; }),fix:fix||''}); }
+  /* R1 شروع قبل از تمام شدن پیش‌نیاز · R2 تاریخ برعکس · R12 وابستگی به خود */
+  opn.forEach(function(t){
+    (t.deps||[]).forEach(function(i){ var x=byId[i]; if(!x||isClosed(x)) return;
+      if(x.due!=null&&t.start!=null&&x.due>t.start) add(2,'R1','«'+t.t+'» قبل از تمام شدن «'+x.t+'» شروع می‌شود (پیش‌نیاز تا '+jd(x.due)+'، این از '+jd(t.start)+')',[t.id,x.id],[t.owner,x.owner],'موعد پیش‌نیاز را جلو بکش یا شروع این را عقب ببر');
+      if(i===t.id) add(2,'R12','«'+t.t+'» به خودش وابسته است',[t.id],[t.owner],'وابستگی را بردار'); });
+    if(t.start!=null&&t.due!=null&&t.start>t.due) add(2,'R2','«'+t.t+'»: شروع بعد از موعد است',[t.id],[t.owner],'تاریخ‌ها را درست کن');
+  });
+  /* R3 */
+  var off=opn.filter(function(t){ return t.due!=null&&t.due>=TODAY&&wd(t.due)>=5; });
+  if(off.length) add(1,'R3',fa(off.length)+' تسک در پنج‌شنبه یا جمعه موعد دارند (قاعده: شنبه تا چهارشنبه)',off.slice(0,8).map(function(t){ return t.id; }),off.map(function(t){ return t.owner; }),'به شنبه تا چهارشنبه ببر');
+  /* R4 بار هفتگی */
+  var bw={};
+  opn.forEach(function(t){ if(t.due==null||t.due<TODAY-6||!t.owner||t.owner==='C') return; var p=person(t.owner); if(p.bot) return; var k=t.owner+'|'+wst(t.due); (bw[k]=bw[k]||[]).push(t); });
+  Object.keys(bw).forEach(function(k){ var L=bw[k], p=k.split('|')[0], w=+k.split('|')[1], hi=L.filter(function(t){ return (PR[t.prio]||0)<=1; }).length;
+    if(L.length>=9||hi>=7) add(L.length>=12?3:2,'R4','بار '+nmw(p)+' در هفتهٔ '+jd(w)+': '+fa(L.length)+' تسک ('+fa(hi)+' با اولویت بالا)',L.slice(0,6).map(function(t){ return t.id; }),[p],'بخشی را به امیرحسین یا همکار بده یا موعد را پخش کن'); });
+  /* R5 */
+  var late=opn.filter(function(t){ return t.due!=null&&t.due<TODAY; }), crit=late.filter(function(t){ return t.prio==='p0'; });
+  if(crit.length) add(3,'R5',fa(crit.length)+' کار مسیر بحرانی عقب افتاده: '+crit.slice(0,4).map(function(t){ return '«'+t.t+'»'; }).join('، '),crit.map(function(t){ return t.id; }),crit.map(function(t){ return t.owner; }),'امروز تکلیفش را روشن کن: انجام، جابه‌جایی با دلیل یا واگذاری');
+  else if(late.length) add(2,'R5',fa(late.length)+' کار عقب افتاده',late.slice(0,8).map(function(t){ return t.id; }),late.map(function(t){ return t.owner; }),'هر کدام: انجام، جابه‌جایی با دلیل یا حذف');
+  /* R6 */
+  var miss=opn.filter(function(t){ return t.status==='todo'&&t.start!=null&&t.start<TODAY&&!(t.due!=null&&t.due<TODAY); });
+  if(miss.length>=3) add(1,'R6',fa(miss.length)+' کار تاریخ شروعش گذشته ولی هنوز شروع نشده',miss.slice(0,8).map(function(t){ return t.id; }),miss.map(function(t){ return t.owner; }),'وضعیت را «در جریان» کن یا تاریخ را اصلاح کن');
+  /* R7 هفتهٔ خالی */
+  var end=TODAY; T.forEach(function(t){ if(t.due!=null&&t.due>end) end=t.due; });
+  var emp=[]; for(var w=wst(TODAY)+7; w<=end; w+=7){ if(!opn.some(function(t){ return t.due!=null&&t.due>=w&&t.due<w+7; })) emp.push(w); }
+  if(emp.length) add(1,'R7','هفته‌هایی بدون هیچ تسک: '+emp.slice(0,5).map(jd).join('، '),[],[],'ببین کار جا افتاده یا واقعاً خالی است');
+  /* R8 ورودی کارفرما · R9 تصمیم باز */
+  opn.forEach(function(t){
+    if(t.owner==='C'&&t.due!=null&&t.due-TODAY<=3){ var n=opn.filter(function(x){ return (x.deps||[]).indexOf(t.id)>=0; }).length; add(t.due>=TODAY?2:3,'R8','ورودی منتظر امیررضا: «'+t.t+'» ('+(t.due<TODAY?'گذشته':'تا '+jd(t.due))+') · '+fa(n)+' کار وابسته',[t.id],['M'],'ممضی در دیدار روزانه پیگیری کند'); }
+    if(kindOf(t)==='D'){ var ds=opn.filter(function(x){ return (x.deps||[]).indexOf(t.id)>=0&&x.start!=null&&x.start-TODAY<=3; }); if(ds.length) add(3,'R9','تصمیم «'+t.t+'» هنوز گرفته نشده و '+fa(ds.length)+' کار تا ۳ روز دیگر منتظرش‌اند',[t.id].concat(ds.slice(0,3).map(function(x){ return x.id; })),[t.owner],'همین هفته تصمیم بگیر؛ گزینه‌ها را با فیلتر هفت بسنج'); }
+  });
+  /* R10 گیت */
+  T.forEach(function(g){ if(g.type!=='gate'||isDone(g)||g.due==null) return;
+    var ds=(g.deps||[]).map(function(i){ return byId[i]; }).filter(function(x){ return x&&!isDone(x); });
+    var risky=ds.filter(function(x){ return (x.due!=null&&x.due<TODAY)||x.status==='budget'||x.status==='paused'; });
+    if(g.due-TODAY<=10&&risky.length) add(3,'R10','گیت «'+g.t.replace(/^گیت\s*[۰-۹0-9]+\s*·\s*/,'')+'» ('+jd(g.due)+') در خطر: '+fa(risky.length)+' کار پیش‌نیازش عقب یا گیر است',[g.id].concat(risky.slice(0,4).map(function(x){ return x.id; })),['M'],'پیش‌نیازهای گیر را اول حل کن'); });
+  /* R11 */
+  var noo=opn.filter(function(t){ return !t.owner; }), nod=opn.filter(function(t){ return t.due==null&&t.start==null; });
+  if(noo.length) add(2,'R11',fa(noo.length)+' تسک مسئول ندارند',noo.slice(0,6).map(function(t){ return t.id; }),[],'مسئول بده');
+  if(nod.length) add(1,'R11',fa(nod.length)+' تسک باز هیچ تاریخی ندارند',nod.slice(0,6).map(function(t){ return t.id; }),nod.map(function(t){ return t.owner; }),'تاریخ بده یا متوقف کن');
+  /* R13 · R14 */
+  T.forEach(function(t){ if(isDone(t)&&(t.check||[]).some(function(c){ return c&&/^افزودن به برندبوک/.test(c.x||'')&&!c.done; })) add(1,'R13','«'+t.t+'» تمام شده ولی هنوز به برندبوک اضافه نشده',[t.id],[t.owner,'CL'],'گام «افزودن به برندبوک»'); });
+  var leak=T.filter(function(t){ return MONEYRE.test((t.t||'')+' '+(t.notes||'')+' '+(t.briefNote||'')); });
+  if(leak.length) add(3,'R14','احتمال مبلغ یا عدد مالی در متن '+fa(leak.length)+' تسک (مخزن عمومی است)',leak.slice(0,6).map(function(t){ return t.id; }),['M','CL'],'مبلغ را حذف کن؛ فقط در ولت خصوصی');
+  /* R15 */
+  var props=T.filter(function(t){ return isProp(t)&&!isClosed(t)&&!decisionOf(t); });
+  if(props.length>=3) add(1,'R15',fa(props.length)+' پیشنهاد منتظر تصمیم ممضی است',props.slice(0,6).map(function(t){ return t.id; }),['M'],'در صندوق Claude تأیید یا رد کن');
+  out.sort(function(a,b){ return b.sev-a.sev; });
+  return out;
+}
+function watchFor(me){ return watchdog().filter(function(r){ return !me||!r.who.length||r.who.indexOf(me)>=0; }); }
+function watchPanel(me){
+  var all=watchFor(me), big=all.filter(function(r){ return r.sev>=2; }), L=ui.open.watchAll?all:big;
+  var h='<div class="panel wdg"><h2 class="h2">ناظر پروژه <small>'+(big.length?fa(big.length)+' هشدار مهم':'هشدار مهمی نیست')+'</small></h2>';
+  h+='<p class="muted small" style="margin:0 0 8px">خلأ، تضاد زمانی، بار زیاد و تصمیم‌های گیر را خودکار می‌سنجد؛ ایجنت و دستیار همین قاعده‌ها را اجرا می‌کنند.</p>';
+  if(!L.length) h+='<div class="empty">فعلاً چیزی نیست که مراقبش باشید.</div>';
+  else h+='<ul class="wl">'+L.slice(0,ui.open.watchAll?40:6).map(function(r){ return '<li class="wi s'+r.sev+'"'+(r.ids[0]?' data-open="'+esc(r.ids[0])+'"':'')+'><span class="ws">'+WSEV[r.sev]+'</span><div><div class="wt">'+esc(r.text)+'</div>'+(r.fix?'<div class="wf">← '+esc(r.fix)+'</div>':'')+'</div></li>'; }).join('')+'</ul>';
+  if(all.length>big.length||L.length>6) h+='<button class="btn sm ghost" data-act="more" data-v="watchAll">'+(ui.open.watchAll?'فقط مهم‌ها':'همهٔ هشدارها ('+fa(all.length)+')')+'</button>';
+  return h+'</div>';
+}
+
 /* ---------- میز کار ---------- */
 VIEWS.desk=function(){
   var me=ui.me, p=me?person(me):null, h='';
@@ -1550,7 +1625,7 @@ VIEWS.desk=function(){
   if(crit.length){ var cl=crit.filter(function(t){ return t.due<TODAY; }).length;
     main+='<div class="panel"><h2 class="h2">مسیر بحرانی تا افتتاحیه <small>'+fa(crit.length)+' کار'+(cl?' · '+fa(cl)+' عقب':'')+'</small></h2><ul class="tl">'+(ui.open.crit?crit:crit.slice(0,7)).map(function(t){ return trow(t); }).join('')+'</ul>'+(crit.length>7?'<button class="btn sm ghost" data-act="more" data-v="crit">'+(ui.open.crit?'کمتر':'همه ('+fa(crit.length)+')')+'</button>':'')+'</div>'; }
   /* ستون کناری */
-  var side='';
+  var side=watchPanel(me);
   var props=M.tasks.filter(function(t){ return isProp(t)&&!isClosed(t); }).sort(function(a,b){ return (!!decisionOf(a))-(!!decisionOf(b)) || cmp(a,b); });
   var cnote=M.notes.filter(function(n){ return n.by==='CL'; }).sort(function(a,b){ return (b.at||0)-(a.at||0); })[0];
   side+='<div class="panel claude"><h2 class="h2">Claude · مدیر پروژه <small>'+(cnote?'آخرین گزارش '+tfmt(cnote.at):'هنوز گزارشی نیست')+'</small></h2>';

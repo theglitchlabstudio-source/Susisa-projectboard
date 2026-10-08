@@ -91,6 +91,12 @@ def digest():
          '- امروز: %s · تا افتتاحیهٔ ۱ آبان: %s روز' % (jd(today), fa(max(0, B.j2d(1405, 8, 1) - today))), '']
     cl = sorted([n for n in D['N'].values() if n.get('by') == 'CL'], key=lambda n: n.get('at', 0))
     if cl: o += ['## آخرین یادداشت روز Claude', '', cl[-1].get('text', ''), '']
+    try:
+        import watch as W
+        wo, wnm, _ = W.run()
+        o += ['## هشدارهای ناظر (خلأ، تضاد، ریسک، تصمیم یا روش پرخطر)', '', W.render_md(wo, wnm, T, 25)]
+    except Exception as e:
+        o += ['## هشدارهای ناظر', '', '- اجرا نشد: %s' % e, '']
     o += ['## گیت‌ها', '']
     for g in sorted([t for t in T.values() if t.get('type') == 'gate'], key=lambda g: g.get('due') or 0):
         ds = [T[i] for i in (g.get('deps') or []) if i in T]

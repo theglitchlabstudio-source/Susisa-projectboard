@@ -384,3 +384,9 @@
 33. CNBC — Japadog is Olympic business winner (۲۴ فوریهٔ ۲۰۱۰). https://www.cnbc.com/2010/02/24/japadog-is-olympic-business-winner.html (خوانده شد)
 34. ZoomShift — 19 Restaurant Grand Opening Ideas. https://www.zoomshift.com/blog/restaurant-grand-opening-ideas (خوانده شد)
 35. Chowly — Restaurant loyalty programs: physical vs digital. https://chowly.com/resources/blogs/restaurant-loyalty-programs-physical-vs-digital-and-which-drives-3x-more-profitability/ (خوانده شد؛ فروشندهٔ نرم‌افزار)
+
+## افزوده‌ها
+### 1405/07/17 — جایگاه‌یابی رستوران تک‌محصولی
+- جملهٔ جایگاه را با پنج جزء Dunford بنویس: جایگزین‌هایی که مشتری الان دارد، ویژگی منحصربه‌فرد، ارزشی که می‌سازد، مشتری‌ای که بیشتر از همه برایش مهم است، و دسته. منبع: https://miro.com/templates/april-dunfords-positioning-template/ · کاربرد برای سوسیسا: «جایگزین» مشتری مشهدی اغذیه‌فروشی محله و فست‌فودی منوپهن است، نه هات‌داگ‌فروشی دیگر.
+- جایگاه خوب رستوران یک ارزش واحد و ساده است که «ساده، روشن و یکسان» همه‌جا گفته شود؛ خطای رایج: واکنش به رقیب و نداشتن تعهد بعد از انتخاب. منبع: https://www.sld.com/white-papers/developing-an-effective-restaurant-brand-position/ · کاربرد: یک جملهٔ جایگاه برای تابلو، بیو و منو.
+- رستوران‌های تک‌محصولی (مثل Raising Cane's) تصویر «ارزان یعنی بی‌کیفیت» را با تمرکز و تکرارپذیری می‌شکنند. منبع: https://www.gospotcheck.com/blog/in-defense-of-single-item-specialists-is-less-better-in-the-restaurant-world · کاربرد: «تخصص» را با منوی کوتاه و یکدستی نشان بده، نه با ادعا.

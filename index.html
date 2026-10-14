@@ -1351,7 +1351,7 @@ var Store = (function(){
 var MONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 var WD=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
 var WDS=['ش','ی','د','س','چ','پ','ج'];
-var OPEN=j2d(1405,8,1);
+var OPEN=j2d(1405,8,10);
 var M, byId={}, TODAY, UIK='susisa-ui-v6';
 var ui={tab:'desk', me:null, theme:null, plan:{g:'svc', own:'all', st:'open', q:''}, cal:{mode:null, y:null, m:null}, feed:'all', open:{}, sheet:null, draft:{}, fl:{g:'svc', ty:'all', own:'all', q:'', task:''}};
 document.addEventListener('toggle',function(e){ var d=e.target; if(d&&d.classList&&d.classList.contains('bfd')) ui.bfOpen=d.open?ui.sheet:null; },true);
@@ -1575,7 +1575,7 @@ function watchdog(){
   if(nod.length) add(1,'R11',fa(nod.length)+' تسک باز هیچ تاریخی ندارند',nod.slice(0,6).map(function(t){ return t.id; }),nod.map(function(t){ return t.owner; }),'تاریخ بده یا متوقف کن');
   /* R13 · R14 */
   T.forEach(function(t){ if(isDone(t)&&(t.check||[]).some(function(c){ return c&&/^افزودن به برندبوک/.test(c.x||'')&&!c.done; })) add(1,'R13','«'+t.t+'» تمام شده ولی هنوز به برندبوک اضافه نشده',[t.id],[t.owner,'CL'],'گام «افزودن به برندبوک»'); });
-  var leak=T.filter(function(t){ return MONEYRE.test((t.t||'')+' '+(t.notes||'')+' '+(t.briefNote||'')); });
+  var leak=T.filter(function(t){ return MONEYRE.test((t.t||'')+' '+(t.notes||'')+' '+(t.qc||'')+' '+(t.briefNote||'')); });
   if(leak.length) add(3,'R14','احتمال مبلغ یا عدد مالی در متن '+fa(leak.length)+' تسک (مخزن عمومی است)',leak.slice(0,6).map(function(t){ return t.id; }),['M','CL'],'مبلغ را حذف کن؛ فقط در ولت خصوصی');
   /* R15 */
   var props=T.filter(function(t){ return isProp(t)&&!isClosed(t)&&!decisionOf(t); });
@@ -1976,7 +1976,8 @@ function fillSheet(first){
     '<label>فاز'+sel('fH',[['','خودکار از موعد'+(phaseOf(t)&&!t.phase?' ('+phaseOf(t).n+')':'')]].concat((M.cfg.phases||[]).map(function(x){ return [x.id,x.n]; })),t.phase||'','data-f="phase"'+ro)+'</label>'+
     '<label>مرحله<input class="in" id="fG" data-f="stage" value="'+esc(t.stage||'')+'" placeholder="مثلاً هویت بصری"'+ro+'></label>'+
     '</div><div class="blk" style="margin-top:4px"><h5 style="margin:0">همکاران <small class="muted">(تسک روی میز کار آن‌ها هم دیده می‌شود'+(t.owner==='T'?'؛ مسئول «'+esc(person('T').name)+'» است، پس برای همه دیده می‌شود':'')+')</small></h5><div class="withc">'+(M.cfg.people||[]).filter(function(x){ return x.id!==t.owner&&x.id!=='C'; }).map(function(x){ return '<button class="chip" data-act="with" data-v="'+esc(x.id)+'" aria-pressed="'+((t.with||[]).indexOf(x.id)>=0)+'"'+ro+'>'+esc(x.name)+'</button>'; }).join('')+'</div></div><label class="row small" style="gap:6px"><input type="checkbox" id="fU" data-fb="urgent"'+(t.urgent?' checked':'')+ro+'> فوری</label>';
-  h+='<div class="blk"><h5>خروجی و معیار «تمام شد»</h5><textarea class="in" id="fN" data-f="notes" rows="4" placeholder="چه چیزی تحویل می‌شود و کی تمام است؟"'+ro+'>'+esc(t.notes||'')+'</textarea></div>';
+  h+='<div class="blk"><h5 style="display:block">توضیحات و نکات <small class="muted" style="display:block;font-weight:400">(شرح کار، دستور کار و روش درست، خروجی و فرمت مطلوب)</small></h5><textarea class="in" id="fN" data-f="notes" rows="7" placeholder="این تسک چیه و چرا مهمه؟ مراحل و روش درست انجامش، نکته‌ها و گایدلاین، و آخرش چه خروجی‌ای با چه فرمتی می‌خوایم"'+ro+'>'+esc(t.notes||'')+'</textarea></div>';
+  h+='<div class="blk"><h5 style="display:block">کنترل کیفیت <small class="muted" style="display:block;font-weight:400">(خروجی رو با این‌ها بسنج)</small></h5><textarea class="in" id="fQ" data-f="qc" rows="4" placeholder="معیارهای کیفیت: چه چیزی باید درست باشه تا خروجی قبول بشه، و کی چک می‌کنه"'+ro+'>'+esc(t.qc||'')+'</textarea></div>';
   var ck=t.check||[]; h+='<div class="blk"><h5>چک‌لیست <small class="muted">'+fa(ck.filter(function(c){ return c.done; }).length)+'/'+fa(ck.length)+'</small></h5><ul class="ckl">'+ck.map(function(c,i){ return '<li class="'+(c.done?'done':'')+'"><input type="checkbox" data-ck="'+i+'"'+(c.done?' checked':'')+ro+'><span>'+esc(c.x)+'</span><button class="ib" style="width:28px;height:28px" data-act="ckdel" data-i="'+i+'" aria-label="حذف">'+IC.x+'</button></li>'; }).join('')+'</ul><div class="row"><input class="in" id="ckIn" style="flex:1" placeholder="مورد تازه"'+ro+'><button class="btn sm" data-act="ckadd">افزودن</button></div></div>';
   var deps=(t.deps||[]).map(function(i){ return byId[i]; }).filter(Boolean), rdeps=M.tasks.filter(function(x){ return (x.deps||[]).indexOf(t.id)>=0; });
   h+='<div class="blk"><h5>'+(gate?'شرط‌های گیت':'بعد از این کارها')+'</h5>'+deps.map(function(d){ return '<div class="dep"><span class="s'+(isDone(d)?' ok':'')+'">'+esc(stt(d.status).n)+'</span><button class="lnk" style="flex:1;font-size:13px;color:var(--ink)" data-open="'+esc(d.id)+'">'+esc(d.t)+'</button>'+dueHtml(d)+'<button class="ib" style="width:28px;height:28px" data-act="depdel" data-id="'+esc(d.id)+'" aria-label="حذف">'+IC.x+'</button></div>'; }).join('')+
@@ -2198,6 +2199,7 @@ function onField(el){
   if(el.id==='cIn'){ ui.draft['c'+t.id]=el.value; return; }
   if(el.id==='fT'){ t.t=el.value; el.style.height='auto'; el.style.height=el.scrollHeight+'px'; touch(t,['t'],true); renderSoon(); return; }
   if(el.dataset.f==='notes'){ t.notes=el.value; touch(t,['notes'],true); return; }
+  if(el.dataset.f==='qc'){ t.qc=el.value; touch(t,['qc'],true); return; }
   if(el.dataset.f==='stage'){ t.stage=el.value; touch(t,['stage'],true); renderSoon(); return; }
 }
 function onChange(el){
@@ -2209,7 +2211,7 @@ function onChange(el){
   if(el.classList&&el.classList.contains('dSt')){ var tx=byId[el.dataset.id]; if(tx){ setStatus(tx,el.value); render(); } return; }
   if(!t) return;
   if(el.dataset.f==='status'){ setStatus(t,el.value); fillSheet(true); return; }
-  if(el.dataset.f){ var k=el.dataset.f, val=el.value; if(k==='phase'&&!val) val=null; if(k==='stage'||k==='notes') return; t[k]=val; if(k==='kind') t.type=val==='G'?'gate':val==='D'?'decision':'task'; if(touch(t,[k].concat(k==='kind'?['type']:[]))){ render(); } return; }
+  if(el.dataset.f){ var k=el.dataset.f, val=el.value; if(k==='phase'&&!val) val=null; if(k==='stage'||k==='notes'||k==='qc') return; t[k]=val; if(k==='kind') t.type=val==='G'?'gate':val==='D'?'decision':'task'; if(touch(t,[k].concat(k==='kind'?['type']:[]))){ render(); } return; }
   if(el.dataset.fd){ var d=parseJ(el.value); if(d===undefined){ toast('تاریخ را مثل ۱۴۰۵/۰۷/۲۰ بنویسید'); el.value=jinput(t[el.dataset.fd]); return; } t[el.dataset.fd]=d; if(touch(t,[el.dataset.fd])){ el.value=jinput(d); render(); } return; }
   if(el.dataset.fb){ t[el.dataset.fb]=el.checked; touch(t,[el.dataset.fb]); render(); return; }
   if(el.dataset.ck!=null){ var c=t.check[+el.dataset.ck]; if(c){ c.done=el.checked; touch(t,['check']); fillSheet(true); } return; }
@@ -2228,7 +2230,7 @@ function bind(){
     if(e.key==='Enter'&&!e.shiftKey){ var id=e.target.id; if(id==='ckIn'){ e.preventDefault(); act({dataset:{act:'ckadd'}},e); } else if(id==='depIn'){ e.preventDefault(); act({dataset:{act:'depadd'}},e); } else if((id==='cIn'||id==='talkIn'||id==='noteIn')&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); act({dataset:{act:id==='cIn'?'cadd':id==='talkIn'?'talk':'note'}},e); } } });
   $('scrim').addEventListener('click',closeSheet);
   document.addEventListener('pointerdown',dDown); document.addEventListener('pointermove',dMove); document.addEventListener('pointerup',dUp);
-  document.addEventListener('focusout',function(e){ if(e.target&&e.target.id==='fT'||e.target&&e.target.dataset&&(e.target.dataset.f==='notes'||e.target.dataset.f==='stage')) setTimeout(function(){ if(ui.sheet&&!$('sheet').contains(document.activeElement)) fillSheet(); },50); });
+  document.addEventListener('focusout',function(e){ if(e.target&&e.target.id==='fT'||e.target&&e.target.dataset&&(e.target.dataset.f==='notes'||e.target.dataset.f==='qc'||e.target.dataset.f==='stage')) setTimeout(function(){ if(ui.sheet&&!$('sheet').contains(document.activeElement)) fillSheet(); },50); });
   window.addEventListener('beforeunload',function(){ Store.flush(); });
   var lastW=window.innerWidth; window.addEventListener('resize',function(){ if((lastW<700)!==(window.innerWidth<700)&&ui.tab==='cal'&&!ui.cal.mode){ render(); } lastW=window.innerWidth; });
   setInterval(function(){ var n=todayJ(); if(n!==TODAY){ TODAY=n; render(); } },60000);

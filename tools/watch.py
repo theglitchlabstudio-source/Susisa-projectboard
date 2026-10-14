@@ -103,7 +103,7 @@ def run():
         if t.get('status') in done and any((c.get('x') or '').startswith('افزودن به برندبوک') and not c.get('done') for c in t.get('check', [])):
             add(1, 'R13', '«%s» تمام شده ولی هنوز به برندبوک اضافه نشده' % t['t'], [t['id']], [t.get('owner'), 'CL'], 'گام «افزودن به برندبوک»')
     # R14 خط قرمز مبلغ در متن عمومی
-    leak = [t for t in T.values() if MONEY.search((t.get('t') or '') + ' ' + (t.get('notes') or '') + ' ' + (t.get('briefNote') or ''))]
+    leak = [t for t in T.values() if MONEY.search((t.get('t') or '') + ' ' + (t.get('notes') or '') + ' ' + (t.get('qc') or '') + ' ' + (t.get('briefNote') or ''))]
     if leak: add(3, 'R14', 'احتمال مبلغ یا عدد مالی در متن %s تسک (مخزن عمومی است)' % fa(len(leak)), [t['id'] for t in leak[:6]], ['M', 'CL'], 'مبلغ را حذف کن؛ فقط در ولت خصوصی')
     # R15 پیشنهاد بی‌پاسخ
     props = [t for t in T.values() if (t.get('t') or '').startswith(('پیشنهاد', 'درخواست خدمت')) and t.get('status') not in closed]

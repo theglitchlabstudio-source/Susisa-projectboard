@@ -88,7 +88,7 @@ def digest():
     open_ = sorted([t for t in T.values() if t.get('status') not in closed and t.get('type') != 'gate'], key=lambda t: (t.get('due') is None, t.get('due') or 0))
     o = ['# وضعیت زندهٔ پروژهٔ سوسیسا (برای دستیار پروژه)', '',
          '> خودکار از برد (شاخهٔ board-data) ساخته شده: %s. برای دادهٔ لحظه‌ای‌تر: مخزن عمومی theglitchlabstudio-source/Susisa-projectboard، شاخهٔ board-data، پوشهٔ data/. شناسهٔ تسک داخل [] فقط برای ابزار و بلوک تحویل است؛ با تیم با عنوان حرف بزن.' % time.strftime('%Y-%m-%d %H:%M'), '',
-         '- امروز: %s · تا افتتاحیهٔ ۱ آبان: %s روز' % (jd(today), fa(max(0, B.j2d(1405, 8, 1) - today))), '']
+         '- امروز: %s · تا افتتاحیهٔ ۱۰ آبان: %s روز' % (jd(today), fa(max(0, B.j2d(1405, 8, 10) - today))), '']
     cl = sorted([n for n in D['N'].values() if n.get('by') == 'CL'], key=lambda n: n.get('at', 0))
     if cl: o += ['## آخرین یادداشت روز Claude', '', cl[-1].get('text', ''), '']
     try:

@@ -51,7 +51,7 @@ def dump(col, docs):
     os.makedirs(os.path.join(DIR, 'data'), exist_ok=True)
     open(os.path.join(DIR, 'data', col + '.json'), 'w', encoding='utf8').write(body)
 
-LOGK = {'with': 'همکاران', 'due': 'موعد', 'start': 'شروع', 'owner': 'مسئول', 'prio': 'اولویت', 'urgent': 'فوری', 'deps': 'پیش‌نیاز', 't': 'عنوان', 'svc': 'خدمت', 'files': 'فایل‌ها', 'stage': 'مرحله', 'kind': 'نوع', 'briefNote': 'یادداشت بریف', 'promptNote': 'پرامپت اجرا', 'ideaNote': 'ایده‌ها', 'notes': 'توضیح'}
+LOGK = {'with': 'همکاران', 'due': 'موعد', 'start': 'شروع', 'owner': 'مسئول', 'prio': 'اولویت', 'urgent': 'فوری', 'deps': 'پیش‌نیاز', 't': 'عنوان', 'svc': 'خدمت', 'files': 'فایل‌ها', 'stage': 'مرحله', 'kind': 'نوع', 'briefNote': 'یادداشت بریف', 'promptNote': 'پرامپت اجرا', 'ideaNote': 'ایده‌ها', 'notes': 'توضیحات و نکات', 'qc': 'کنترل کیفیت'}
 LOG_KEEP_DAYS, LOG_MAX = 60, 1500
 
 def _lv(k, v):
@@ -61,7 +61,7 @@ def _lv(k, v):
         return ('، '.join(n(x) for x in (v or [])) or '—') if k == 'with' else n(v)
     if k == 'files': return '%d فایل' % len(v or [])
     if k == 'deps': return '%d مورد' % len(v or [])
-    if k in ('briefNote', 'notes'): return (v or '')[:80].replace('\n', ' ')
+    if k in ('briefNote', 'notes', 'qc'): return (v or '')[:80].replace('\n', ' ')
     return '—' if v is None else str(v)
 
 def log_diff(before, after, msg=''):

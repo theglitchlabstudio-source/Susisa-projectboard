@@ -3,6 +3,7 @@
 این پوشه روی وب عمومی است تا «دستیار پروژه» از هر دستگاهی (حتی وقتی لپ‌تاپ کسی خاموش است) پروژه را ببیند.
 
 - وضعیت زندهٔ برد (ایجنت هر اجرا تازه می‌کند): [live.md](live.md)
+- **بانک دانش مشترک ایجنت و دستیار** (جریان کار، تصمیم‌ها، نقشهٔ اسناد، رویدادها، پرسش‌های باز؛ دستیار رویداد تازه اضافه می‌کند): [BANK.md](BANK.md)
 - نقشهٔ دانش و ماژول‌ها: [../agent/knowledge/README.md](../agent/knowledge/README.md)
 - دستورالعمل دستیار: [../agent/copilot/INSTRUCTIONS.md](../agent/copilot/INSTRUCTIONS.md)
 - برندبوک زنده: https://theglitchlabstudio-source.github.io/Susisa-Brandbook/

@@ -1508,7 +1508,7 @@ function renderChrome(){
   var days=OPEN-TODAY, me=ui.me?person(ui.me):null;
   $('top').innerHTML='<div class="wrap"><div class="brand"><b>سوسیسا</b><span>برد پروژه · گلیچ‌لب</span></div><div class="sp"></div>'+
     (days>0?'<span class="count" title="افتتاحیه ۱۰ آبان">'+fa(days)+' روز<span class="cx"> تا افتتاحیه</span></span>':days===0?'<span class="count">امروز افتتاحیه</span>':'')+
-    '<span class="net" role="img"></span>'+
+    '<a class="count" href="content.html" title="برد تولید محتوا: تقویم، استوری‌بورد، تولید ریل و پست" style="text-decoration:none">🎬<span class="cx"> برد محتوا</span></a>'+'<span class="net" role="img"></span>'+
     '<button class="ib" data-act="png" aria-label="خروجی تصویر" title="خروجی تصویر">'+IC.img+'</button>'+
     '<button class="ib" data-act="theme" aria-label="تم روشن یا تیره" title="تم">'+IC.moon+'</button>'+
     '<button class="me" data-act="tab" data-v="more" aria-label="پروفایل"><span class="mn">'+(me?esc(me.name):'من کی هستم؟')+'</span>'+(me?who(me.id):'')+'</button></div>'+

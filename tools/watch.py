@@ -109,6 +109,12 @@ def run():
     props = [t for t in T.values() if (t.get('t') or '').startswith(('پیشنهاد', 'درخواست خدمت')) and t.get('status') not in closed]
     old = [t for t in props if not any(c.get('task') == t['id'] and re.match(r'^(تأیید|تایید|رد)', (c.get('text') or '').strip()) for c in C.values())]
     if len(old) >= 3: add(1, 'R15', '%s پیشنهاد منتظر تصمیم ممضی است' % fa(len(old)), [t['id'] for t in old[:6]], ['M'], 'در صندوق Claude تأیید یا رد کن')
+    # R16 برد تولید محتوا (content.html): همان قاعده‌ها و زمان‌ها، از tools/content.py
+    try:
+        import content as CT
+        for r in CT.check_all(): add(r['sev'], 'R16', '[برد محتوا] ' + r['text'], [], r['who'], r['fix'])
+    except Exception as e:
+        add(1, 'R16', 'بررسی برد محتوا اجرا نشد: %s' % e, [], ['CL'], 'tools/content.py check')
     out.sort(key=lambda x: -x['sev'])
     return out, nm, T
 

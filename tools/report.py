@@ -97,6 +97,11 @@ def digest():
         o += ['## هشدارهای ناظر (خلأ، تضاد، ریسک، تصمیم یا روش پرخطر)', '', W.render_md(wo, wnm, T, 25)]
     except Exception as e:
         o += ['## هشدارهای ناظر', '', '- اجرا نشد: %s' % e, '']
+    try:
+        import content as CT
+        o += [CT.summary()]
+    except Exception as e:
+        o += ['## برد تولید محتوا', '', '- خلاصه ساخته نشد: %s' % e, '']
     o += ['## گیت‌ها', '']
     for g in sorted([t for t in T.values() if t.get('type') == 'gate'], key=lambda g: g.get('due') or 0):
         ds = [T[i] for i in (g.get('deps') or []) if i in T]

@@ -1351,7 +1351,7 @@ var Store = (function(){
 var MONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 var WD=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
 var WDS=['ش','ی','د','س','چ','پ','ج'];
-var OPEN=j2d(1405,8,10);
+var OPEN=j2d(1405,8,8);
 var M, byId={}, TODAY, UIK='susisa-ui-v6';
 var ui={tab:'desk', me:null, theme:null, plan:{g:'svc', own:'all', st:'open', q:''}, cal:{mode:null, y:null, m:null}, feed:'all', open:{}, sheet:null, draft:{}, fl:{g:'svc', ty:'all', own:'all', q:'', task:''}};
 document.addEventListener('toggle',function(e){ var d=e.target; if(d&&d.classList&&d.classList.contains('bfd')) ui.bfOpen=d.open?ui.sheet:null; },true);
@@ -1507,7 +1507,7 @@ function inboxCount(){ return M.tasks.filter(function(t){ return isProp(t)&&!isC
 function renderChrome(){
   var days=OPEN-TODAY, me=ui.me?person(ui.me):null;
   $('top').innerHTML='<div class="wrap"><div class="brand"><b>سوسیسا</b><span>برد پروژه · گلیچ‌لب</span></div><div class="sp"></div>'+
-    (days>0?'<span class="count" title="افتتاحیه ۱۰ آبان">'+fa(days)+' روز<span class="cx"> تا افتتاحیه</span></span>':days===0?'<span class="count">امروز افتتاحیه</span>':'')+
+    (days>0?'<span class="count" title="افتتاحیه جمعه ۸ آبان">'+fa(days)+' روز<span class="cx"> تا افتتاحیه</span></span>':days===0?'<span class="count">امروز افتتاحیه</span>':'')+
     '<a class="count" href="content.html" title="برد تولید محتوا: تقویم، استوری‌بورد، تولید ریل و پست" style="text-decoration:none">🎬<span class="cx"> برد محتوا</span></a>'+'<span class="net" role="img"></span>'+
     '<button class="ib" data-act="png" aria-label="خروجی تصویر" title="خروجی تصویر">'+IC.img+'</button>'+
     '<button class="ib" data-act="theme" aria-label="تم روشن یا تیره" title="تم">'+IC.moon+'</button>'+

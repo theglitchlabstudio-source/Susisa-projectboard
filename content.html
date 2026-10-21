@@ -337,7 +337,7 @@ var db=null,assets=null,downloads=null,userCap=null,diag={db:'در حال وصل
 var items={},ideas={},settings=null,activity=[],pending={},timers={},chains={},sketchCache={},saving=0,saveErr=null;
 var view='desk',openId=null,openTab='concept',sheetDirty=false,sbMode='grid',listSort='date',listArch=false;
 var filt={types:{reel:true,post:true,story:true},owner:'',tag:'',kbTypes:{reel:true,post:true,story:false},tOwner:'',tState:'open'};
-var DEFAULT_SETTINGS={team:['ممضی','امیرحسین','همکار گلیچ‌لب','امیررضا'],start:'1405/07/18',end:'1405/08/15',events:[{date:'1405/07/22',label:'سافت‌اوپنینگ'},{date:'1405/08/10',label:'افتتاحیه'}],rules:{reelGap:5,noPostOnReelDay:true,dailyStory:true,storyFrom:'1405/07/22',storyTo:'1405/08/10'},tags:['سریال سه بسته','منو','پشت صحنه','افتتاحیه']};
+var DEFAULT_SETTINGS={team:['ممضی','امیرحسین','همکار گلیچ‌لب','امیررضا'],start:'1405/07/18',end:'1405/08/15',events:[{date:'1405/07/22',label:'سافت‌اوپنینگ'},{date:'1405/08/08',label:'افتتاحیه'}],rules:{reelGap:5,noPostOnReelDay:true,dailyStory:true,storyFrom:'1405/07/22',storyTo:'1405/08/08'},tags:['سریال سه بسته','منو','پشت صحنه','افتتاحیه']};
 function S(){return settings||DEFAULT_SETTINGS}
 function R(){return merge(DEFAULT_SETTINGS.rules,S().rules||{})}
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}

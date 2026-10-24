@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # نصب جعبه‌ابزار گلیچ‌لب برای Claude Code روی لپ‌تاپ (ماژول ۲۷)
 # اجرا از ریشهٔ مخزن برد:  bash tools/install-toolbox.sh   [--all برای ابزارهای سنگین‌تر]
+# اگر Claude Code اسکیل‌ها را از پوشهٔ دیگری می‌خواند:  CLAUDE_SKILLS_DIR="/e/cluade/claude-code/skills" bash tools/install-toolbox.sh --all
 set -e
 SK="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 mkdir -p "$SK"
@@ -17,7 +18,9 @@ clone() { # repo  dest  [subdir]
 }
 clone wheresryan22/anatomy anatomy
 clone MrBongoC/ai-iso-skill iso-figure skills/iso-figure
-clone remotion-dev/skills remotion-skills
+# اسکیل‌های Remotion داخل زیرپوشهٔ skills/ اند؛ هر کدام مستقیم در پوشهٔ اسکیل‌ها کپی می‌شود
+t=$(mktemp -d); git clone -q --depth 1 https://github.com/remotion-dev/skills "$t" && cp -r "$t"/skills/* "$SK/" && echo "✓ remotion skills"; rm -rf "$t"
+[ -d "$SK/remotion-skills" ] && rm -rf "$SK/remotion-skills" && echo "↻ remotion-skills قدیمی پاک شد"
 if command -v npx >/dev/null; then
   npx -y skills add coreyhaines31/marketingskills -g -a claude-code -y || echo "! marketingskills: دستی نصب کن"
 fi

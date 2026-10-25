@@ -97,7 +97,7 @@
 
 ### ساختار پوشه برای هر قسمت
 ```
-susisa-reels/ep02-farangis/
+E:\glitch test\susisa\taghvim mohtava\1405-08-07_reel_farda-mibinimetoon\   (از ۴ آبان: همهٔ محتواها اینجا؛ ماژول ۲۸ بخش ۶)
   00_brief.md          ← سناریو، استوری‌بورد، کپشن (از برد)
   01_raw/              ← راش اصلی (دست نزن؛ فقط خواندن)
   02_proxy/            ← نسخهٔ سبک برای تدوین سریع
@@ -106,6 +106,7 @@ susisa-reels/ep02-farangis/
   05_renders/          ← rough_v1.mp4، final_v1.mp4 …
   06_qc.md             ← چک‌لیست کنترل کیفیت تیک‌خورده
   manifest.json        ← مشخصات فنی هر فایل (ffprobe)
+  REPORT.md            ← گزارش انجام کار: روند، ابزار، تصمیم‌ها، درس‌ها ← tools/taskreport.py --method
 ```
 اصول (منبع ۴): روی کپی کار کن نه اصل فایل؛ manifest داشته باش؛ بعد از هر مرحله مدت، صدا و خرابی رو چک کن؛ هر خروجی نسخه بخوره.
 

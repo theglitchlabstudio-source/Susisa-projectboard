@@ -1,0 +1,64 @@
+You are a senior motion designer, illustrator and food-ad compositor. Build the Susisa OPENING POSTER POST: an Instagram CAROUSEL of 2 animated slides (MP4 each). Publish deadline: TOMORROW Tuesday 5 Aban 1405, 13:00 Tehran — so plan for speed: mockup still frames tonight, final videos by ~11:00 tomorrow. Stop at every ★ and wait for my OK. The mockup (★ step 2) goes to the client for approval, so make it presentable.
+
+PROJECT FOLDER (work only here, create subfolders as needed):
+E:\glitch test\susisa\mohtava instagram\post opening poster\
+  refs\ref-01_made-only-this-way_exploded-anatomy.jpg  ← slide 1 layout/type/exploded-hot-dog reference
+  refs\ref-02_were-open_hero-hotdog.jpg                ← slide 1 end-state reference (hero hot dog + big type)
+REUSE from the menu-story project (read, don't modify):
+E:\glitch test\susisa\mohtava instagram\story menu & menu highlight\
+  DESIGN_KNOWLEDGE.md (brand bible, textures, 3-D grounding, motion craft)
+  02_design\pro\cast\CAST_BIBLE_v01.md, GEMINI_CHARACTER_SHEETS_v01.md, STORY_PANELS_v01.md, sheets_raw\, assets\png|svg\, stickers\, panels_raw\  ← THE SUSISA CHARACTERS. Use these character sheets for every character; stay on-model.
+  refrenc & sampel\03_product-photos\آمریکن داگ\ (american-dog.png = final studio image, plus real photos = truth for ingredients)
+  refrenc & sampel\06_brand-assets\ (fonts, logo, wordmark, sign, stamps, patterns) · 07_textures\
+  your existing scripts/pipeline in 02_design\pro\ (texture, grain, export, QC tools)
+
+FORMAT: 3:4 vertical = 1080×1440 px (work at 2160×2880), 30 fps, H.264 High yuv420p, 10–15 Mbps, +faststart, silent master (I add music in Instagram). Each slide 10–12 s. Keep key text inside a 4:5-safe center area (x 0–1080, y 90–1350) and away from the outer 60 px, because Instagram may crop the grid preview. Also export a poster-frame PNG of each slide.
+
+BRAND: Red #D5222B · Cream #FDF0D7 · Mustard #F09E00 · Carbon #2C2C2C · white line. Every surface textured (paper/cardboard + grain, like the references' textured blue fabric — but in OUR red/cream). Fonts: Anton (English display), Oswald (numbers), Bangers (comic SFX only), Vazirmatn (Persian if any). Headlines/sentences in ENGLISH. Original art only. No prices, no discounts.
+
+==================================================
+SLIDE 1 — "THE ANATOMY" (real world)
+==================================================
+Look: like ref-01 (exploded hot-dog anatomy, floating layers, white star-burst shapes, thin white hand-drawn squiggle lines over the food, small labels) but on textured SUSISA RED with cream/white stars, and ref-02 for the assembled hero end-state.
+Typography (minimal, big):
+  top headline: "OPENING FRIDAY" (Anton, cream, like "MADE ONLY THIS WAY" in ref-01)
+  pill/caption: "8 ABAN · 6 PM – 1 AM" (Oswald, in a cream rounded pill like ref-02's "DAILY 7AM–5PM")
+  small labels pointing to layers (Oswald/Anton small, mustard or cream): e.g. "TOASTED BUN", "THE SAUSAGE (THE BOSS)", "OUR SAUCE", "PICKLES", "CRISPY ONIONS" — ONLY ingredients that really are in the chosen item; verify against the real photos and ask me if unsure.
+  bottom pill (like ref-01): "TOO SERIOUS FOR A HOT DOG." 
+Food must look NATURAL and photographic — this is the real world before the comic world. Base it on our real product (default: آمریکن داگ — confirm with me at ★1). Build the exploded layers by separating/re-generating the real product into layers (bun top, sausage, sauces, toppings, bun bottom) with AI image editing that keeps the real ingredients (Gemini / Nano Banana image edit, Qwen-Image-Edit, Photoshop Generative Fill on non-food areas, rembg cut-outs, Real-ESRGAN). Same key light top-left for all layers; soft colored shadows on the red.
+Animation:
+ 0.0–1.0  Exploded state on screen, layers floating with tiny idle drift (hook frame: readable as a still). Headline already on.
+ 1.0–6.0  MAGNETIC ASSEMBLY (~5 s): it feels like a magnetic force pulls the materials together — slight vibration/jitter before each snap, thin white "field lines" / squiggles bending toward the center, layers accelerate and snap into place one by one (ease-in then hard snap with small overshoot + tiny camera shake), crumbs/onion bits get sucked in. Ends as the assembled hero hot dog like ref-02, with the white stars behind it.
+ 6.0–7.5  Hold: hero hot dog + "OPENING FRIDAY" + "8 ABAN · 6 PM – 1 AM" fully readable.
+ 7.5–9.5  A real human HAND enters frame (natural, photographic, matching the light) and grabs the hot dog and pulls it away toward the RIGHT edge / into depth.
+ 9.5–11.0 TRANSITION HOOK: where the hot dog was, a void opens — the frame is sucked into a swirling comic-ink rabbit hole (Alice-in-Wonderland feeling: real world → drawn world), halftone dots and comic line art spiralling in; last frames show a glimpse of the comic world and a small "SWIPE →" cue (Anton, cream) so people move to slide 2.
+Hand + grab: generate with an image-to-video model (Kling / Veo / Wan 2.2 / Runway / Luma — whatever is available and best; start/end-frame control) on top of your composited plate, or composite a real hand photo with tracked motion; it must look real and not distort the food.
+
+==================================================
+SLIDE 2 — "MEANWHILE, IN THE SUSISA WORLD" (comic world)
+==================================================
+Starts by continuing the void from slide 1 (first frames = the end of the tunnel opening up), then settles into ONE full comic page in color (our palette, halftone, ink lines, textured paper), panels of varied size, gutters, a few tilted panels.
+Story:
+ - HERO PANEL (largest): BACKSTAGE OF THE KITCHEN — a TV / radio news report: a Susisa character as news anchor (or the newsboy character) announcing "BREAKING: SUSISA OPENS FRIDAY!" with a ticker "8 ABAN · 6 PM – 1 AM". 
+ - Other panels: the city is buzzing — people/characters waiting, binoculars (doyle), a crowd at the door, someone circling the date; and the kitchen in pre-opening CHAOS: chefs stressed, running, grill flames, mustard art, rookie tripping, boss pointing, delivery rider ready, sweat drops, speed lines, SFX ("SIZZLE!", "HURRY!", "CHOMP!").
+ - Caption boxes in English, short and deadpan: "MEANWHILE, IN THE KITCHEN…", "THE CITY WAITS.", "FRIDAY. 6 PM." 
+ - Last element to land: a stamp "OPENING FRIDAY · 8 ABAN" or the SUSISA sign.
+Motion rule (IMPORTANT): backgrounds and panel art are STATIC; ONLY the Susisa characters move — each one does a short seamless LOOP inside its own panel (blink, stir, tap foot, run cycle in place, flip a sausage, point, sweat). Captions/SFX may pop in once. After the entry from the void (~1.5 s), the page is a calm living loop; the last frame should loop back smoothly to the settled page state.
+Make it colored, rich, on-model: generate panels with Gemini (Nano Banana) / other image models using the CHARACTER SHEETS as reference images for consistency, then cut each character onto its own layer (rembg / manual masks) so it can be animated (puppet/mesh warp in After Effects, Spine/DragonBones, Rive, Live2D-style, Remotion/CSS transforms, or short image-to-video loops per character cut back into the panel). Pick what gives the best result; justify briefly.
+
+==================================================
+TOOLS (free to research and choose)
+==================================================
+Quick audit only (time is short): what's installed (Photoshop, After Effects, Blender, Python, Node/Remotion, ffmpeg, ComfyUI/GPU, rembg, Real-ESRGAN, browser access to Gemini/Kling/etc.). Propose a toolchain table in ≤10 lines ★, then go. Ask before anything paid. Never upload anything to Instagram or public sites (AI generators are fine).
+
+==================================================
+WORKFLOW (stop at ★)
+==================================================
+1. Quick audit + read the cast bible + product check (which item, which ingredients) + toolchain. ★
+2. MOCKUP for client: 3 stills per slide — slide 1: exploded / assembled / void; slide 2: the full comic page — plus a 1-line timing note per beat. ★ (client approval 3)
+3. Slide 1 animatic (low-res) ★ → final.
+4. Slide 2: characters cut & looped, page final. ★
+5. QC: 1080×1440, 30 fps, ffprobe, text inside safe area, Instagram feed + grid preview mockups, seam between slide 1 end and slide 2 start, food looks real, characters on-model. ★ (client approval 4)
+6. Write HANDOFF.md (files, tools, what's reusable). Outputs: 03_exports\slide1_anatomy_v01.mp4, slide2_comic_v01.mp4, + PNG poster frames + qc\.
+
+QUALITY BAR: agency food-ad realism on slide 1, rich colored comic on slide 2, the jump from real to comic must feel magical. If it looks like a template or generic AI, it's not done. Never overwrite my files (_v01, _v02…). Start with step 1 now.

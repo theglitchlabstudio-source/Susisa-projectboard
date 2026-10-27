@@ -62,10 +62,10 @@
 ## ۶. پوشهٔ کاری محتوا روی سیستم ممضی
 **یه درخت، یه آدرس (ممضی، ۴ آبان):** ولت Obsidian = `E:\glitch test` (همون مخزن susisa-vault) و همهٔ دادهٔ پروژه = `E:\glitch test\susisa` (پوشهٔ `susisa/` همین ولت). یعنی ولت و ذخیرهٔ لوکال یکی‌ان؛ هر مسیر ولت مثل `susisa/menu/…` روی سیستم می‌شه `E:\glitch test\susisa\menu\…`. چیز تازه فقط داخل همین درخت ذخیره بشه؛ پراکنده‌ها ← `susisa\_inbox`، تکراری‌ها ← `susisa\_archive\duplicates` (اسکریپت `_agent/unify/unify-local.ps1` و پرامپت `_agent/unify/PROMPT-claude-code.md` در ولت). اسم پوشه‌های اصلی `susisa/*` عوض نمی‌شه چون برد و فهرست ولت بهشون لینک دارن.
 
-`E:\glitch test\susisa\taghvim mohtava`
+`E:\glitch test\susisa\06 mohtava instagram\taghvim mohtava`
 - همهٔ محتواهای تقویم (ریل، پست، استوری) اینجا تدوین و ثبت می‌شن؛ هر محتوا یه زیرپوشه: `<تاریخ>_<نوع>_<اسم>` مثل `1405-08-07_reel_farda-mibinimetoon` (اسم دقیق هر کدوم تو فیلد `folder` همون محتوا در برد محتوا).
 - داخل هر زیرپوشه: `00_brief.md`، `01_raw/`، `03_assets/`، `04_edl.json`، `05_renders/`، `06_qc.md`، **`REPORT.md`**.
-- ولت: `susisa/taghvim mohtava/` آینهٔ همین پوشه‌ست (md، json، pdf و عکس سبک؛ راش و رندر حجیم نه). اگه ولت Obsidian روی همون سیستمه، پوشهٔ `taghvim mohtava` رو داخل ولت بذارید یا لینکش کنید تا همه‌چی به یه مسیر وصل باشه.
+- ولت: `susisa/06 mohtava instagram/taghvim mohtava/` آینهٔ همین پوشه‌ست (md، json، pdf و عکس سبک؛ راش و رندر حجیم نه). اگه ولت Obsidian روی همون سیستمه، پوشهٔ `taghvim mohtava` رو داخل ولت بذارید یا لینکش کنید تا همه‌چی به یه مسیر وصل باشه.
 - ایجنت ابری به این مسیر دسترسی نداره؛ فقط از طریق برد، ولت و مخزن می‌بینه. پس Claude Code روی لپ‌تاپ باید آخر هر کار گزارش و فایل نهایی رو بفرسته بالا.
 
 ## ۷. رشد خود ایجنت

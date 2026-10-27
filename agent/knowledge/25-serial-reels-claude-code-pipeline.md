@@ -97,7 +97,7 @@
 
 ### ساختار پوشه برای هر قسمت
 ```
-E:\glitch test\susisa\taghvim mohtava\1405-08-07_reel_farda-mibinimetoon\   (از ۴ آبان: همهٔ محتواها اینجا؛ ماژول ۲۸ بخش ۶)
+E:\glitch test\susisa\06 mohtava instagram\taghvim mohtava\1405-08-07_reel_farda-mibinimetoon\   (از ۴ آبان: همهٔ محتواها اینجا؛ ماژول ۲۸ بخش ۶)
   00_brief.md          ← سناریو، استوری‌بورد، کپشن (از برد)
   01_raw/              ← راش اصلی (دست نزن؛ فقط خواندن)
   02_proxy/            ← نسخهٔ سبک برای تدوین سریع

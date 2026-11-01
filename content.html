@@ -485,7 +485,7 @@ function rCal(){
   var t=todayJ(),all=allItems().filter(function(i){return filt.types[i.type]&&(!filt.owner||i.owner===filt.owner)&&(!filt.tag||tagsOf(i).indexOf(filt.tag)>=0)&&matchesQ(i)});
   var byDay={};all.forEach(function(i){if(i.date)(byDay[i.date]=byDay[i.date]||[]).push(i)});
   var warn=ruleWarnings().day,undated=all.filter(function(i){return !i.date});
-  var h='<div class="toolbar">';
+  var h='<a class="banner info" href="plan.html" style="display:block;text-decoration:none;margin-bottom:10px"><b>📋 تقویم برنامه‌ریزی</b>: موضوع، کانسپت، نوع، سازنده و تأیید امیررضای هر آیتم، با خروجی PNG و PDF ←</a><div class="toolbar">';
   Object.keys(TYPES).forEach(function(k){h+='<label class="chip '+k+' ck"><input type="checkbox" data-ft="'+k+'"'+(filt.types[k]?' checked':'')+'> '+TYPES[k]+'</label>'});
   h+='<select data-fo="1" aria-label="مسئول">'+ownerOpts(filt.owner,'همهٔ مسئول‌ها')+'</select><select data-fg="1" aria-label="برچسب"><option value="">همهٔ برچسب‌ها</option>'+(s.tags||[]).map(function(x){return '<option'+(x===filt.tag?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select></div>';
   h+='<div class="toolbar"><span class="muted small">بازه:</span><input type="text" data-date="1" data-range="start" value="'+fa(st)+'" aria-label="شروع بازه" readonly><span class="muted">تا</span><input type="text" data-date="1" data-range="end" value="'+fa(en_)+'" aria-label="پایان بازه" readonly>'+

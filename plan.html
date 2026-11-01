@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#CC0212"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-32.png"><link rel="apple-touch-icon" href="icon-180.png">
+<title>تقویم محتوای سوسیسا</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;500;600;700;800&display=swap">
+<style>
+/* صفحهٔ تعاملی تقویم محتوا: موضوع، کانسپت، نوع، سازنده و تأیید هر آیتم برد محتوا. قیمت‌ها فقط روی دستگاه و ولت خصوصی، هرگز در مخزن عمومی. */
+:root{
+  --bg:#FFF6E8;--card:#FFFFFF;--card2:#FFF1DC;--ink:#22140F;--mute:#7C6658;--line:#EEDDC6;
+  --red:#CC0212;--red2:#A30010;--redsoft:#FCE3DF;--onred:#FFFFFF;
+  --ok:#1F7A4D;--oksoft:#DDF1E5;--warn:#A86200;--warnsoft:#FCEBCB;--info:#2F5D8A;--infosoft:#DFEAF5;
+  --reel:#CC0212;--post:#22140F;--story:#7B3FA8;
+  --sh:0 1px 2px rgba(60,20,0,.07),0 8px 20px -14px rgba(60,20,0,.45);
+  --f-display:"Lalezar","Vazirmatn",Tahoma,sans-serif;--f-body:"Vazirmatn",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1A110D;--card:#241814;--card2:#2E201A;--ink:#F7EADB;--mute:#B9A08E;--line:#3E2C23;--redsoft:#3E1715;--oksoft:#16301F;--warnsoft:#3A2A10;--infosoft:#172636;--post:#F7EADB}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--red)}
+.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left))}
+.top .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.top h1{font-family:var(--f-display);font-weight:400;font-size:24px;margin:0 0 0 auto;color:var(--red)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:11px;padding:6px 12px;font-weight:700;cursor:pointer;box-shadow:var(--sh);white-space:nowrap}
+.btn:hover{border-color:var(--red)}
+.btn.pri{background:var(--red);color:var(--onred);border-color:var(--red)}
+.btn.sm{padding:3px 9px;font-size:13px;box-shadow:none}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:3px 11px;font-size:13px;font-weight:700;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.muted{color:var(--mute)}.small{font-size:12.5px}
+.status{font-size:12.5px;color:var(--mute);margin-inline-start:8px}
+.status.err{color:var(--red)}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px 80px}
+.banner{border-radius:12px;padding:10px 14px;margin:0 0 12px;background:var(--infosoft);color:var(--info);font-size:14px}
+.banner.warn{background:var(--warnsoft);color:var(--warn)}
+.week{margin:18px 0 6px;font-family:var(--f-display);font-weight:400;font-size:19px;display:flex;gap:10px;align-items:baseline}
+.week small{font-family:var(--f-body);font-size:12.5px;color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:8px 0;box-shadow:var(--sh);display:grid;grid-template-columns:150px 1fr;gap:6px 14px}
+.card.done{opacity:.7}
+.when{font-weight:800}
+.when .t{display:inline-block;color:#fff;border-radius:7px;padding:0 8px;font-size:12px;margin-top:4px}
+.t.reel{background:var(--reel)}.t.post{background:var(--post);color:var(--bg)}.t.story{background:var(--story)}
+.ttl{font-weight:800;font-size:16px;border:0;background:transparent;width:100%;padding:2px 0;border-bottom:1px dashed transparent}
+.ttl:focus{outline:0;border-bottom-color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:6px}
+.fld{display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--mute)}
+.fld input,.fld select,.fld textarea{border:1px solid var(--line);background:var(--card2);border-radius:9px;padding:5px 8px;font-size:14px;color:var(--ink);width:100%}
+.fld textarea{min-height:58px;resize:vertical}
+.fld.wide{grid-column:span 2}.fld.full{grid-column:1/-1}
+.ap{display:flex;gap:4px;flex-wrap:wrap}
+.ap .chip[data-v="ok"][aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.ap .chip[data-v="review"][aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.ap .chip[data-v="fix"][aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.price{background:var(--warnsoft)!important}
+.hidep .pcol{display:none!important}
+.sum{margin:18px 0;padding:12px 14px;border-radius:14px;background:var(--card2);font-size:14px}
+dialog{border:0;border-radius:16px;padding:18px;max-width:640px;width:calc(100% - 32px);background:var(--card);color:var(--ink);box-shadow:var(--sh)}
+dialog::backdrop{background:rgba(20,10,5,.45)}
+.trow{display:grid;grid-template-columns:90px 1fr 120px 36px;gap:6px;margin:4px 0;align-items:center}
+.trow input,.trow select{border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:4px 6px;width:100%}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:14px;z-index:99;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+/* برگهٔ خروجی (PNG/PDF): جدول ساده */
+#sheet{display:none}
+.sheet{background:#FFF6E8;color:#22140F;padding:28px;font-family:var(--f-body);width:1120px}
+.sheet h2{font-family:var(--f-display);font-weight:400;color:#CC0212;font-size:30px;margin:0}
+.sheet table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}
+.sheet th{background:#22140F;color:#FFF6E8;padding:6px 8px;text-align:right}
+.sheet td{border-bottom:1px solid #EEDDC6;padding:6px 8px;vertical-align:top}
+.sheet tr.wk td{background:#FBE6C8;font-weight:800}
+.sheet .tg{display:inline-block;color:#fff;border-radius:6px;padding:0 6px;font-size:11.5px}
+.sheet .tg.reel{background:#CC0212}.sheet .tg.post{background:#22140F}.sheet .tg.story{background:#7B3FA8}
+.sheet .ok{color:#1F7A4D;font-weight:800}.sheet .review{color:#A86200;font-weight:800}.sheet .fix{color:#CC0212;font-weight:800}
+@media (max-width:720px){.card{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.top h1{font-size:20px;width:100%;margin:0}}
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  html,body{background:#fff}
+  .top,.wrap,.toast,dialog{display:none!important}
+  #sheet{display:block!important}
+  .sheet{width:auto;padding:0;background:#fff}
+  .sheet tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="row">
+    <h1>تقویم محتوای سوسیسا</h1>
+    <a class="btn sm" href="content.html">برد محتوا</a>
+    <a class="btn sm" href="./">برد اصلی</a>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="filters">
+    <button class="btn sm" data-act="add">+ آیتم تازه</button>
+    <button class="btn sm" data-act="types">نوع‌ها و قیمت پایه</button>
+    <button class="btn sm" data-act="png">خروجی PNG</button>
+    <button class="btn sm" data-act="pdf">خروجی PDF</button>
+    <button class="btn sm" data-act="share">اشتراک</button>
+    <button class="btn sm" data-act="snap">ثبت نسخه در فایل‌های برد</button>
+    <span class="status" id="st"></span>
+  </div>
+</header>
+<main class="wrap" id="app"><div class="banner">در حال خوندن برد…</div></main>
+<div id="sheet"></div>
+<dialog id="dlg"></dialog>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script>
+function div(a,b){return ~~(a/b)}function mod(a,b){return a-~~(a/b)*b}
+function jalCal(jy){var br=[-61,9,38,199,426,686,756,818,1111,1181,1210,1635,2060,2097,2192,2262,2324,2394,2456,3178],gy=jy+621,lj=-14,jp=br[0],jm,jump,leap,lg,march,n,i;for(i=1;i<br.length;i++){jm=br[i];jump=jm-jp;if(jy<jm)break;lj=lj+div(jump,33)*8+div(mod(jump,33),4);jp=jm}n=jy-jp;lj=lj+div(n,33)*8+div(mod(n,33)+3,4);if(mod(jump,33)===4&&jump-n===4)lj+=1;lg=div(gy,4)-div((div(gy,100)+1)*3,4)-150;march=20+lj-lg;if(jump-n<6)n=n-jump+div(jump+4,33)*33;leap=mod(mod(n+1,33)-1,4);if(leap===-1)leap=4;return{leap:leap,gy:gy,march:march}}
+function g2d(gy,gm,gd){var d=div((gy+div(gm-8,6)+100100)*1461,4)+div(153*mod(gm+9,12)+2,5)+gd-34840408;return d-div(div(gy+100100+div(gm-8,6),100)*3,4)+752}
+function d2g(jdn){var j=4*jdn+139361631;j=j+div(div(4*jdn+183187720,146097)*3,4)*4-3908;var i=div(mod(j,1461),4)*5+308,gd=div(mod(i,153),5)+1,gm=mod(div(i,153),12)+1,gy=div(j,1461)-100100+div(8-gm,6);return{gy:gy,gm:gm,gd:gd}}
+function j2d(jy,jm,jd){var r=jalCal(jy);return g2d(r.gy,3,r.march)+(jm-1)*31-div(jm,7)*(jm-7)+jd-1}
+function d2j(jdn){var gy=d2g(jdn).gy,jy=gy-621,r=jalCal(jy),f=g2d(gy,3,r.march),jd,jm,k=jdn-f;if(k>=0){if(k<=185){jm=1+div(k,31);jd=mod(k,31)+1;return{jy:jy,jm:jm,jd:jd}}else k-=186}else{jy-=1;k+=179;if(r.leap===1)k+=1}jm=7+div(k,30);jd=mod(k,30)+1;return{jy:jy,jm:jm,jd:jd}}
+
+var WD=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه','شنبه'];
+var WDS=['ش','ی','د','س','چ','پ','ج'];
+var MN=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+function fa(s){return String(s==null?'':s).replace(/\d/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'[d]})}
+function en(s){return String(s||'').replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)}).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)})}
+function pad(n){return (n<10?'0':'')+n}
+function normDate(s){s=en(s).trim().replace(/[-.]/g,'/');var m=s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);if(!m)return '';var y=+m[1],mo=+m[2],d=+m[3];if(mo<1||mo>12||d<1||d>(mo<=6?31:30))return '';return y+'/'+pad(mo)+'/'+pad(d)}
+function toJdn(s){var p=s.split('/').map(Number);return j2d(p[0],p[1],p[2])}
+function fromJdn(n){var j=d2j(n);return j.jy+'/'+pad(j.jm)+'/'+pad(j.jd)}
+function wdOf(s){var g=d2g(toJdn(s));return new Date(g.gy,g.gm-1,g.gd).getDay()}
+function satIdx(s){return (wdOf(s)+1)%7}
+function todayJ(){var t=new Date();return fromJdn(g2d(t.getFullYear(),t.getMonth()+1,t.getDate()))}
+function human(s,withWd){if(!s)return 'بی‌تاریخ';var p=s.split('/').map(Number);return (withWd===false?'':WD[wdOf(s)]+' ')+fa(p[2])+' '+MN[p[1]-1]}
+function dayDiff(a,b){return toJdn(b)-toJdn(a)}
+function addDays(s,n){return fromJdn(toJdn(s)+n)}
+function monthLen(y,m){return m<=6?31:m<=11?30:(toJdn((y+1)+'/01/01')-toJdn(y+'/12/01'))}
+function nowStamp(){var t=new Date();return todayJ()+' '+pad(t.getHours())+':'+pad(t.getMinutes())}
+
+/* ================= Model ================= */
+var TYPES={reel:'ریل',post:'پست',story:'استوری'};
+
+/* ================= helpers ================= */
+function $(s){return document.querySelector(s)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function clone(o){return o==null?o:JSON.parse(JSON.stringify(o))}
+function isObj(o){return o&&typeof o==='object'&&!Array.isArray(o)}
+function deepMerge(a,b){var o=isObj(a)?a:{};Object.keys(b).forEach(function(k){if(isObj(b[k])&&isObj(o[k]))deepMerge(o[k],b[k]);else o[k]=clone(b[k])});return o}
+function toast(t){var el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(function(){el.classList.remove('on')},2600)}
+function setSt(t,err){var el=$('#st');el.textContent=t||'';el.className='status'+(err?' err':'')}
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function num(s){var n=parseFloat(en(s).replace(/[,٬\s]/g,''));return isFinite(n)?n:null}
+function money(n){return n==null?'':fa(String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'٬'))}
+
+var TYPES={reel:'ریل',post:'پست',story:'استوری'};
+var AP=[['draft','پیش‌نویس'],['review','منتظر امیررضا'],['ok','تأیید شد'],['fix','نیاز به اصلاح']];
+var APL={};AP.forEach(function(a){APL[a[0]]=a[1]});
+var MAKERS={glitch:'گلیچ‌لب',out:'برون‌سپاری'};
+var DEF_TYPES=[
+  {id:'reel-cine',kind:'reel',name:'ریل سینمایی و سناریودار'},{id:'reel-dump',kind:'reel',name:'ریل فوتودامپ و استاپ‌موشن'},
+  {id:'reel-prod',kind:'reel',name:'ریل محصول و بافت'},{id:'reel-ugc',kind:'reel',name:'ریل واکنش و محتوای مشتری'},
+  {id:'post-photo',kind:'post',name:'کاروسل عکس'},{id:'post-design',kind:'post',name:'کاروسل طراحی و اینفوگرافی'},
+  {id:'post-poster',kind:'post',name:'پوستر و موشن'},{id:'post-comic',kind:'post',name:'اپیزود کمیک'},
+  {id:'story-simple',kind:'story',name:'استوری ساده و عکس'},{id:'story-design',kind:'story',name:'استوری طراحی‌شده و قالب'},
+  {id:'story-inter',kind:'story',name:'استوری تعاملی (نظرسنجی و سؤال)'},{id:'story-share',kind:'story',name:'شیر و ریپوست'}];
+var PLAN_TASK='n96a268451a3e', SNAP_NAME='تقویم محتوا (صفحهٔ تعاملی).html', PRICE_KEY='susisa-plan-prices', VAULT_REPO='susisa-vault', VAULT_PATH='content-plan/prices.json';
+
+/* ================= GitHub ================= */
+var GHK='susisa-gh';
+function ghCfg(){var c={owner:'',repo:'',branch:'board-data',token:''},d=window.SUSISA_CFG||{};['owner','repo','branch'].forEach(function(k){if(d[k])c[k]=d[k]});
+  try{var u=JSON.parse(localStorage.getItem(GHK)||'null');if(u)['owner','repo','branch','token'].forEach(function(k){if(u[k])c[k]=u[k]})}catch(e){}return c}
+function b64enc(str){var b=new TextEncoder().encode(str),s='';for(var i=0;i<b.length;i+=8192)s+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return btoa(s)}
+function b64dec(b64){var s=atob(b64.replace(/\s/g,'')),a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return new TextDecoder().decode(a)}
+function serialize(docs){var ids=Object.keys(docs).sort();return '{"v":1,"docs":{'+(ids.length?'\n':'')+ids.map(function(id){return JSON.stringify(id)+':'+JSON.stringify(docs[id])}).join(',\n')+(ids.length?'\n':'')+'}}\n'}
+var C=ghCfg();
+function api(repo){return 'https://api.github.com/repos/'+C.owner+'/'+(repo||C.repo)}
+function call(method,url,body,raw){var h={'Accept':raw?'application/vnd.github.raw+json':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};if(C.token)h['Authorization']='Bearer '+C.token;if(body)h['Content-Type']='application/json';
+  return fetch(url,{method:method,headers:h,body:body?JSON.stringify(body):undefined,cache:'no-store'}).then(function(r){
+    if(raw&&r.ok)return r.text();
+    return r.json().catch(function(){return null}).then(function(d){if(!r.ok){var e=new Error((d&&d.message)||('HTTP '+r.status));e.status=r.status;throw e}return d})},
+    function(){var e=new Error('اینترنت قطعه');e.net=true;throw e})}
+function encPath(p){return p.split('/').map(encodeURIComponent).join('/')}
+function readJson(path){ /* {docs,sha} از شاخهٔ داده */
+  if(!C.token)return fetch('https://raw.githubusercontent.com/'+C.owner+'/'+C.repo+'/'+C.branch+'/'+path+'?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var j={};try{j=JSON.parse(t)}catch(e){}return {docs:(j&&j.docs)||{},sha:null}});
+  return call('GET',api()+'/contents/'+encPath(path)+'?ref='+encodeURIComponent(C.branch)).then(function(d){
+    if(d.content&&d.encoding==='base64')return {docs:(JSON.parse(b64dec(d.content)).docs)||{},sha:d.sha};
+    return call('GET',api()+'/git/blobs/'+d.sha).then(function(b){return {docs:(JSON.parse(b64dec(b.content)).docs)||{},sha:d.sha}})},
+    function(e){if(e.status===404)return {docs:{},sha:null};throw e})}
+function mutateJson(path,msg,fn,attempt){attempt=attempt||0;
+  return readJson(path).then(function(f){var r=fn(f.docs);var body={message:msg,content:b64enc(serialize(f.docs)),branch:C.branch};if(f.sha)body.sha=f.sha;
+    return call('PUT',api()+'/contents/'+encPath(path),body).then(function(){return {docs:f.docs,ret:r}})})
+  .catch(function(e){if((e.status===409||e.status===422)&&attempt<5)return new Promise(function(res){setTimeout(res,500+Math.random()*900)}).then(function(){return mutateJson(path,msg,fn,attempt+1)});throw e})}
+function putFile(path,text,msg){var body={message:msg,content:b64enc(text),branch:C.branch};return call('PUT',api()+'/contents/'+encPath(path),body)}
+
+/* ================= state ================= */
+var items={},meta={},prices=lsGet(PRICE_KEY,{types:{},items:{}}),priceSha=null,priceRemote='?';
+var ui=lsGet('susisa-plan-ui',{scope:'rem',types:{reel:true,post:true,story:true},showPrice:false});
+function saveUi(){lsSet('susisa-plan-ui',ui)}
+function planTypes(){var t=meta.plan&&meta.plan.types;return (t&&t.length)?t:DEF_TYPES}
+function typeName(id){var t=planTypes().filter(function(x){return x.id===id})[0];return t?t.name:''}
+function list(){var t=todayJ();return Object.keys(items).map(function(id){var it=items[id];it._id=id;return it}).filter(function(it){
+    if(it.archived)return false;if(!ui.types[it.type])return false;
+    if(ui.scope==='rem')return it.stage!=='done'&&(!it.date||it.date>=t);
+    if(ui.scope==='month')return it.date&&it.date.slice(0,7)===t.slice(0,7);
+    return true}).sort(function(a,b){return (a.date||'9999').localeCompare(b.date||'9999')||(a.type>b.type?1:-1)})}
+function wkStart(d){return addDays(d,-satIdx(d))}
+function costOf(it){var p=prices.items[it._id];if(p&&p.cost!=null)return p.cost;var pl=it.plan||{};if(pl.maker==='glitch'&&pl.ptype&&prices.types[pl.ptype]!=null)return prices.types[pl.ptype];return null}
+
+/* ================= render ================= */
+function renderFilters(){
+  var h='';[['rem','باقی‌مونده'],['month','این ماه'],['all','همه']].forEach(function(s){h+='<button class="chip" data-scope="'+s[0]+'" aria-pressed="'+(ui.scope===s[0])+'">'+s[1]+'</button>'});
+  h+='<span class="muted small">·</span>';Object.keys(TYPES).forEach(function(k){h+='<button class="chip" data-ty="'+k+'" aria-pressed="'+!!ui.types[k]+'">'+TYPES[k]+'</button>'});
+  h+='<span class="muted small">·</span><button class="chip" data-act="price" aria-pressed="'+!!ui.showPrice+'">نمایش قیمت</button>';
+  $('#filters').innerHTML=h}
+function render(){
+  renderFilters();var L=list(),h='';
+  if(!C.token)h+='<div class="banner warn">این دستگاه به GitHub وصل نیست، پس فقط می‌شه دید. برای ویرایش، تو برد اصلی از «بیشتر ← اتصال GitHub» توکن رو بذار.</div>';
+  if(ui.showPrice)h+='<div class="banner">قیمت‌ها هیچ‌وقت تو برد و مخزن عمومی نمی‌رن. فقط روی همین دستگاه و '+(priceRemote==='ok'?'در ولت خصوصی ذخیره می‌شن.':'(تا وقتی توکن به ولت دسترسی نوشتن نداره) فقط روی همین دستگاه.')+'</div>';
+  if(!L.length)h+='<div class="banner">آیتمی با این فیلتر نیست.</div>';
+  var wk=null,sum={n:0,ok:0,review:0,cost:0};
+  L.forEach(function(it){var w=it.date?wkStart(it.date):'';
+    if(w!==wk){wk=w;h+='<div class="week">'+(w?'هفتهٔ '+human(w,false):'بی‌تاریخ')+(w?'<small>تا '+human(addDays(w,6),false)+'</small>':'')+'</div>'}
+    h+=card(it);sum.n++;var s=(it.plan&&it.plan.ap)||'draft';if(s==='ok')sum.ok++;if(s==='review')sum.review++;var c=costOf(it);if(c)sum.cost+=c});
+  h+='<div class="sum">'+fa(sum.n)+' آیتم · '+fa(sum.ok)+' تأییدشده · '+fa(sum.review)+' منتظر امیررضا'+(ui.showPrice?' · جمع هزینه: '+money(sum.cost):'')+'</div>';
+  var app=$('#app');app.innerHTML=h;app.classList.toggle('hidep',!ui.showPrice)}
+function card(it){var pl=it.plan||{},id=it._id,ap=pl.ap||'draft',ro=C.token?'':' disabled';
+  var opts='<option value="">انتخاب نوع</option>'+planTypes().filter(function(t){return t.kind===it.type}).map(function(t){return '<option value="'+esc(t.id)+'"'+(pl.ptype===t.id?' selected':'')+'>'+esc(t.name)+'</option>'}).join('');
+  var c=prices.items[id]||{},base=pl.ptype&&prices.types[pl.ptype];
+  return '<div class="card'+(it.stage==='done'?' done':'')+'" data-id="'+esc(id)+'">'+
+   '<div class="when">'+(it.date?human(it.date):'بی‌تاریخ')+(it.time?'، ساعت '+fa(it.time):'')+'<br><span class="t '+it.type+'">'+TYPES[it.type]+'</span>'+(it.stage==='done'?' <span class="small muted">منتشر شد</span>':'')+
+   '<label class="fld" style="margin-top:6px"><span>تاریخ</span><input data-f="date" value="'+esc(fa(it.date||''))+'" placeholder="۱۴۰۵/۰۸/۱۴"'+ro+'></label></div>'+
+   '<div><input class="ttl" data-f="title" value="'+esc(it.title||'')+'"'+ro+' aria-label="عنوان">'+
+   '<div class="grid">'+
+    '<label class="fld wide"><span>موضوع</span><input data-f="topic" value="'+esc(pl.topic||'')+'" placeholder="موضوع در یه جمله"'+ro+'></label>'+
+    '<label class="fld"><span>نوع محتوا</span><select data-f="ptype"'+ro+'>'+opts+'</select></label>'+
+    '<label class="fld"><span>سازنده</span><select data-f="maker"'+ro+'><option value="">نامشخص</option><option value="glitch"'+(pl.maker==='glitch'?' selected':'')+'>گلیچ‌لب</option><option value="out"'+(pl.maker==='out'?' selected':'')+'>برون‌سپاری</option></select></label>'+
+    '<label class="fld full"><span>کانسپت</span><textarea data-f="concept"'+ro+'>'+esc((it.concept&&it.concept.text)||'')+'</textarea></label>'+
+    (pl.maker==='out'?'<label class="fld wide"><span>اسم برون‌سپار</span><input data-f="vendor" value="'+esc(pl.vendor||'')+'"'+ro+'></label>':'')+
+    '<label class="fld wide"><span>یادداشت و نظر امیررضا</span><input data-f="note" value="'+esc(pl.note||'')+'"'+ro+'></label>'+
+    '<label class="fld pcol"><span>هزینه (تومان)</span><input class="price" data-p="cost" inputmode="numeric" value="'+esc(c.cost!=null?money(c.cost):'')+'" placeholder="'+esc(base!=null?'پایه: '+money(base):'')+'"></label>'+
+    '<div class="fld full"><span>تأیید کانسپت</span><div class="ap">'+AP.map(function(a){return '<button class="chip" data-ap="'+a[0]+'" data-v="'+a[0]+'" aria-pressed="'+(ap===a[0])+'"'+ro+'>'+a[1]+'</button>'}).join('')+'</div></div>'+
+   '</div></div></div>'}
+
+/* ================= save (debounced per item) ================= */
+var pend={},saveT=null,snapT=null,dirtySnap=false;
+function queue(id,patch){pend[id]=deepMerge(pend[id]||{},patch);deepMerge(items[id],patch);setSt('ذخیره…');clearTimeout(saveT);saveT=setTimeout(flush,1200)}
+function flush(){var batch=pend;pend={};var ids=Object.keys(batch);if(!ids.length)return Promise.resolve();
+  return mutateJson('data/content_items.json','content-plan: '+ids.slice(0,4).join(','),function(docs){ids.forEach(function(id){var p=batch[id];p.updatedAt=nowStamp();p.updatedBy='صفحهٔ تقویم';docs[id]=deepMerge(docs[id]||{},p)})})
+  .then(function(r){items=r.docs;setSt('ذخیره شد ✓');dirtySnap=true;clearTimeout(snapT);snapT=setTimeout(function(){snapshot(true)},90000)},
+    function(e){Object.keys(batch).forEach(function(id){pend[id]=deepMerge(batch[id],pend[id]||{})});setSt('ذخیره نشد: '+e.message,true);if(e.net)setTimeout(flush,6000)})}
+window.addEventListener('beforeunload',function(e){if(Object.keys(pend).length){flush();e.preventDefault();e.returnValue=''}});
+
+/* ================= prices: device + private vault ================= */
+var priceT=null;
+function loadPrices(){if(!C.token){priceRemote='no';return Promise.resolve()}
+  return call('GET','https://api.github.com/repos/'+C.owner+'/'+VAULT_REPO+'/contents/'+VAULT_PATH+'?ref=main').then(function(d){priceSha=d.sha;var r=JSON.parse(b64dec(d.content||''));
+      prices={types:Object.assign({},r.types||{},prices.types),items:Object.assign({},r.items||{},prices.items)};lsSet(PRICE_KEY,prices);priceRemote='ok'},
+    function(e){priceRemote=e.status===404?'new':'no'})}
+function savePrices(){lsSet(PRICE_KEY,prices);if(!C.token||priceRemote==='no')return;clearTimeout(priceT);priceT=setTimeout(function(){
+  var body={message:'content-plan: prices',content:b64enc(JSON.stringify(prices,null,1)),branch:'main'};if(priceSha)body.sha=priceSha;
+  call('PUT','https://api.github.com/repos/'+C.owner+'/'+VAULT_REPO+'/contents/'+VAULT_PATH,body).then(function(r){priceSha=r.content.sha;priceRemote='ok';setSt('قیمت‌ها در ولت خصوصی ذخیره شد ✓')},
+    function(e){if(e.status===409||e.status===422){priceSha=null;loadPrices().then(savePrices)}else{priceRemote='no';setSt('قیمت فقط روی همین دستگاه ذخیره شد (توکن به ولت دسترسی نوشتن نداره)',true)}})},1500)}
+
+/* ================= events ================= */
+document.addEventListener('click',function(e){var el=e.target.closest('[data-scope],[data-ty],[data-act],[data-ap]');if(!el)return;
+  if(el.dataset.scope){ui.scope=el.dataset.scope;saveUi();render();return}
+  if(el.dataset.ty){ui.types[el.dataset.ty]=!ui.types[el.dataset.ty];saveUi();render();return}
+  if(el.dataset.ap){var id=el.closest('.card').dataset.id,v=el.dataset.ap;if(!C.token)return;
+    var who=(v==='ok'||v==='fix')?'امیررضا':'ممضی';queue(id,{plan:{ap:v,apAt:nowStamp()},concept:{ap:{status:v,by:who,at:nowStamp(),note:'از صفحهٔ تقویم'+((items[id].plan||{}).note?': '+items[id].plan.note:'')}}});render();return}
+  var a=el.dataset.act;
+  if(a==='price'){ui.showPrice=!ui.showPrice;saveUi();render()}
+  else if(a==='add')addDlg();else if(a==='types')typesDlg();
+  else if(a==='png')png(false);else if(a==='share')png(true);
+  else if(a==='pdf'){buildSheet();setTimeout(function(){window.print()},50)}
+  else if(a==='snap')snapshot(false)});
+document.addEventListener('change',function(e){var el=e.target,cd=el.closest('.card');if(!cd)return;var id=cd.dataset.id,f=el.dataset.f,v=el.value;
+  if(el.dataset.p){var n=num(v);prices.items[id]=prices.items[id]||{};prices.items[id].cost=n;el.value=n==null?'':money(n);savePrices();render();return}
+  if(!f||!C.token)return;
+  if(f==='title')queue(id,{title:v.trim()});
+  else if(f==='date'){var d=normDate(v);if(!d&&v.trim()){toast('تاریخ رو مثل ۱۴۰۵/۰۸/۱۴ بنویس');return}queue(id,{date:d});render()}
+  else if(f==='concept')queue(id,{concept:{text:v}});
+  else{var p={};p[f]=v;queue(id,{plan:p});if(f==='maker')render()}});
+
+/* ================= dialogs ================= */
+function addDlg(){if(!C.token){toast('اول توکن GitHub رو وصل کن');return}var d=$('#dlg');
+  d.innerHTML='<h3 style="margin:0 0 10px">آیتم تازه</h3><div class="grid" style="grid-template-columns:1fr 1fr"><label class="fld"><span>نوع</span><select id="nT"><option value="reel">ریل</option><option value="post">پست</option><option value="story">استوری</option></select></label><label class="fld"><span>تاریخ</span><input id="nD" placeholder="۱۴۰۵/۰۸/۱۸"></label><label class="fld full"><span>عنوان</span><input id="nN"></label></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn pri" id="nOk">بساز</button><button class="btn" id="nX">بی‌خیال</button></div>';
+  d.showModal();$('#nX').onclick=function(){d.close()};
+  $('#nOk').onclick=function(){var t=$('#nT').value,dt=normDate($('#nD').value),n=$('#nN').value.trim();if(!n){toast('عنوان لازمه');return}
+    var id=t[0]+Date.now().toString(16).slice(-9),it={type:t,title:n,date:dt,time:'',owner:'',stage:'concept',concept:{text:'',ap:{status:'draft'}},stages:{},tasks:[],comments:[],tags:[],createdAt:nowStamp(),createdBy:'صفحهٔ تقویم',plan:{ap:'draft'}};
+    items[id]=it;queue(id,clone(it));d.close();render()}}
+function typesDlg(){var d=$('#dlg'),T=clone(planTypes());
+  function rows(){return T.map(function(t,i){return '<div class="trow"><select data-i="'+i+'" data-k="kind">'+Object.keys(TYPES).map(function(k){return '<option value="'+k+'"'+(t.kind===k?' selected':'')+'>'+TYPES[k]+'</option>'}).join('')+'</select><input data-i="'+i+'" data-k="name" value="'+esc(t.name)+'"><input class="price" data-i="'+i+'" data-k="price" inputmode="numeric" placeholder="قیمت پایه" value="'+esc(prices.types[t.id]!=null?money(prices.types[t.id]):'')+'"><button class="btn sm" data-del="'+i+'">×</button></div>'}).join('')}
+  function draw(){d.innerHTML='<h3 style="margin:0 0 4px">نوع‌های محتوا</h3><p class="muted small" style="margin:0 0 8px">اسم نوع‌ها تو برد ذخیره می‌شه. قیمت پایه فقط روی همین دستگاه و ولت خصوصی.</p><div id="tr">'+rows()+'</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn sm" id="tA">+ نوع تازه</button><span style="flex:1"></span><button class="btn pri" id="tOk">ذخیره</button><button class="btn" id="tX">بستن</button></div>';
+    $('#tA').onclick=function(){T.push({id:'t'+Date.now().toString(36),kind:'post',name:''});draw()};$('#tX').onclick=function(){d.close()};
+    d.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){T.splice(+b.dataset.del,1);draw()}});
+    d.querySelectorAll('[data-k]').forEach(function(inp){inp.onchange=function(){var t=T[+inp.dataset.i];if(inp.dataset.k==='price'){prices.types[t.id]=num(inp.value)}else t[inp.dataset.k]=inp.value}});
+    $('#tOk').onclick=function(){T=T.filter(function(t){return t.name.trim()});savePrices();
+      if(!C.token){d.close();render();return}
+      mutateJson('data/content_meta.json','content-plan: types',function(docs){docs.plan=deepMerge(docs.plan||{},{});docs.plan.types=T}).then(function(r){meta=r.docs;toast('نوع‌ها ذخیره شد');d.close();render()},function(e){toast('ذخیره نشد: '+e.message)})}}
+  draw();d.showModal()}
+
+/* ================= export sheet (PNG / PDF / snapshot) ================= */
+function sheetHtml(withPrice){var L=list(),wk=null,rows='';
+  L.forEach(function(it){var w=it.date?wkStart(it.date):'';if(w!==wk){wk=w;rows+='<tr class="wk"><td colspan="'+(withPrice?8:7)+'">'+(w?'هفتهٔ '+human(w,false)+' تا '+human(addDays(w,6),false):'بی‌تاریخ')+'</td></tr>'}
+    var pl=it.plan||{},ap=pl.ap||'draft',c=costOf(it);
+    rows+='<tr><td>'+(it.date?human(it.date):'—')+'</td><td><span class="tg '+it.type+'">'+TYPES[it.type]+'</span></td><td><b>'+esc(it.title)+'</b>'+(pl.topic?'<br>'+esc(pl.topic):'')+'</td><td>'+esc((it.concept&&it.concept.text)||'')+'</td><td>'+esc(typeName(pl.ptype))+'</td><td>'+esc(pl.maker?MAKERS[pl.maker]+(pl.maker==='out'&&pl.vendor?' ('+pl.vendor+')':''):'')+'</td><td class="'+ap+'">'+APL[ap]+(pl.note?'<br><span style="font-weight:400">'+esc(pl.note)+'</span>':'')+'</td>'+(withPrice?'<td>'+money(c)+'</td>':'')+'</tr>'});
+  return '<div class="sheet"><h2>تقویم محتوای سوسیسا</h2><div style="font-size:13px;color:#7C6658">'+esc({rem:'آیتم‌های باقی‌مونده',month:'این ماه',all:'همهٔ آیتم‌ها'}[ui.scope])+' · به‌روز: '+fa(nowStamp())+'</div><table><thead><tr><th style="width:120px">روز</th><th>نوع</th><th style="width:22%">عنوان و موضوع</th><th style="width:28%">کانسپت</th><th>نوع محتوا</th><th>سازنده</th><th>تأیید امیررضا</th>'+(withPrice?'<th>هزینه</th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'}
+function buildSheet(){$('#sheet').innerHTML=sheetHtml(!!ui.showPrice)}
+function loadH2C(){if(window.html2canvas)return Promise.resolve();return new Promise(function(res,rej){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onload=res;s.onerror=function(){rej(new Error('ابزار PNG لود نشد'))};document.head.appendChild(s)})}
+function png(share){buildSheet();var sh=$('#sheet');setSt('ساخت تصویر…');
+  loadH2C().then(function(){sh.style.cssText='display:block;position:absolute;left:-99999px;top:0';return window.html2canvas(sh.firstChild,{scale:2,backgroundColor:'#FFF6E8'})})
+  .then(function(cv){sh.style.cssText='';cv.toBlob(function(b){var name='susisa-content-calendar-'+en(todayJ()).replace(/\//g,'-')+'.png',file=new File([b],name,{type:'image/png'});
+    if(share&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'تقویم محتوای سوسیسا'}).catch(function(){});setSt('');return}
+    var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setSt('');if(share)toast('اشتراک مستقیم پشتیبانی نشد؛ تصویر دانلود شد')},'image/png')})
+  .catch(function(e){sh.style.cssText='';setSt(e.message,true)})}
+function snapshot(auto){if(!C.token){if(!auto)toast('اول توکن GitHub رو وصل کن');return}if(auto&&!dirtySnap)return;dirtySnap=false;
+  var css=[].slice.call(document.querySelectorAll('style')).map(function(s){return s.textContent}).join('\n');
+  var doc='<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تقویم محتوای سوسیسا</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;800&display=swap"><style>'+css+'\n#sheet{display:block}body{padding:16px}</style></head><body><div id="sheet">'+sheetHtml(false)+'</div></body></html>';
+  var fid='f'+Date.now().toString(16).slice(-8)+Math.floor(Math.random()*46656).toString(16),path='files/'+fid+'-taghvim-mohtava.html';
+  setSt('ثبت نسخه در فایل‌ها…');
+  putFile(path,doc,'content-plan: snapshot').then(function(){
+    return mutateJson('data/tasks.json','content-plan: snapshot file',function(docs){var t=docs[PLAN_TASK];if(!t)return false;var fs=t.files||[],ex=fs.filter(function(f){return f.name===SNAP_NAME&&f.kind==='gh'})[0];
+      var ent={id:fid,kind:'gh',name:SNAP_NAME,type:'text/html',size:new Blob([doc]).size,path:path,by:'M',at:Date.now()};
+      if(ex){var old=Object.assign({},ex);delete old.vers;ent.vers=[old].concat(ex.vers||[]);fs[fs.indexOf(ex)]=ent}else fs.push(ent);t.files=fs;t.upd=Date.now();return true})})
+  .then(function(r){setSt(r&&r.ret===false?'فایل ذخیره شد ولی تسک تقویم پیدا نشد':'نسخهٔ تازه تو فایل‌های برد ثبت شد ✓')},function(e){dirtySnap=true;setSt('ثبت نسخه نشد: '+e.message,true)})}
+
+/* ================= boot ================= */
+function boot(){setSt('خوندن برد…');
+  Promise.all([readJson('data/content_items.json'),readJson('data/content_meta.json'),loadPrices()]).then(function(r){items=r[0].docs;meta=r[1].docs;setSt(C.token?'':'فقط خواندنی');render()},
+    function(e){$('#app').innerHTML='<div class="banner warn">برد خونده نشد: '+esc(e.message)+'</div>';setSt('',true)})}
+setInterval(function(){if(!Object.keys(pend).length&&!document.activeElement.closest('.card,dialog'))readJson('data/content_items.json').then(function(r){if(!Object.keys(pend).length&&JSON.stringify(r.docs)!==JSON.stringify(items)){items=r.docs;render()}}).catch(function(){})},60000);
+boot();
+</script>
+</body></html>

@@ -75,3 +75,10 @@ python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
 - ابزار ایجنت: `python3 tools/content.py list|show|set|stage|approve|task|comment|ai|add|link|sync|check|summary` (راهنما: `content.py -h`). مرحله‌ها: concept, scenario, storyboard, prep, shoot, edit, color, caption, qc, publish, done.
 - **پل دو برد:** هر محتوا `boardTask` (تسک انتشار یا کل کار در برد اصلی) و `stageTasks` ({مرحله: [تسک‌های تولید]}) دارد. `content.py sync` در هر اجرای ایجنت (اول و آخر) دو برد را هم‌گام می‌کند؛ `watch.py` هشدارهای برد محتوا را با قاعدهٔ R16 می‌آورد و `report.py digest` خلاصه‌اش را. ماژول ۱۳ بخش ۱۰.
 - **فایل اضافه نساز:** برنامه، تقویم، سناریو، کپشن و بریف مستقیم در خود بردها؛ `attach` فقط وقتی تیم صریح خواسته.
+
+## صفحهٔ تقویم برنامه‌ریزی محتوا (plan.html، از ۱۰ آبان ۱۴۰۵)
+- لینک از هدر برد اصلی («تقویم محتوا») و بالای بخش «تقویم» برد محتوا. آیتم‌ها همان `content_items` برد محتوا هستند.
+- فیلدهای تازهٔ هر آیتم: `plan` = `{topic, ptype, maker: glitch|out, vendor, note, ap: draft|review|ok|fix, apAt}`؛ کانسپت همان `concept.text` است و تأیید صفحه روی `concept.ap` هم نوشته می‌شود (ok/fix = امیررضا).
+- نوع‌های محتوا (بدون قیمت) در `content_meta` سند `plan.types`. **قیمت و هزینه هرگز در board-data یا مخزن عمومی نیست:** فقط localStorage دستگاه (`susisa-plan-prices`) و ولت خصوصی `susisa-vault/content-plan/prices.json`. ایجنت این فایل را در بردها، کامنت‌ها یا گزارش‌ها نقل نمی‌کند.
+- خروجی PNG (html2canvas از cdnjs) و PDF (چاپ مرورگر، A4 افقی)، اشتراک با Web Share. «ثبت نسخه در فایل‌های برد» (و خودکار ۹۰ ثانیه بعد از هر ویرایش) یک HTML ایستای بی‌قیمت در `files/` می‌گذارد و روی تسک «تقویم محتوای باقی‌مونده…» (`n96a268451a3e`) با نسخه‌گذاری ثبت می‌کند.
+- ایجنت: برای خواندن موضوع و کانسپت و تأییدها `content.py show <id>` (فیلد `plan`)؛ برای نوشتن `content.py set <id> plan.topic="…" plan.ap=review`.

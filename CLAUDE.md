@@ -90,4 +90,4 @@ python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
 - فیلدهای `plan`: `{topic, ptype, extra, maker, vendor, note, dateAsk, hist, aps:{topic,concept,mock,final}, ap, apAt}`.
 - امیررضا بدون توکن همان لینک را باز می‌کند؛ نظرش روی دستگاهش می‌ماند و با «فرستادن نظرها» به ممضی می‌رسد و ممضی در «نظر امیررضا» پیست می‌کند.
 - **مبلغ هرگز در board-data یا مخزن عمومی نیست:** فقط localStorage دستگاه (`susisa-plan-prices`) و ولت خصوصی `content-plan/prices.json`. ایجنت این فایل را در بردها، کامنت‌ها یا گزارش‌ها نقل نمی‌کند.
-- مناسبت‌ها و ماه‌های قمری: `EV` و `LUNAR` در plan.html (تا پایان ۱۴۰۵).
+- مناسبت‌ها و ماه‌های قمری: `EV` و `LUNAR` در `cal-core.js` (تا پایان ۱۴۰۵). هر سه برد تقویم رو از `cal-core.js` و ظاهرش رو از `cal.css` می‌گیرن؛ تغییر ظاهر یا مناسبت همون‌جا.

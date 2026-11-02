@@ -229,9 +229,25 @@ tr.isdone td{opacity:.6}
 .diag{font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sin .18s ease-out}@keyframes sin{from{transform:translateX(-24px);opacity:.6}}}
 @media (max-width:640px){.sheet{width:100%}}
+.metatog{display:none}
+@media (max-width:760px){
+  /* گوشی: کل برگه یک اسکرول داره تا فیلدها ته صفحه گیر نکنن؛ تب‌ها بالا می‌چسبن */
+  .sheet{overflow-y:auto;overscroll-behavior:contain;display:block;-webkit-overflow-scrolling:touch}
+  .shead{display:contents}
+  .shead>*{background:var(--card);padding-inline:16px}
+  .shead .r1{padding-top:12px}
+  .metatog{display:block;width:100%;text-align:start;border:0;background:var(--card);color:var(--mute);font-weight:700;font-size:13px;padding:8px 16px}
+  .meta{display:none}.meta.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stagebar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.stagebar button{white-space:nowrap;flex:none}
+  .stabs{position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line);padding-inline:6px}
+  .sbody{flex:none;overflow:visible;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+  .sbody textarea{min-height:42vh;font-size:16px}
+  .sbody input,.sbody select,.meta input,.meta select{font-size:16px}
+}
 .mobileOnly{display:none}
 @media (max-width:860px){.mobileOnly{display:inline-block;max-width:130px}}
 </style>
+<link rel="stylesheet" href="cal.css">
 </head><body>
 <div class="app">
   <aside class="side" aria-label="بخش‌ها">
@@ -268,6 +284,7 @@ tr.isdone td{opacity:.6}
 <div id="dpHost"></div>
 <div id="toastHost"></div>
 <script src="config.js"></script>
+<script src="cal-core.js"></script>
 <script>
 /* ================= Jalali ================= */
 function div(a,b){return ~~(a/b)}function mod(a,b){return a-~~(a/b)*b}
@@ -482,29 +499,22 @@ function quickDone(i){return i.stage==='done'?'<span class="chip done">منتش�
 function workRow(w){var t=todayJ();return '<div class="row'+(w.done?' isdone':'')+'"><input type="checkbox" '+(w.done?'checked ':'')+'data-act="wdone" data-id="'+w.it._id+'" data-kind="'+w.kind+'" data-key="'+esc(w.key)+'" data-idx="'+(w.idx==null?'':w.idx)+'" aria-label="انجام شد">'+typeChip(w.it.type)+'<button class="link t" data-open="'+w.it._id+'" data-tab="stages">'+esc(w.it.title)+' · '+esc(w.text)+'</button>'+(w.owner?'<span class="chip st">'+esc(w.owner)+'</span>':'')+(w.due?'<span class="chip '+(isLate(w,t)?'late':'st')+'">'+human(w.due,false)+'</span>':'')+'</div>'}
 
 /* ================= Calendar ================= */
+var calM='',calSel='',metaOpen=false;
+function calItems(){return allItems().filter(function(i){return filt.types[i.type]&&(!filt.owner||i.owner===filt.owner)&&(!filt.tag||tagsOf(i).indexOf(filt.tag)>=0)&&matchesQ(i)})}
+function calTk(i,long){var t=planTiers().filter(function(x){return x.id===(i.plan||{}).ptype})[0];return '<button class="sc-tk citem '+(t?'t-'+t.id:'t-none')+(i.stage==='done'?' isdone':'')+'" draggable="true" data-open="'+i._id+'" title="'+esc(i.title)+' · '+(t?esc(t.name)+' · ':'')+stLabel(i.type,i.stage||'concept')+'"><span class="tt">'+(i.hold?'🔒 ':'')+(t&&t.id==='reel-cine'?'★ ':'')+esc(i.title||TYPES[i.type])+(long?'<span class="tier">'+esc(t?t.name:'بی‌دسته')+' · '+stLabel(i.type,i.stage||'concept')+(i.time?' · ساعت '+fa(i.time):'')+'</span>':'')+'</span></button>'}
 function rCal(){
-  var s=S(),st=s.start,en_=s.end;if(!st||!en_||st>en_){st=todayJ();en_=addDays(st,27)}
-  var t=todayJ(),all=allItems().filter(function(i){return filt.types[i.type]&&(!filt.owner||i.owner===filt.owner)&&(!filt.tag||tagsOf(i).indexOf(filt.tag)>=0)&&matchesQ(i)});
-  var byDay={};all.forEach(function(i){if(i.date)(byDay[i.date]=byDay[i.date]||[]).push(i)});
-  var warn=ruleWarnings().day,undated=all.filter(function(i){return !i.date});
-  var h='<a class="banner info" href="plan.html" style="display:block;text-decoration:none;margin-bottom:10px"><b>📅 تقویم محتوا (مرجع اصلی)</b>: تقویم شمسی و میلادی با مناسبت‌ها، دسته و سهمیهٔ ماه، تغییر تاریخ و تأیید امیررضا ←</a><div class="toolbar">';
+  var s=S(),t=todayJ(),m=calM||t.slice(0,7),all=calItems(),byDay={};SCal.state.own=s.events||[];SCal.state.notes=(planMeta&&planMeta.notes)||{};
+  all.forEach(function(i){if(i.date)(byDay[i.date]=byDay[i.date]||[]).push(i)});
+  var o={reel:0,post:1,story:2},warn=ruleWarnings().day,undated=all.filter(function(i){return !i.date}),sd=calSel&&calSel.slice(0,7)===m?calSel:(t.slice(0,7)===m?t:m+'/01');
+  function sorted(d){return (byDay[d]||[]).slice().sort(function(x,y){return (o[x.type]-o[y.type])||String(x.time||'').localeCompare(String(y.time||''))})}
+  var h='<a class="banner info" href="plan.html" style="display:block;text-decoration:none;margin-bottom:10px"><b>📅 تقویم برنامه‌ریزی</b>: دسته و تعرفه، تأیید امیررضا، یادداشت روز و خروجی ←</a><div class="toolbar">';
   Object.keys(TYPES).forEach(function(k){h+='<label class="chip '+k+' ck"><input type="checkbox" data-ft="'+k+'"'+(filt.types[k]?' checked':'')+'> '+TYPES[k]+'</label>'});
-  h+='<select data-fo="1" aria-label="مسئول">'+ownerOpts(filt.owner,'همهٔ مسئول‌ها')+'</select><select data-fg="1" aria-label="برچسب"><option value="">همهٔ برچسب‌ها</option>'+(s.tags||[]).map(function(x){return '<option'+(x===filt.tag?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select></div>';
-  h+='<div class="toolbar"><span class="muted small">بازه:</span><input type="text" data-date="1" data-range="start" value="'+fa(st)+'" aria-label="شروع بازه" readonly><span class="muted">تا</span><input type="text" data-date="1" data-range="end" value="'+fa(en_)+'" aria-label="پایان بازه" readonly>'+
-    '<button class="btn sm" data-act="calShift" data-d="-7">← هفتهٔ قبل</button><button class="btn sm" data-act="calShift" data-d="7">هفتهٔ بعد →</button><button class="btn sm" data-act="calToday">این ماه</button><button class="btn sm" data-act="calLaunch">تا افتتاحیه</button><span class="grow"></span><span class="muted small">روی دسکتاپ محتوا رو بکش و روی روز دیگه بنداز.</span></div>';
-  h+='<div class="calhead">'+['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه'].map(function(d){return '<div>'+d+'</div>'}).join('')+'</div><div class="calgrid">';
-  var a=toJdn(st),b=toJdn(en_);if(b-a>120)b=a+120;var lead=satIdx(st);
-  for(var p=0;p<lead;p++)h+='<div class="day pad" aria-hidden="true"></div>';
-  for(var n=a;n<=b;n++){
-    var d=fromJdn(n),dd=d.split('/').map(Number),list=(byDay[d]||[]).sort(function(x,y){return ({reel:0,post:1,story:2}[x.type]-{reel:0,post:1,story:2}[y.type])||String(x.time||'').localeCompare(String(y.time||''))});
-    var evs=(s.events||[]).filter(function(e){return e.date===d});
-    h+='<div class="day'+(d===t?' today':'')+(d<t?' out':'')+'" data-day="'+d+'"><div class="dh"><span class="wd">'+WD[wdOf(d)]+'</span><b>'+fa(dd[2])+'</b><span class="muted" style="font-size:11px">'+MN[dd[1]-1]+'</span>'+(warn[d]?'<span class="wchip" title="هشدار قاعده">'+warn[d]+'</span>':'')+'<button class="add" data-act="addOn" data-d="'+d+'" aria-label="افزودن محتوا در '+human(d)+'">+</button></div>';
-    evs.forEach(function(e){h+='<span class="chip ev">'+esc(e.label)+'</span>'});
-    list.forEach(function(i){h+='<button class="citem '+i.type+(i.stage==='done'?' isdone':'')+'" draggable="true" data-open="'+i._id+'" title="'+esc(i.title)+' · '+stLabel(i.type,i.stage||'concept')+'">'+(i.stage==='done'?'✓ ':'')+'<span>'+(i.time?fa(i.time)+' · ':'')+esc(i.title||TYPES[i.type])+'</span></button>'});
-    h+='</div>';
-  }
-  h+='</div>';
-  h+='<h2 class="sec">بی‌تاریخ</h2>'+(undated.length?'<div class="list">'+undated.map(function(i){return itemLine(i)}).join('')+'</div>':'<div class="empty">همه تاریخ دارن.</div>');
+  h+='<select data-fo="1" aria-label="مسئول">'+ownerOpts(filt.owner,'همهٔ مسئول‌ها')+'</select><select data-fg="1" aria-label="برچسب"><option value="">همهٔ برچسب‌ها</option>'+(s.tags||[]).map(function(x){return '<option'+(x===filt.tag?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select><span class="grow"></span><span class="muted small">روی دسکتاپ محتوا رو بکش و روی روز دیگه بنداز.</span></div>';
+  h+='<div class="sc-layout"><div class="sc-main">'+SCal.monthHtml({m:m,sel:sd,nav:function(v){return 'data-act="calM" data-d="'+v+'"'},cell:function(d){var l=sorted(d);return {cls:'day',attrs:'data-day="'+d+'" data-act="calSel" data-d="'+d+'"',add:'<button class="sc-add" data-act="addOn" data-d="'+d+'" aria-label="افزودن محتوا در '+human(d)+'">+</button>',body:l.map(function(i){return calTk(i)}).join(''),dots:l.map(function(i){return SCal.TIER_COLOR[(i.plan||{}).ptype]||'#fff'}),warn:warn[d]?'هشدار قاعده':''}}});
+  h+='</div><div class="sc-side">'+SCal.leafHtml(sd,{body:sorted(sd).length?sorted(sd).map(function(i){return calTk(i,true)}).join(''):'<span class="sc-mute">محتوایی برای این روز نیست.</span>',foot:'<button class="sc-pbtn" data-act="addOn" data-d="'+sd+'">+ محتوا برای این روز</button>'});
+  var T=planTiers();if(T.length){var mq=(planMeta.quota&&planMeta.quota[m])||{};h+='<div class="sc-card"><h2>سهمیهٔ ماه</h2><div class="sub">هر جای پر یه محتوا از این دسته. تنظیمش تو تقویم برنامه‌ریزی.</div>'+T.map(function(x){var q=mq[x.id]!=null?+mq[x.id]:(+x.quota||0),L=allItems().filter(function(i){return (i.date||'').slice(0,7)===m&&(i.plan||{}).ptype===x.id&&!(i.plan||{}).extra}),dn=L.filter(function(i){return i.stage==='done'}).length;if(!q&&!L.length)return '';var dots='',mx=Math.max(q,L.length);for(var k=0;k<mx;k++)dots+='<i class="'+(k<dn?'on done':k<Math.min(L.length,q)?'on':k<L.length?'ovr':'')+'"></i>';return '<div class="sc-row"><span class="n"><span class="sc-sw" style="background:'+(SCal.TIER_COLOR[x.id]||'#fff')+'"></span>'+esc(x.name)+'<span class="cnt'+(L.length>q?' over':'')+'">'+fa(L.length)+' از '+fa(q)+'</span></span><span class="sc-punch">'+dots+'</span></div>'}).join('')+'</div>'}
+  h+='</div>'+SCal.occHtml(m,function(d){return 'data-act="calSel" data-d="'+d+'"'})+'</div>';
+  if(undated.length)h+='<h2 class="sec">بی‌تاریخ</h2><div class="list">'+undated.map(function(i){return itemLine(i)}).join('')+'</div>';
   document.getElementById('v-cal').innerHTML=h;
 }
 
@@ -642,11 +652,11 @@ function apprBlock(it,sec){
   (hist.length?'<details><summary class="muted small">تاریخچهٔ وضعیت ('+fa(hist.length)+')</summary><div class="list" style="margin-top:6px">'+hist.slice().reverse().map(function(x){return '<div class="row small">'+apChip(x.status)+'<span>'+esc(x.by||'')+' · '+fa(x.at||'')+'</span>'+(x.note?'<span class="muted">'+esc(x.note)+'</span>':'')+'</div>'}).join('')+'</div></details>':'')+'</div>'}
 function rSheet(){
   var it=item(openId);if(!it){openId=null;document.getElementById('sheetHost').innerHTML='';return}
-  var host=document.getElementById('sheetHost'),keep=host.querySelector('.sbody'),sc=keep?keep.scrollTop:0,secs=SECTIONS[it.type];
+  var host=document.getElementById('sheetHost'),keep=host.querySelector('.sbody'),sc=keep?keep.scrollTop:0,oldSh=host.querySelector('.sheet'),shSc=oldSh?oldSh.scrollTop:0,secs=SECTIONS[it.type];
   var h='<div class="scrim" data-act="close"></div><aside class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(it.title)+'"><div class="shead"><div class="r1">'+typeChip(it.type)+
     '<input class="ttl" data-f="title" value="'+esc(it.title||'')+'" aria-label="عنوان">'+
     '<button class="btn sm" data-act="brief" title="همهٔ اطلاعات این محتوا برای دادن به Claude Code">کپی بریف برای Claude</button><button class="btn sm ghost" data-act="dup" data-id="'+openId+'">کپی</button><button class="btn sm ghost" data-act="close" aria-label="بستن">✕</button></div>'+
-    '<div class="meta"><label>نوع<select data-act="typeSel">'+Object.keys(TYPES).map(function(k){return '<option value="'+k+'"'+(k===it.type?' selected':'')+'>'+TYPES[k]+'</option>'}).join('')+'</select></label><label>تاریخ انتشار'+F('date',it,'بی‌تاریخ',{date:1})+'</label><label>ساعت'+F('time',it,'۲۱:۰۰')+'</label><label>مسئول کل'+F('owner',it,'',{owner:1})+'</label>'+
+    '<button class="metatog" data-act="metaTog">'+(metaOpen?'▴ بستن جزئیات':'▾ جزئیات: تاریخ، مسئول، مرحله، دسته')+'</button><div class="meta'+(metaOpen?' open':'')+'"><label>نوع<select data-act="typeSel">'+Object.keys(TYPES).map(function(k){return '<option value="'+k+'"'+(k===it.type?' selected':'')+'>'+TYPES[k]+'</option>'}).join('')+'</select></label><label>تاریخ انتشار'+F('date',it,'بی‌تاریخ',{date:1})+'</label><label>ساعت'+F('time',it,'۲۱:۰۰')+'</label><label>مسئول کل'+F('owner',it,'',{owner:1})+'</label>'+
     '<label>مرحله<select data-stagesel="'+openId+'">'+flowOf(it).map(function(k){return '<option value="'+k+'"'+(k===(it.stage||'concept')?' selected':'')+'>'+stLabel(it.type,k)+'</option>'}).join('')+'</select></label>'+
     '<label>دسته و تعرفه<select data-act="tierSet"><option value="">انتخاب دسته</option>'+planTiers().filter(function(x){return x.kind===it.type}).map(function(x){return '<option value="'+esc(x.id)+'"'+(((it.plan||{}).ptype===x.id)?' selected':'')+'>'+esc(x.name)+'</option>'}).join('')+'</select></label>'+tierSpec(it)+
     '<label>برچسب<select data-act="tagAdd"><option value="">+ افزودن برچسب</option>'+(S().tags||[]).filter(function(x){return tagsOf(it).indexOf(x)<0}).map(function(x){return '<option>'+esc(x)+'</option>'}).join('')+'</select></label></div>'+
@@ -656,7 +666,7 @@ function rSheet(){
   h+=linkPanel(it);
   h+=({concept:sConcept,scenario:sScenario,storyboard:sBoard,slides:sSlides,shoot:sShoot,edit:sEdit,caption:sCaption,qc:sQc,stages:sStages,files:sFiles,insight:sInsight,talk:sTalk}[openTab])(it)+altsBlock(it,openTab);
   h+='<div class="ab" style="margin-top:22px;border-top:1px solid var(--line);padding-top:12px"><span class="muted small grow">'+(it.createdAt?'ساخته شده: '+esc(it.createdBy||'')+' '+fa(it.createdAt)+' · ':'')+(it.updatedAt?'آخرین تغییر: '+esc(it.updatedBy||'')+' '+fa(it.updatedAt):'')+'</span><button class="btn sm danger" data-act="archive">بایگانی</button></div></div></aside>';
-  host.innerHTML=h;var nb=host.querySelector('.sbody');if(nb&&keep)nb.scrollTop=sc;
+  host.innerHTML=h;var nb=host.querySelector('.sbody');if(nb&&keep)nb.scrollTop=sc;var nsh=host.querySelector('.sheet');if(nsh&&oldSh)nsh.scrollTop=shSc;
   if(openTab==='storyboard')loadSketches(it);
 }
 var mainTasks={},MST={todo:'برنامه‌ریزی‌شده',doing:'در جریان',review:'بازبینی',done:'انجام شد',paused:'متوقف',budget:'منتظر بودجه',replan:'بازبرنامه'};
@@ -920,9 +930,9 @@ function onClick(e){
   case 'new':newPicker('');return;
   case 'addOn':newPicker(el.dataset.d);return;
   case 'mk':{var nd=normDate((document.getElementById('newDate')||{}).value||'');newItem(TEMPLATES[+el.dataset.i],nd);return}
-  case 'calShift':{var d=+el.dataset.d,s=S();saveSettings({start:addDays(s.start,d),end:addDays(s.end,d)});return}
-  case 'calToday':{var p=todayJ().split('/');saveSettings({start:p[0]+'/'+p[1]+'/01',end:p[0]+'/'+p[1]+'/'+pad(monthLen(+p[0],+p[1]))});return}
-  case 'calLaunch':{var t2=todayJ(),ev=(S().events||[]).filter(function(x){return x.date>=t2}).sort(function(a,b){return b.date.localeCompare(a.date)})[0];saveSettings({start:addDays(t2,-satIdx(t2)),end:ev?addDays(ev.date,6-satIdx(ev.date)):addDays(t2,27)});return}
+  case 'metaTog':metaOpen=!metaOpen;rSheet();return
+  case 'calM':{var dv=+el.dataset.d;calM=dv?SCal.shift(calM||todayJ().slice(0,7),dv):todayJ().slice(0,7);calSel='';rCal();return}
+  case 'calSel':{calSel=el.dataset.d;rCal();return}
   case 'mv':{var x=item(el.dataset.id),f=flowOf(x),i=f.indexOf(x.stage||'concept')+(+el.dataset.d);if(i>=0&&i<f.length)moveStage(el.dataset.id,f[i]);return}
   case 'markDone':moveStage(el.dataset.id,'done');toast('منتشر شد ✓');return;
   case 'theme':{var v=el.dataset.v;if(v)document.documentElement.setAttribute('data-theme',v);else document.documentElement.removeAttribute('data-theme');lsSet('susisa-cb-theme',v);return}
@@ -1122,7 +1132,7 @@ document.getElementById('status').innerHTML='<div class="banner info">در حا�
   db=makeGh(c);
   db.collection('items').onSnapshot(onItems);
   db.doc('meta/settings').onSnapshot(function(s){if(s.exists){var dd=s.data();settings=merge(DEFAULT_SETTINGS,dd);['team','events','tags'].forEach(function(k){if(dd[k])settings[k]=clone(dd[k])})}render()});
-  db.doc('meta/plan').onSnapshot(function(s){planMeta=s.exists?s.data():null;if(openId&&!sheetDirty)rSheet()});
+  db.doc('meta/plan').onSnapshot(function(s){planMeta=s.exists?s.data():null;if(openId&&!sheetDirty)rSheet();if(view==='cal')rCal()});
   db.doc('meta/activity').onSnapshot(function(s){activity=(s.exists&&s.data().list)||[];if(view==='feed')rFeed()});
   db.collection('tasks').onSnapshot(function(s){var n={};s.docs.forEach(function(d){n[d.id]=d.data()});mainTasks=n;if(openId&&!sheetDirty)rSheet()});
   db.collection('ideas').onSnapshot(function(s){var n={};s.docs.forEach(function(d){n[d.id]=clone(d.data())});ideas=n;rIdeas()});

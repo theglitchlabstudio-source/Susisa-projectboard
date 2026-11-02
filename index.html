@@ -420,9 +420,11 @@ body{background:radial-gradient(1200px 500px at 85% -10%,color-mix(in srgb,var(-
 .pastbtn{margin:0 auto 4px;justify-self:center}
 @media (max-width:600px){.rprev .row b{flex-basis:100%}}
 </style>
+<link rel="stylesheet" href="cal.css">
 </head>
 <body>
 <script src="config.js"></script>
+<script src="cal-core.js"></script>
 <header id="top" class="top"></header>
 <nav id="nav" class="nav" aria-label="منو"></nav>
 <main id="view"></main>
@@ -1672,6 +1674,8 @@ function dayView(d){
   var h='<div class="dayp"><div class="bar2 dnav"><button class="btn" data-act="calday" data-v="">'+IC.cal+'تقویم</button><span class="sp"></span><button class="btn" data-act="calday" data-v="'+(d-1)+'" aria-label="روز قبل">→ روز قبل</button><button class="btn ghost" data-act="calday" data-v="'+TODAY+'">امروز</button><button class="btn" data-act="calday" data-v="'+(d+1)+'" aria-label="روز بعد">روز بعد ←</button></div>';
   h+='<div class="dhead"><h1 class="h1">'+(d===TODAY?'امروز · ':d===TODAY+1?'فردا · ':d===TODAY-1?'دیروز · ':'')+jfull(d)+'</h1><div class="muted">'+[d===OPEN?'<b style="color:var(--red)">روز افتتاحیه</b>':'',OPEN-d>0?fa(OPEN-d)+' روز تا افتتاحیه':'',fa(due.length)+' موعد'+(dn?' · '+fa(dn)+' انجام‌شده':'')+(lt?' · <span style="color:var(--late)">'+fa(lt)+' عقب‌افتاده</span>':''),run.length?fa(run.length)+' کار در جریان':''].filter(Boolean).join(' · ')+'</div>'+
     '<div class="row" style="margin-top:6px;gap:6px"><button class="btn sm" data-act="calprev2" data-v="'+d+'">روز قبلی با تسک</button><button class="btn sm" data-act="calnext2" data-v="'+d+'">روز بعدی با تسک</button></div></div>';
+  var dsS=SCal.fromJdn(d),dG=SCal.greg(dsS),dL=SCal.lunar(dsS),dE=SCal.events(dsS);
+  h+='<div class="muted small" style="margin:4px 0 8px"><span dir="ltr">'+dG.gd+' '+SCal.GM[dG.gm-1]+' '+dG.gy+'</span>'+(dL?' · '+fa(dL.d)+' '+dL.m+' '+fa(dL.y):'')+(dE.length?' · <b style="color:'+(dE.some(function(e){return e.h})?'var(--red)':'inherit')+'">'+dE.map(function(e){return esc(e.t)}).join('، ')+'</b>':'')+'</div>';
   h+='<h2 class="h2 dsec">موعد این روز <small>'+fa(due.length)+'</small></h2>'+(due.length?due.map(function(t){ return dayCard(t,d); }).join(''):'<div class="empty">برای این روز موعدی ثبت نشده.</div>');
   if(run.length) h+='<h2 class="h2 dsec">در جریان در این روز <small>'+fa(run.length)+'</small></h2>'+run.map(function(t){ return dayCard(t,d); }).join('');
   h+='<h2 class="h2 dsec">یادداشت‌های روز <small>'+fa(notes.length)+'</small></h2>'+(notes.length?'<div class="panel">'+notes.map(function(n){ return '<div class="fi'+(n.by==='CL'?' cl':'')+'"><div>'+who(n.by)+'</div><div class="fb"><div class="fh"><b>'+esc(person(n.by).name)+'</b>'+tfmt(n.at)+'</div><div class="fx">'+esc(n.text)+'</div></div></div>'; }).join('')+'</div>':'<div class="empty">یادداشتی برای این روز نیست.</div>');
@@ -1680,7 +1684,7 @@ function dayView(d){
 }
 function dayWithTasks(d,dir){ var ds=M.tasks.filter(function(t){ return t.due!=null; }).map(function(t){ return t.due; }); var c=ds.filter(function(x){ return dir>0?x>d:x<d; }); if(!c.length) return null; return dir>0?Math.min.apply(null,c):Math.max.apply(null,c); }
 
-function calMode(){ return ui.cal.mode || (window.innerWidth<700?'ag':'mo'); }
+function calMode(){ return ui.cal.mode || 'mo'; }
 /* ---------- برنامه (v13) ---------- */
 var PST=[['open','باز','layers'],['late','عقب‌افتاده','fire'],['week','۷ روز آینده','clock'],['p0','مسیر بحرانی','flag'],['done','انجام‌شده','check'],['all','همه','grid']];
 function pstOk(t,st){
@@ -1761,20 +1765,21 @@ VIEWS.cal=function(){
       h+='<div class="agd'+(d===TODAY?' today':'')+(d===OPEN?' open':'')+'"><button class="dtile" data-act="calday" data-v="'+d+'"><b>'+fa(x2.jd)+'</b><i>'+WD[wd(d)]+'</i><small>'+MONTHS[x2.jm-1]+'</small></button><div class="agb"><div class="agh"><b>'+(d===TODAY?'امروز':d===TODAY+1?'فردا':WD[wd(d)])+(d===OPEN?' · 🎉 افتتاحیه':'')+'</b><small>'+(all.length?fa(all.length)+' کار'+(dn?' · '+fa(dn)+' انجام':''):'موعدی نیست')+'</small><span class="sp"></span>'+(all.length?'<span class="wbar"><i style="width:'+Math.round(100*dn/all.length)+'%"></i></span>':'')+'<button class="lnk" data-act="calday" data-v="'+d+'">باز کردن روز ‹</button></div>'+(L.length?'<ul class="tl">'+L.map(function(t){ return trow(t); }).join('')+'</ul>':'')+'</div></div>'; }
     return h;
   }
-  var y=ui.cal.y, m=ui.cal.m, first=j2d(y,m,1), len=monthLen(y,m), lead=wd(first);
-  var used={}; for(var k0=0;k0<len;k0++) (byDay[first+k0]||[]).forEach(function(t){ used[t.svc]=1; });
-  h+='<div class="mhead"><button class="rb" data-act="calnav" data-v="-1" aria-label="ماه قبل">'+IC.chev+'</button><b>'+MONTHS[m-1]+' '+fa(y)+'</b><button class="rb nx" data-act="calnav" data-v="1" aria-label="ماه بعد">'+IC.chev+'</button><button class="chip sm" data-act="calnav" data-v="0">امروز</button><span class="sp"></span><span class="muted small hint">'+(matchMedia('(pointer:fine)').matches?'برای تغییر موعد، تسک را بکشید روی روز دیگر · روی شمارهٔ روز بزنید تا روز باز شود':'روی هر روز بزنید تا کارهایش بزرگ باز شود')+'</span></div>';
-  h+='<div class="legend">'+(M.cfg.services||[]).filter(function(s){ return used[s.id]; }).map(function(s){ return '<span style="--c:'+esc(s.c)+'"><i></i>'+esc(s.s||s.n)+'</span>'; }).join('')+'</div>';
-  h+='<div class="cal">'+WD.map(function(w){ return '<div class="wd"><span class="wl">'+w+'</span><span class="ws">'+w.charAt(0)+'</span></div>'; }).join('');
-  for(var i=0;i<lead;i++) h+='<div class="cell off"></div>';
-  for(var k=0;k<len;k++){ var dd=first+k, L2=(byDay[dd]||[]).slice().sort(function(a,b){ return (a.type==='gate'?-1:0)-(b.type==='gate'?-1:0)||cmp(a,b); }), op=L2.filter(function(t){ return !isClosed(t); }).length;
-    h+='<div class="cell'+(dd===TODAY?' today':'')+(dd<TODAY?' past':'')+(wd(dd)>=5?' fri':'')+(dd===OPEN?' opening':'')+'" style="--heat:'+Math.min(1,op/5)+'" data-day="'+dd+'" data-act="calday" data-v="'+dd+'"><div class="dn"><button class="dnb" data-act="calday" data-v="'+dd+'" aria-label="دیدن روز '+fa(k+1)+'">'+fa(k+1)+'</button>'+(dd===OPEN?'<span class="obadge">🎉 افتتاحیه</span>':(L2.length?'<span class="cnum">'+fa(L2.length)+'</span>':''))+'</div>'+
-      '<div class="evs">'+L2.slice(0,4).map(function(t){ return '<div class="ev'+(t.type==='gate'?' gate':'')+(isDone(t)?' done':'')+'" style="--c:'+esc(svc(t.svc).c)+'" data-open="'+esc(t.id)+'" data-drag="'+esc(t.id)+'" title="'+esc(t.t)+'">'+(t.type==='gate'?IC.flag:'')+esc(t.t)+'</div>'; }).join('')+
-      (L2.length>4?'<button class="lnk" data-act="calday" data-v="'+dd+'">+'+fa(L2.length-4)+' دیگر</button>':'')+'</div>'+
-      '<div class="dots">'+L2.slice(0,6).map(function(t){ return '<i class="'+(isDone(t)?'d':'')+(t.type==='gate'?' g':'')+'" style="--c:'+esc(svc(t.svc).c)+'"></i>'; }).join('')+'</div></div>'; }
-  h+='</div>';
+  var y=ui.cal.y, m=ui.cal.m, first=j2d(y,m,1), len=monthLen(y,m), ms=y+'/'+(m<10?'0':'')+m;
+  scMeta();
+  var sel=(ui.cal.sel!=null&&ui.cal.sel>=first&&ui.cal.sel<first+len)?ui.cal.sel:(TODAY>=first&&TODAY<first+len?TODAY:first), sv=ui.cal.svc||'';
+  function tkH(t){ return '<div class="sc-tk sv'+(t.type==='gate'?' g':'')+(isDone(t)?' isdone':'')+'" style="--c:'+esc(svc(t.svc).c)+'" data-open="'+esc(t.id)+'" data-drag="'+esc(t.id)+'" title="'+esc(t.t)+'"><span class="tt">'+(t.type==='gate'?IC.flag:'')+esc(t.t)+'</span></div>'; }
+  function list(dd){ return (byDay[dd]||[]).filter(function(t){ return !sv||t.svc===sv; }).sort(function(a,b){ return (a.type==='gate'?-1:0)-(b.type==='gate'?-1:0)||cmp(a,b); }); }
+  h+='<div class="sc-layout"><div class="sc-main">'+SCal.monthHtml({m:ms,sel:SCal.fromJdn(sel),nav:function(v){ return 'data-act="calnav" data-v="'+v+'"'; },cell:function(ds,n){ var dd=first+n-1, L=list(dd); return {cls:'cell',attrs:'data-day="'+dd+'" data-act="calsel" data-v="'+dd+'"',body:(dd===OPEN?'<span class="sc-evt h">🎉 افتتاحیه</span>':'')+L.slice(0,4).map(tkH).join('')+(L.length>4?'<span class="sc-more">+'+fa(L.length-4)+' دیگه</span>':''),dots:L.slice(0,6).map(function(t){ return svc(t.svc).c; })}; }});
+  var used={},Lk=[]; for(var k0=0;k0<len;k0++) (byDay[first+k0]||[]).forEach(function(t){ (used[t.svc]=used[t.svc]||[]).push(t); });
+  var LS=list(sel);
+  h+='</div><div class="sc-side">'+SCal.leafHtml(SCal.fromJdn(sel),{body:LS.length?'<ul class="tl">'+LS.map(function(t){ return trow(t); }).join('')+'</ul>':'<span class="sc-mute">موعدی برای این روز نیست.</span>',foot:'<button class="sc-pbtn" data-act="calday" data-v="'+sel+'">صفحهٔ کامل روز</button>'});
+  h+='<div class="sc-card"><h2>کارهای این ماه</h2><div class="sub">روی هر خدمت بزن تا فقط همون تو تقویم بمونه.</div>'+(M.cfg.services||[]).filter(function(s){ return used[s.id]; }).map(function(s){ var U=used[s.id], dn=U.filter(isDone).length, dots=''; for(var q=0;q<U.length&&q<24;q++) dots+='<i class="'+(q<dn?'on done':'on')+'"></i>'; return '<button class="sc-row" data-act="calsvc" data-v="'+esc(s.id)+'" aria-pressed="'+(sv===s.id)+'"><span class="n"><span class="sc-sw" style="background:'+esc(s.c)+'"></span>'+esc(s.s||s.n)+'<span class="cnt">'+fa(dn)+' از '+fa(U.length)+'</span></span><span class="sc-punch">'+dots+'</span></button>'; }).join('')+'</div>';
+  h+='</div>'+SCal.occHtml(ms,function(ds){ return 'data-act="calsel" data-v="'+SCal.toJdn(ds)+'"'; })+'</div>';
   return h;
 };
+var scMetaT=0;
+function scMeta(){ if(scMetaT) return; scMetaT=1; try{ var c=window.SUSISA_CFG||{}; fetch('https://raw.githubusercontent.com/'+c.owner+'/'+c.repo+'/'+(c.branch||'board-data')+'/data/content_meta.json?t='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){ var d=j&&j.docs; if(!d) return; SCal.state.own=(d.settings&&d.settings.events)||[]; SCal.state.notes=(d.plan&&d.plan.notes)||{}; if(ui.tab==='cal') render(); }).catch(function(){}); }catch(e){} }
 
 /* ---------- گزارش‌ها (v13) ---------- */
 function repWeekly(days){
@@ -2143,6 +2148,8 @@ function act(a,e){
     case 'repfile': (function(){ var r=(M.reports||[]).filter(function(x){ return x.id===v; })[0]; var f=r&&r[a.dataset.k]; if(!f) return; repFileUrl(f).then(function(u){ if(!u){ toast('فایل در دسترس نیست'); return; } var l=document.createElement('a'); l.href=u; l.download=(r.title||'report')+(a.dataset.k==='md'?'.md':'.html'); document.body.appendChild(l); l.click(); setTimeout(function(){ l.remove(); },500); }); })(); break;
     case 'calmode': ui.cal.mode=v; saveUI(); render(); break;
     case 'calnav': if(v==='0'){ var xx=d2j(TODAY); ui.cal.y=xx.jy; ui.cal.m=xx.jm; } else { ui.cal.m+= +v; if(ui.cal.m>12){ ui.cal.m=1; ui.cal.y++; } if(ui.cal.m<1){ ui.cal.m=12; ui.cal.y--; } } ui.cal.day=null; render(); break;
+    case 'calsel': ui.cal.sel=+v; render(); break;
+    case 'calsvc': ui.cal.svc=ui.cal.svc===v?'':v; render(); break;
     case 'calday': ui.cal.day=(v===''||v==null)?null:+v; render(); window.scrollTo(0,0); break;
     case 'calprev2': case 'calnext2': var dw2=dayWithTasks(+v,A==='calnext2'?1:-1); if(dw2==null){ toast('روز دیگری با تسک نیست'); break; } ui.cal.day=dw2; render(); window.scrollTo(0,0); break;
     case 'with': if(!t||!canW()) break; var wl=(t.with||[]).slice(), wi=wl.indexOf(v); if(wi>=0) wl.splice(wi,1); else wl.push(v); t.with=wl; if(touch(t,['with'])) render(); break;

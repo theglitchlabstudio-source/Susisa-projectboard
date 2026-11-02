@@ -359,7 +359,7 @@ def check_all():
     td = today(); out = []
     def add(sev, text, who='', fix='', ids=()):
         out.append({'sev': sev, 'text': text, 'who': [w for w in [NAME2ID.get(who, who)] if w], 'fix': fix, 'ids': list(ids), 'k': 'C'})
-    act = {k: v for k, v in I.items() if not v.get('archived')}
+    act = {k: v for k, v in I.items() if not v.get('archived') and not v.get('hold')}  # hold = متوقف به دستور ممضی، بدون هشدار
     for k, it in act.items():
         tt = it.get('title'); f = flow(it); st = it.get('stages') or {}
         if it.get('date') and it['date'] < td and it.get('stage') != 'done':

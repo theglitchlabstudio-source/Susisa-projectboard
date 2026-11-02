@@ -219,3 +219,4 @@ ffmpeg -i edit.mp4 -vf "scale=1080:1920:flags=lanczos,fps=30,format=yuv420p" -c:
 7. سیگنال‌های رتبه‌بندی: ماژول ۱۹ و https://www.highstyle.ai/insights/instagram-reels-algorithm-2026
 
 </div>
+- 1405/08/11 · ریل غذا: روی پرصداترین لحظه شروع کن و ثانیهٔ اول بی‌حرف و بی‌متن بذار؛ ریل ۱۵ تا ۳۰ ثانیه. منبع: blitzcutai.com (فروشنده، بدون داده؛ **فرضیه**، با اینسایت Every Bite Counts چکش می‌کنیم).

@@ -24,6 +24,7 @@
     تسک تجمیعی (چند محتوا روی یک تسک، مثل پست‌ها یا استوری روزانه): یک خط چک‌لیست برای هر محتوا؛ done وقتی همه منتشر شدن؛ موعد = آخرین تاریخ.
   برد اصلی ← محتوا: اگر مسئول محتوا خالیه، مسئول تسک برد اصلی؛ اگر تاریخ محتوا خالیه و تسک یک‌به‌یک موعد داره، همون موعد.
 """
+import hashlib
 import argparse, json, os, re, sys, time, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import board as B
@@ -308,6 +309,30 @@ def sync_core(I, M, T, nm):
                     elif fld == 'owner' and cv: t['owner'] = NAME2ID.get(cv, t.get('owner'))
                     t['upd'] = int(time.time() * 1000); t['by'] = 'CL'; ch.append('برد اصلی «%s»: %s ← %s (از برد محتوا)' % (t.get('t'), 'موعد' if fld == 'due' else 'مسئول', human(cv) if fld == 'due' else cv))
             ss[s] = {'due': x.get('due') or '', 'owner': x.get('owner') or ''}
+    # concept/title change watch (تأیید ممضی ۱۱ آبان): تغییر کانسپت = خط هشدار روی تسک برد اصلی + کانسپت تازه در notes
+    for k, it in I.items():
+        if it.get('archived') or it.get('stage') == 'done': continue
+        sig = hashlib.sha1(((it.get('title') or '') + '|' + ((it.get('concept') or {}).get('text') or '')).encode('utf8')).hexdigest()[:12]
+        cs = it.get('conceptSync') or {}
+        if cs.get('sig') == sig: continue
+        first = not cs.get('sig')
+        it['conceptSync'] = {'sig': sig, 'at': cs.get('at') or '', 'line': cs.get('line') or ''}
+        if first: continue
+        line = '⚠️ کانسپت «%s» عوض شد (%s): تسک‌های مرحله و پرامپت تدوین رو چک کن' % (it.get('title'), human(today()))
+        it['conceptSync'].update({'at': today(), 'line': line}); touch(it)
+        tids = [it.get('boardTask')] if it.get('boardTask') else []
+        for v in (it.get('stageTasks') or {}).values(): tids += v if isinstance(v, list) else [v]
+        solo = len([1 for o in I.values() if not o.get('archived') and o.get('boardTask') == it.get('boardTask')]) == 1
+        for i, tid in enumerate(dict.fromkeys(tids)):
+            t = T.get(tid)
+            if not t or t.get('status') == 'done': continue
+            if tid == it.get('boardTask') or not it.get('boardTask') or not i:
+                if not any(c.get('x') == line for c in t.get('check') or []): t['check'] = (t.get('check') or []) + [{'x': line, 'done': False}]
+            if solo or tid != it.get('boardTask'):
+                n = re.sub(r'\[کانسپت از برد محتوا\][^\n]*\n?', '', t.get('notes') or '')
+                t['notes'] = '[کانسپت از برد محتوا] %s\n%s' % (((it.get('concept') or {}).get('text') or '').replace('\n', ' '), n)
+            t['upd'] = int(time.time() * 1000); t['by'] = 'CL'
+        ch.append('«%s»: کانسپت عوض شد، به برد اصلی خبر داده شد' % it.get('title'))
     return ch
 
 def cmd_sync(a):
@@ -373,6 +398,13 @@ def check_all():
         miss = [B.fmt_j(n) for n in range(max(B.parse_j(R['storyFrom']), B.today_j()), B.parse_j(R['storyTo']) + 1) if not any(i.get('type') == 'story' for i in by.get(B.fmt_j(n), []))]
         if miss: add(1, '%s روز آینده استوری برنامه‌ریزی‌شده نداره: %s' % (fa(len(miss)), '، '.join(human(d) for d in miss[:5])), 'A', 'استوری اضافه کن')
     Tm = B.load('tasks')
+    for k, it in act.items():
+        cs = it.get('conceptSync') or {}
+        if not cs.get('at') or not it.get('date') or it.get('stage') == 'done': continue
+        t = Tm.get(it.get('boardTask') or '')
+        open_ = t and any(c.get('x') == cs.get('line') and not c.get('done') for c in t.get('check') or [])
+        if open_ and jdn(it['date']) - jdn(today()) <= 2:
+            add(3, 'کانسپت «%s» عوض شده و کمتر از ۲ روز تا انتشار مونده' % it.get('title'), 'ممضی', 'تسک‌های مرحله و پرامپت تدوین رو هم‌خط کن و خط هشدار رو تیک بزن', (k,))
     for k, it in act.items():
         t = Tm.get(it.get('boardTask') or '')
         if t and len([1 for x in act.values() if x.get('boardTask') == it['boardTask']]) == 1 and t.get('due') is not None and it.get('date') and B.fmt_j(t['due']) != it['date'] and (it.get('sync') or {}).get('date') not in (it['date'], B.fmt_j(t['due'])):

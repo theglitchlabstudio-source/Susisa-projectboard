@@ -74,6 +74,7 @@ python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
 - همان قالب `{"v":1,"docs":{…}}` و همان توکن دستگاه (`localStorage` کلید `susisa-gh`) که برد اصلی دارد؛ دستگاهی که برد اصلی را وصل کرده، این صفحه را هم بی‌تنظیم ویرایش می‌کند.
 - ابزار ایجنت: `python3 tools/content.py list|show|set|stage|approve|task|comment|ai|add|link|sync|check|summary` (راهنما: `content.py -h`). مرحله‌ها: concept, scenario, storyboard, prep, shoot, edit, color, caption, qc, publish, done.
 - **پل دو برد:** هر محتوا `boardTask` (تسک انتشار یا کل کار در برد اصلی) و `stageTasks` ({مرحله: [تسک‌های تولید]}) دارد. `content.py sync` در هر اجرای ایجنت (اول و آخر) دو برد را هم‌گام می‌کند؛ `watch.py` هشدارهای برد محتوا را با قاعدهٔ R16 می‌آورد و `report.py digest` خلاصه‌اش را. ماژول ۱۳ بخش ۱۰.
+- **sync خودکار (از ۱۱ آبان):** ورک‌فلوی `board-sync` با هر push روی `tasks.json` یا `content_items.json` در شاخهٔ `board-data` حدود یک دقیقه بعد `content.py sync` رو می‌زنه. فایل ورک‌فلو باید روی **هر دو** شاخهٔ main و board-data یکی باشه (رویداد push ورک‌فلو رو از همون شاخه می‌خونه). تغییر عنوان یا کانسپت: خط «⚠️ کانسپت … عوض شد» روی تسک برد اصلی و `[کانسپت از برد محتوا]` در notes تسک‌های مرتبط؛ `edit.prompt` رو ایجنت هم‌خط می‌کنه.
 - **فایل اضافه نساز:** برنامه، تقویم، سناریو، کپشن و بریف مستقیم در خود بردها؛ `attach` فقط وقتی تیم صریح خواسته.
 
 ## صفحهٔ تقویم برنامه‌ریزی محتوا (plan.html، از ۱۰ آبان ۱۴۰۵)

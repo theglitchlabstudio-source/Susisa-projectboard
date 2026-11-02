@@ -1,0 +1,80 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تقویم محتوای سوسیسا</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;800&display=swap"><style>
+/* صفحهٔ تعاملی تقویم محتوا: موضوع، کانسپت، نوع، سازنده و تأیید هر آیتم برد محتوا. قیمت‌ها فقط روی دستگاه و ولت خصوصی، هرگز در مخزن عمومی. */
+:root{
+  --bg:#FFF6E8;--card:#FFFFFF;--card2:#FFF1DC;--ink:#22140F;--mute:#7C6658;--line:#EEDDC6;
+  --red:#CC0212;--red2:#A30010;--redsoft:#FCE3DF;--onred:#FFFFFF;
+  --ok:#1F7A4D;--oksoft:#DDF1E5;--warn:#A86200;--warnsoft:#FCEBCB;--info:#2F5D8A;--infosoft:#DFEAF5;
+  --reel:#CC0212;--post:#22140F;--story:#7B3FA8;
+  --sh:0 1px 2px rgba(60,20,0,.07),0 8px 20px -14px rgba(60,20,0,.45);
+  --f-display:"Lalezar","Vazirmatn",Tahoma,sans-serif;--f-body:"Vazirmatn",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1A110D;--card:#241814;--card2:#2E201A;--ink:#F7EADB;--mute:#B9A08E;--line:#3E2C23;--redsoft:#3E1715;--oksoft:#16301F;--warnsoft:#3A2A10;--infosoft:#172636;--post:#F7EADB}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--red)}
+.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left))}
+.top .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.top h1{font-family:var(--f-display);font-weight:400;font-size:24px;margin:0 0 0 auto;color:var(--red)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:11px;padding:6px 12px;font-weight:700;cursor:pointer;box-shadow:var(--sh);white-space:nowrap}
+.btn:hover{border-color:var(--red)}
+.btn.pri{background:var(--red);color:var(--onred);border-color:var(--red)}
+.btn.sm{padding:3px 9px;font-size:13px;box-shadow:none}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:3px 11px;font-size:13px;font-weight:700;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.muted{color:var(--mute)}.small{font-size:12.5px}
+.status{font-size:12.5px;color:var(--mute);margin-inline-start:8px}
+.status.err{color:var(--red)}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px 80px}
+.banner{border-radius:12px;padding:10px 14px;margin:0 0 12px;background:var(--infosoft);color:var(--info);font-size:14px}
+.banner.warn{background:var(--warnsoft);color:var(--warn)}
+.week{margin:18px 0 6px;font-family:var(--f-display);font-weight:400;font-size:19px;display:flex;gap:10px;align-items:baseline}
+.week small{font-family:var(--f-body);font-size:12.5px;color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:8px 0;box-shadow:var(--sh);display:grid;grid-template-columns:150px 1fr;gap:6px 14px}
+.card.done{opacity:.7}
+.when{font-weight:800}
+.when .t{display:inline-block;color:#fff;border-radius:7px;padding:0 8px;font-size:12px;margin-top:4px}
+.t.reel{background:var(--reel)}.t.post{background:var(--post);color:var(--bg)}.t.story{background:var(--story)}
+.ttl{font-weight:800;font-size:16px;border:0;background:transparent;width:100%;padding:2px 0;border-bottom:1px dashed transparent}
+.ttl:focus{outline:0;border-bottom-color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:6px}
+.fld{display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--mute)}
+.fld input,.fld select,.fld textarea{border:1px solid var(--line);background:var(--card2);border-radius:9px;padding:5px 8px;font-size:14px;color:var(--ink);width:100%}
+.fld textarea{min-height:58px;resize:vertical}
+.fld.wide{grid-column:span 2}.fld.full{grid-column:1/-1}
+.ap{display:flex;gap:4px;flex-wrap:wrap}
+.ap .chip[data-v="ok"][aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.ap .chip[data-v="review"][aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.ap .chip[data-v="fix"][aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.price{background:var(--warnsoft)!important}
+.hidep .pcol{display:none!important}
+.sum{margin:18px 0;padding:12px 14px;border-radius:14px;background:var(--card2);font-size:14px}
+dialog{border:0;border-radius:16px;padding:18px;max-width:640px;width:calc(100% - 32px);background:var(--card);color:var(--ink);box-shadow:var(--sh)}
+dialog::backdrop{background:rgba(20,10,5,.45)}
+.trow{display:grid;grid-template-columns:90px 1fr 120px 36px;gap:6px;margin:4px 0;align-items:center}
+.trow input,.trow select{border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:4px 6px;width:100%}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:14px;z-index:99;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+/* برگهٔ خروجی (PNG/PDF): جدول ساده */
+#sheet{display:none}
+.sheet{background:#FFF6E8;color:#22140F;padding:28px;font-family:var(--f-body);width:1120px}
+.sheet h2{font-family:var(--f-display);font-weight:400;color:#CC0212;font-size:30px;margin:0}
+.sheet table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}
+.sheet th{background:#22140F;color:#FFF6E8;padding:6px 8px;text-align:right}
+.sheet td{border-bottom:1px solid #EEDDC6;padding:6px 8px;vertical-align:top}
+.sheet tr.wk td{background:#FBE6C8;font-weight:800}
+.sheet .tg{display:inline-block;color:#fff;border-radius:6px;padding:0 6px;font-size:11.5px}
+.sheet .tg.reel{background:#CC0212}.sheet .tg.post{background:#22140F}.sheet .tg.story{background:#7B3FA8}
+.sheet .ok{color:#1F7A4D;font-weight:800}.sheet .review{color:#A86200;font-weight:800}.sheet .fix{color:#CC0212;font-weight:800}
+@media (max-width:720px){.card{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.top h1{font-size:20px;width:100%;margin:0}}
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  html,body{background:#fff}
+  .top,.wrap,.toast,dialog{display:none!important}
+  #sheet{display:block!important}
+  .sheet{width:auto;padding:0;background:#fff}
+  .sheet tr{break-inside:avoid}
+}
+
+#sheet{display:block}body{padding:16px}</style></head><body><div id="sheet"><div class="sheet"><h2>تقویم محتوای سوسیسا</h2><div style="font-size:13px;color:#7C6658">آیتم‌های باقی‌مونده · به‌روز: ۱۴۰۵/۰۸/۱۱ ۲۰:۲۴</div><table><thead><tr><th style="width:120px">روز</th><th>نوع</th><th style="width:22%">عنوان و موضوع</th><th style="width:28%">کانسپت</th><th>نوع محتوا</th><th>سازنده</th><th>تأیید امیررضا</th></tr></thead><tbody><tr class="wk"><td colspan="7">هفتهٔ ۹ آبان تا ۱۵ آبان</td></tr><tr><td>دوشنبه ۱۱ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری: شیر پست ۴ اسلایدی + باکس سؤال «چی سفارش دادی؟»</b></td><td>گفت‌وگو و داده: شیر پست آلبوم روز افتتاحیه با باکس سؤال «چی سفارش دادی؟».</td><td>شیر و ریپوست</td><td>گلیچ‌لب</td><td class="draft">پیش‌نویس</td></tr><tr><td>چهارشنبه ۱۳ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری آیتم منو: کراکف از نزدیک</b><br>عکس از محصول</td><td>آشنایی با محصول؛ عکس یا ویدئوی نزدیک واقعی از </td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>پنج‌شنبه ۱۴ آبان</td><td><span class="tg reel">ریل</span></td><td><b>ریل «Every Bite Counts» (راش‌های گاز زدن)</b><br>Every Bite Counts: هر گاز حساب می‌شه</td><td>ریل خلاقانه از راش‌هایی که ممضی از گاز زدن هات‌داگ و غذا گرفته؛ موضوع: Every Bite Counts. جای ریل سینمایی روز افتتاحیه (ممضی، ۱۰ آبان). کانسپت نهایی و تأیید امیررضا لازم.</td><td>ریل محصول و بافت</td><td>گلیچ‌لب</td><td class="draft">پیش‌نویس</td></tr><tr><td>پنج‌شنبه ۱۴ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری تیزر ۱۰ ثانیهٔ آخر ریل Every Bite Counts + شیر ریل</b></td><td>هل اولیهٔ ریل؛ یه ساعت قبل از ریل.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>جمعه ۱۵ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری نظرسنجی: تاپینگ محبوبت کدومه؟</b></td><td>تعامل سریع با استیکر Poll.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr class="wk"><td colspan="7">هفتهٔ ۱۶ آبان تا ۲۲ آبان</td></tr><tr><td>شنبه ۱۶ آبان</td><td><span class="tg post">پست</span></td><td><b>پست «آناتومی برلین ساسیج» (اسلایدی)</b><br>معرفی برلین ساسیج به سبک آناتومی</td><td>معرفی برلین ساسیج (اسم تازهٔ سیگنیچر اسلایسی، الان سرو می‌شه) به سبک آناتومی: لایه‌ها و اجزا. منتظر تأیید اسم از امیررضا و عکس واقعی آیتم.</td><td>کاروسل طراحی و اینفوگرافی</td><td>گلیچ‌لب</td><td class="draft">پیش‌نویس</td></tr><tr><td>یکشنبه ۱۷ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری پشت صحنهٔ آشپزخونه</b></td><td>اعتماد و شفافیت؛ فریم واقعی از آشپزخونه.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>سه‌شنبه ۱۹ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری ریپوست استوری مشتری‌ها</b></td><td>محتوای کاربر؛ فقط استوری‌هایی که پیج رو تگ کردن.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>چهارشنبه ۲۰ آبان</td><td><span class="tg reel">ریل</span></td><td><b>ریل «یک سفارش، از صندوق تا دست مشتری»</b></td><td>نشون دادن فرایند و سرعت. ریل ساده. ابزار: Claude Code و ffmpeg.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>چهارشنبه ۲۰ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری تیزر + شیر ریل «یک سفارش»</b></td><td>هل اولیهٔ ریل.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>جمعه ۲۲ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری آیتم منو: معرفی یه آیتم دیگه</b></td><td>آشنایی با محصول.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr class="wk"><td colspan="7">هفتهٔ ۲۳ آبان تا ۲۹ آبان</td></tr><tr><td>شنبه ۲۳ آبان</td><td><span class="tg post">پست</span></td><td><b>پست «راهنمای سفارش و منوی سوسیسا»</b></td><td>پست گرافیکی حرفه‌ای؛ مرجع منو برای ذخیره و ارسال. ابزار: EpicInfographics.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>یکشنبه ۲۴ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری چهره‌های پشت پیشخوان</b></td><td>نزدیکی با تیم؛ با اجازهٔ خود بچه‌ها.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>چهارشنبه ۲۷ آبان</td><td><span class="tg reel">ریل</span></td><td><b>ریل «اولین گاز: واکنش مشتری‌ها»</b></td><td>اعتبار اجتماعی؛ ویدئوی کوتاه و ریتم‌دار. فقط با رضایت مشتری. ابزار: Claude Code و ffmpeg.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>چهارشنبه ۲۷ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری تیزر + شیر ریل «اولین گاز»</b></td><td>هل اولیهٔ ریل.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr><td>جمعه ۲۹ آبان</td><td><span class="tg post">پست</span></td><td><b>پست «ماه اول با شما»: موزاییک لحظه‌ها</b></td><td>پست ساده؛ جمع‌بندی و تشکر. ابزار: Open Carrusel.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr><tr class="wk"><td colspan="7">هفتهٔ ۳۰ آبان تا ۶ آذر</td></tr><tr><td>شنبه ۳۰ آبان</td><td><span class="tg story">استوری</span></td><td><b>استوری ماه اول در یک نگاه + سؤال برای ماه بعد</b></td><td>بستن ماه و شنیدن مشتری؛ باکس سؤال.</td><td></td><td></td><td class="draft">پیش‌نویس</td></tr></tbody></table></div></div></body></html>

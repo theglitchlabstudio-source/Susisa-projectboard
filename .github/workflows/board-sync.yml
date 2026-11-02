@@ -1,0 +1,27 @@
+name: board-sync
+# هم‌گام‌سازی خودکار برد اصلی و برد محتوا بعد از هر تغییر داده (تأیید ممضی، ۱۱ آبان ۱۴۰۵).
+# کامیت‌های این ورک‌فلو با GITHUB_TOKEN هستن و دوباره اجراش نمی‌کنن، پس حلقه نمی‌شه.
+on:
+  push:
+    branches: [board-data]
+    paths: ['data/tasks.json', 'data/content_items.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: board-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Sync boards
+        env:
+          TZ: Asia/Tehran
+          BOARD_DIR: ${{ runner.temp }}/board-data
+          BOARD_REMOTE: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+        run: python3 tools/content.py sync

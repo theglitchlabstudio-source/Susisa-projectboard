@@ -12,8 +12,9 @@
   content.py task <id> "متن" [--owner ممضی] [--due 1405/07/28] [--stage edit]
   content.py comment <id> "پیام"
   content.py ai <id> [--brief "…"] [--prompt "…"] [--ideas "…"]   # پنل «یادداشت Claude» در صفحهٔ محتوا
-  content.py add <reel|post|story> "عنوان" [--date 1405/07/28] [--owner ممضی] [--concept "…"] [--board <id تسک برد اصلی>]
+  content.py add <reel|post|story> "عنوان" [--date 1405/07/28] [--owner ممضی] [--concept "…"] [--board <id تسک برد اصلی>] [--tier reel-simple]
   content.py link <id> <id تسک برد اصلی>   # پیوند یک محتوا به تسک برد اصلی
+  content.py tiers [--month 1405/09]       # دسته‌ها، حد کار و سهمیه (بدون مبلغ؛ ماژول ۳۰)
   content.py sync [--dry]                  # همگام‌سازی دوطرفهٔ دو برد (قاعده‌ها پایین)
   content.py check [--md] [--json]          # هشدارهای برد محتوا (مثل ناظر)
   content.py summary                        # خلاصهٔ Markdown برای kb/live.md
@@ -251,8 +252,24 @@ def cmd_add(a):
               'concept': {'text': a.concept or '', 'ap': {'status': 'draft'}}, 'stages': {}, 'tasks': [], 'comments': [], 'tags': [],
               'createdAt': stamp(), 'createdBy': BY}
         if a.board: it['boardTask'] = B.find(T, a.board)
+        if a.tier:
+            tr = tier_of(M, a.tier)
+            if not tr or tr.get('kind') != a.type: sys.exit('دسته نامعتبره؛ content.py tiers رو ببین')
+            it['plan'] = {'ptype': a.tier, 'ap': 'draft', 'aps': {'topic': 'review'}}
         touch(it); I[nid] = it; logc(M, 'ساخت «%s» توسط Claude' % a.title); return nid
     print('ok', commit('content: add', fn))
+
+def tiers_of(M): return ((M.get('plan') or {}).get('types')) or []
+def tier_of(M, i): return next((t for t in tiers_of(M) if t.get('id') == i), None)
+def quota(M, t, m):
+    q = ((M.get('plan') or {}).get('quota') or {}).get(m) or {}
+    return int(q.get(t['id'], t.get('quota') or 0))
+def cmd_tiers(a):
+    """دسته‌ها، حد کار و سهمیه؛ مبلغ اینجا نیست و نباید نقل بشه (ولت خصوصی content-plan/prices.json)."""
+    B.ensure(); M = B.load('content_meta'); I = B.load('content_items'); m = (a.month or today())[:7]
+    for t in tiers_of(M):
+        n = len([1 for it in I.values() if not it.get('archived') and (it.get('date') or '')[:7] == m and (it.get('plan') or {}).get('ptype') == t['id'] and not (it.get('plan') or {}).get('extra')])
+        print('%-14s %-22s %s از %s | %s\n  حد کار: %s\n  کانسپت: %s\n  ابزار: %s\n  مرحله‌های حذف‌شدنی: %s' % (t['id'], t['name'], fa(n), fa(quota(M, t, m)), t.get('level', ''), t.get('scope', ''), t.get('concept', ''), t.get('tools', ''), '، '.join(LBL.get(x, x) for x in t.get('skip') or []) or '—'))
 
 def cmd_link(a):
     def fn(I, M, T):
@@ -338,6 +355,15 @@ def sync_core(I, M, T, nm):
         new = {'brief': t.get('briefNote') or '', 'prompt': t.get('promptNote') or '', 'ideas': t.get('ideaNote') or ''}
         if any(new.values()) and any((ai.get(x) or '') != new[x] for x in new):
             ai.update(new); ai['src'] = 'main'; ai['at'] = stamp(); it['ai'] = ai; ch.append('«%s»: یادداشت Claude از برد اصلی به‌روز شد' % it.get('title'))
+    # دسته و حد کار روی تسک برد اصلی (بدون مبلغ)
+    for k, it in I.items():
+        t = T.get(it.get('boardTask') or ''); tr = tier_of(M, (it.get('plan') or {}).get('ptype'))
+        if not t or not tr or it.get('archived') or t.get('status') == 'done': continue
+        if len([1 for o in I.values() if not o.get('archived') and o.get('boardTask') == it.get('boardTask')]) != 1: continue
+        line = '[دستهٔ محتوا] %s: %s' % (tr['name'], tr.get('scope', ''))
+        n0 = t.get('notes') or ''
+        if line not in n0:
+            t['notes'] = line + '\n' + re.sub(r'\[دستهٔ محتوا\][^\n]*\n?', '', n0); t['upd'] = int(time.time() * 1000); t['by'] = 'CL'; ch.append('برد اصلی «%s»: دستهٔ محتوا ثبت شد' % t.get('t'))
     # stage-level links: item.stageTasks = {stage: [main task ids]}
     for k, it in I.items():
         if it.get('archived') or not it.get('stageTasks'): continue
@@ -448,6 +474,16 @@ def check_all():
             add(1, '«%s» مسئول نداره' % tt, '', 'مسئول کل بده', [k])
         for s in APS:
             if ap(it, s) == 'fix': add(2, '«%s»: %s نیاز به اصلاح خورده' % (tt, s), it.get('owner'), 'یادداشت بازبینی رو ببین و اصلاح کن', [k])
+    # دسته و سهمیه (ماژول ۳۰): مبلغ هرگز تو هشدار نمیاد
+    if tiers_of(M):
+        for k, it in act.items():
+            if (it.get('date') or '') >= td and it.get('stage') != 'done' and not tier_of(M, (it.get('plan') or {}).get('ptype')) and not (it.get('plan') or {}).get('extra'):
+                add(2, '«%s» دسته نداره؛ کیفیت و حد کارش معلوم نیست' % it.get('title'), it.get('owner'), 'تو تقویم محتوا دسته بده', [k])
+        months = sorted({(it.get('date') or '')[:7] for it in act.values() if (it.get('date') or '') >= td})
+        for m in months:
+            for t in tiers_of(M):
+                n = len([1 for it in I.values() if not it.get('archived') and (it.get('date') or '')[:7] == m and (it.get('plan') or {}).get('ptype') == t['id'] and not (it.get('plan') or {}).get('extra')])
+                if n > quota(M, t, m): add(2, 'ماه %s: «%s» از سهمیه گذشت (%s از %s)' % (fa(m), t['name'], fa(n), fa(quota(M, t, m))), 'ممضی', 'جابه‌جا کن، یا «خارج از بسته» بزن و با امیررضا هماهنگ کن')
     by = {}
     for k, it in act.items():
         if it.get('date'): by.setdefault(it['date'], []).append(it)
@@ -509,11 +545,12 @@ def main():
     s = sp.add_parser('task'); s.add_argument('id'); s.add_argument('text'); s.add_argument('--owner'); s.add_argument('--due'); s.add_argument('--stage')
     s = sp.add_parser('comment'); s.add_argument('id'); s.add_argument('text')
     s = sp.add_parser('ai'); s.add_argument('id'); s.add_argument('--brief'); s.add_argument('--prompt'); s.add_argument('--ideas')
-    s = sp.add_parser('add'); s.add_argument('type'); s.add_argument('title'); s.add_argument('--date'); s.add_argument('--owner'); s.add_argument('--concept'); s.add_argument('--board')
+    s = sp.add_parser('add'); s.add_argument('type'); s.add_argument('title'); s.add_argument('--date'); s.add_argument('--tier'); s.add_argument('--owner'); s.add_argument('--concept'); s.add_argument('--board')
     s = sp.add_parser('link'); s.add_argument('id'); s.add_argument('task')
     s = sp.add_parser('sync'); s.add_argument('--dry', action='store_true')
     s = sp.add_parser('check'); s.add_argument('--md', action='store_true'); s.add_argument('--json', action='store_true')
     sp.add_parser('summary')
+    s = sp.add_parser('tiers'); s.add_argument('--month')
     s = sp.add_parser('alts'); s.add_argument('id'); s.add_argument('sec', nargs='?')
     s = sp.add_parser('pick'); s.add_argument('id'); s.add_argument('sec'); s.add_argument('n')
     a = ap_.parse_args()
@@ -522,6 +559,6 @@ def main():
     if a.cmd in ('check', 'summary'):
         B.ensure(); NAME2ID = {v: k for k, v in names().items()}
     if a.cmd == 'summary': print(summary()); return
-    {'list': cmd_list, 'show': cmd_show, 'set': cmd_set, 'stage': cmd_stage, 'approve': cmd_approve, 'task': cmd_task, 'comment': cmd_comment, 'ai': cmd_ai, 'add': cmd_add, 'link': cmd_link, 'sync': cmd_sync, 'check': cmd_check, 'alts': cmd_alts, 'pick': cmd_pick}[a.cmd](a)
+    {'list': cmd_list, 'show': cmd_show, 'set': cmd_set, 'stage': cmd_stage, 'approve': cmd_approve, 'task': cmd_task, 'comment': cmd_comment, 'ai': cmd_ai, 'add': cmd_add, 'link': cmd_link, 'sync': cmd_sync, 'check': cmd_check, 'alts': cmd_alts, 'pick': cmd_pick, 'tiers': cmd_tiers}[a.cmd](a)
 
 if __name__ == '__main__': main()

@@ -84,9 +84,10 @@ python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
 - **sync خودکار (از ۱۱ آبان):** ورک‌فلوی `board-sync` با هر push روی `tasks.json` یا `content_items.json` در شاخهٔ `board-data` حدود یک دقیقه بعد `content.py sync` رو می‌زنه. فایل ورک‌فلو باید روی **هر دو** شاخهٔ main و board-data یکی باشه (رویداد push ورک‌فلو رو از همون شاخه می‌خونه). تغییر عنوان یا کانسپت: خط «⚠️ کانسپت … عوض شد» روی تسک برد اصلی و `[کانسپت از برد محتوا]` در notes تسک‌های مرتبط؛ `edit.prompt` رو ایجنت هم‌خط می‌کنه.
 - **فایل اضافه نساز:** برنامه، تقویم، سناریو، کپشن و بریف مستقیم در خود بردها؛ `attach` فقط وقتی تیم صریح خواسته.
 
-## صفحهٔ تقویم برنامه‌ریزی محتوا (plan.html، از ۱۰ آبان ۱۴۰۵)
-- لینک از هدر برد اصلی («تقویم محتوا») و بالای بخش «تقویم» برد محتوا. آیتم‌ها همان `content_items` برد محتوا هستند.
-- فیلدهای تازهٔ هر آیتم: `plan` = `{topic, ptype, maker: glitch|out, vendor, note, ap: draft|review|ok|fix, apAt}`؛ کانسپت همان `concept.text` است و تأیید صفحه روی `concept.ap` هم نوشته می‌شود (ok/fix = امیررضا).
-- نوع‌های محتوا (بدون قیمت) در `content_meta` سند `plan.types`. **قیمت و هزینه هرگز در board-data یا مخزن عمومی نیست:** فقط localStorage دستگاه (`susisa-plan-prices`) و ولت خصوصی `susisa-vault/content-plan/prices.json`. ایجنت این فایل را در بردها، کامنت‌ها یا گزارش‌ها نقل نمی‌کند.
-- خروجی PNG (html2canvas از cdnjs) و PDF (چاپ مرورگر، A4 افقی)، اشتراک با Web Share. «ثبت نسخه در فایل‌های برد» (و خودکار ۹۰ ثانیه بعد از هر ویرایش) یک HTML ایستای بی‌قیمت در `files/` می‌گذارد و روی تسک «تقویم محتوای باقی‌مونده…» (`n96a268451a3e`) با نسخه‌گذاری ثبت می‌کند.
-- ایجنت: برای خواندن موضوع و کانسپت و تأییدها `content.py show <id>` (فیلد `plan`)؛ برای نوشتن `content.py set <id> plan.topic="…" plan.ap=review`.
+## تقویم محتوا (plan.html؛ مرجع اصلی از ۱۱ آبان ۱۴۰۵؛ ماژول ۳۰)
+- PDFهای تقویم آبان منسوخ‌اند. **تقویم فقط همین صفحه و `content_items` است**؛ لینکش در هدر برد اصلی و بالای «تقویم» برد محتوا. تغییر تاریخ اینجا یعنی تغییر در هر دو برد (`board-sync`).
+- هر محتوا دسته دارد (`plan.ptype`): دسته کیفیت، حد کار و جنس کانسپت را تعیین می‌کند. تعریف‌ها و سهمیه در `content_meta` سند `plan` (`types`, `quota`, `notes` یادداشت روز). ابزار: `content.py tiers`، `content.py add … --tier`، `content.py set <id> plan.ptype=…`.
+- فیلدهای `plan`: `{topic, ptype, extra, maker, vendor, note, dateAsk, hist, aps:{topic,concept,mock,final}, ap, apAt}`.
+- امیررضا بدون توکن همان لینک را باز می‌کند؛ نظرش روی دستگاهش می‌ماند و با «فرستادن نظرها» به ممضی می‌رسد و ممضی در «نظر امیررضا» پیست می‌کند.
+- **مبلغ هرگز در board-data یا مخزن عمومی نیست:** فقط localStorage دستگاه (`susisa-plan-prices`) و ولت خصوصی `content-plan/prices.json`. ایجنت این فایل را در بردها، کامنت‌ها یا گزارش‌ها نقل نمی‌کند.
+- مناسبت‌ها و ماه‌های قمری: `EV` و `LUNAR` در plan.html (تا پایان ۱۴۰۵).

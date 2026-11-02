@@ -361,6 +361,8 @@ function patchPath(it,path,val){
 function item(id){var b=items[id];if(!b)return null;return pending[id]?merge(b,pending[id]):b}
 function allItems(withArch){return Object.keys(items).map(item).filter(function(x){return x&&(withArch||!x.archived)})}
 function toast(t){var h=document.getElementById('toastHost');h.innerHTML='<div class="toast" role="status">'+esc(t)+'</div>';clearTimeout(toast._t);toast._t=setTimeout(function(){h.innerHTML=''},2600)}
+var planMeta=null;function planTiers(){return (planMeta&&planMeta.types)||[]}
+function tierSpec(it){var id=(it.plan||{}).ptype,t=planTiers().filter(function(x){return x.id===id})[0];return t?'<div class="banner info" style="margin:4px 0"><b>'+esc(t.level||t.name)+':</b> '+esc(t.scope||'')+' <b>کانسپت:</b> '+esc(t.concept||'')+'</div>':'<div class="banner info" style="margin:4px 0">دسته مشخص نیست؛ کیفیت و حد کار رو دسته تعیین می‌کنه.</div>'}
 function tagsOf(it){return Array.isArray(it.tags)?it.tags:[]}
 
 /* ================= Persistence ================= */
@@ -485,7 +487,7 @@ function rCal(){
   var t=todayJ(),all=allItems().filter(function(i){return filt.types[i.type]&&(!filt.owner||i.owner===filt.owner)&&(!filt.tag||tagsOf(i).indexOf(filt.tag)>=0)&&matchesQ(i)});
   var byDay={};all.forEach(function(i){if(i.date)(byDay[i.date]=byDay[i.date]||[]).push(i)});
   var warn=ruleWarnings().day,undated=all.filter(function(i){return !i.date});
-  var h='<a class="banner info" href="plan.html" style="display:block;text-decoration:none;margin-bottom:10px"><b>📋 تقویم برنامه‌ریزی</b>: موضوع، کانسپت، نوع، سازنده و تأیید امیررضای هر آیتم، با خروجی PNG و PDF ←</a><div class="toolbar">';
+  var h='<a class="banner info" href="plan.html" style="display:block;text-decoration:none;margin-bottom:10px"><b>📅 تقویم محتوا (مرجع اصلی)</b>: تقویم شمسی و میلادی با مناسبت‌ها، دسته و سهمیهٔ ماه، تغییر تاریخ و تأیید امیررضا ←</a><div class="toolbar">';
   Object.keys(TYPES).forEach(function(k){h+='<label class="chip '+k+' ck"><input type="checkbox" data-ft="'+k+'"'+(filt.types[k]?' checked':'')+'> '+TYPES[k]+'</label>'});
   h+='<select data-fo="1" aria-label="مسئول">'+ownerOpts(filt.owner,'همهٔ مسئول‌ها')+'</select><select data-fg="1" aria-label="برچسب"><option value="">همهٔ برچسب‌ها</option>'+(s.tags||[]).map(function(x){return '<option'+(x===filt.tag?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select></div>';
   h+='<div class="toolbar"><span class="muted small">بازه:</span><input type="text" data-date="1" data-range="start" value="'+fa(st)+'" aria-label="شروع بازه" readonly><span class="muted">تا</span><input type="text" data-date="1" data-range="end" value="'+fa(en_)+'" aria-label="پایان بازه" readonly>'+
@@ -646,6 +648,7 @@ function rSheet(){
     '<button class="btn sm" data-act="brief" title="همهٔ اطلاعات این محتوا برای دادن به Claude Code">کپی بریف برای Claude</button><button class="btn sm ghost" data-act="dup" data-id="'+openId+'">کپی</button><button class="btn sm ghost" data-act="close" aria-label="بستن">✕</button></div>'+
     '<div class="meta"><label>نوع<select data-act="typeSel">'+Object.keys(TYPES).map(function(k){return '<option value="'+k+'"'+(k===it.type?' selected':'')+'>'+TYPES[k]+'</option>'}).join('')+'</select></label><label>تاریخ انتشار'+F('date',it,'بی‌تاریخ',{date:1})+'</label><label>ساعت'+F('time',it,'۲۱:۰۰')+'</label><label>مسئول کل'+F('owner',it,'',{owner:1})+'</label>'+
     '<label>مرحله<select data-stagesel="'+openId+'">'+flowOf(it).map(function(k){return '<option value="'+k+'"'+(k===(it.stage||'concept')?' selected':'')+'>'+stLabel(it.type,k)+'</option>'}).join('')+'</select></label>'+
+    '<label>دسته و تعرفه<select data-act="tierSet"><option value="">انتخاب دسته</option>'+planTiers().filter(function(x){return x.kind===it.type}).map(function(x){return '<option value="'+esc(x.id)+'"'+(((it.plan||{}).ptype===x.id)?' selected':'')+'>'+esc(x.name)+'</option>'}).join('')+'</select></label>'+tierSpec(it)+
     '<label>برچسب<select data-act="tagAdd"><option value="">+ افزودن برچسب</option>'+(S().tags||[]).filter(function(x){return tagsOf(it).indexOf(x)<0}).map(function(x){return '<option>'+esc(x)+'</option>'}).join('')+'</select></label></div>'+
     (tagsOf(it).length?'<div class="ab" style="padding-bottom:6px">'+tagsOf(it).map(function(x,i){return '<span class="chip tag">'+esc(x)+' <button class="btn xs ghost" data-act="tagRm" data-i="'+i+'" aria-label="برداشتن برچسب">✕</button></span>'}).join('')+'</div>':'')+
     '<div class="stagebar">'+flowOf(it).map(function(k,i){var c=i<stageIdx(it)?'past':i===stageIdx(it)?'on':'';return '<button class="'+c+'" data-act="stageJump" data-k="'+k+'" title="رفتن به این مرحله">'+stLabel(it.type,k)+'</button>'}).join('')+'</div>'+
@@ -988,6 +991,7 @@ function onChange(e){
   if(el.dataset.up!=null&&openId){uploadShot(+el.dataset.up,el.files&&el.files[0]);return}
   if(!openId)return;var it=item(openId);if(!it)return;
   if(el.dataset.act==='typeSel'){var nt=el.value,pt2={type:nt};if(FLOW[nt].indexOf(it.stage||'concept')<0)pt2.stage='concept';queue(openId,pt2,true);if(!SECTIONS[nt].some(function(x){return x[0]===openTab}))openTab='concept';log('«'+it.title+'»: نوع ← '+TYPES[nt]);rSheet();return}
+  if(el.dataset.act==='tierSet'){queue(openId,{plan:Object.assign({},it.plan||{},{ptype:el.value})},true);rSheet();return}
   if(el.dataset.act==='tagAdd'){if(!el.value)return;var tg=tagsOf(it).slice();tg.push(el.value);queue(openId,{tags:tg},true);rSheet();return}
   if(el.dataset.f){var path=el.dataset.f,val2=el.type==='checkbox'?el.checked:el.dataset.date?normDate(el.value):el.dataset.num?(el.value===''?'':+el.value):el.value;
     queue(openId,patchPath(it,path,val2),true);
@@ -1118,10 +1122,11 @@ document.getElementById('status').innerHTML='<div class="banner info">در حا�
   db=makeGh(c);
   db.collection('items').onSnapshot(onItems);
   db.doc('meta/settings').onSnapshot(function(s){if(s.exists){var dd=s.data();settings=merge(DEFAULT_SETTINGS,dd);['team','events','tags'].forEach(function(k){if(dd[k])settings[k]=clone(dd[k])})}render()});
+  db.doc('meta/plan').onSnapshot(function(s){planMeta=s.exists?s.data():null;if(openId&&!sheetDirty)rSheet()});
   db.doc('meta/activity').onSnapshot(function(s){activity=(s.exists&&s.data().list)||[];if(view==='feed')rFeed()});
   db.collection('tasks').onSnapshot(function(s){var n={};s.docs.forEach(function(d){n[d.id]=d.data()});mainTasks=n;if(openId&&!sheetDirty)rSheet()});
   db.collection('ideas').onSnapshot(function(s){var n={};s.docs.forEach(function(d){n[d.id]=clone(d.data())});ideas=n;rIdeas()});
-  db.start().then(function(){diag.db='وصل ✓ (GitHub · '+c.owner+'/'+c.repo+')';if(/وصل شدن/.test(document.getElementById('status').textContent))document.getElementById('status').innerHTML='';tokenBanner();render()},function(e){diag.db='خطا: '+(e&&e.message);document.getElementById('status').innerHTML='<div class="banner err">برد بارگذاری نشد: '+esc(e&&e.message||'')+'. اینترنت یا توکن رو چک کن.</div>'});
+  db.start().then(function(){var op=new URLSearchParams(location.search).get('open');if(op)setTimeout(function(){if(item(op))openSheet(op)},600);diag.db='وصل ✓ (GitHub · '+c.owner+'/'+c.repo+')';if(/وصل شدن/.test(document.getElementById('status').textContent))document.getElementById('status').innerHTML='';tokenBanner();render()},function(e){diag.db='خطا: '+(e&&e.message);document.getElementById('status').innerHTML='<div class="banner err">برد بارگذاری نشد: '+esc(e&&e.message||'')+'. اینترنت یا توکن رو چک کن.</div>'});
   db.canPush().then(function(p){diag.write=c.token?(p?'دارد ✓':'توکن اجازهٔ نوشتن نداره'):'توکن وصل نیست';diag.owner='—';if(c.token&&!p)document.getElementById('status').innerHTML='<div class="banner err">توکن این دستگاه اجازهٔ نوشتن روی مخزن رو نداره. یه توکن با دسترسی Contents: Read and write بساز.</div>';if(view==='set')rSet()});
   assets=null;diag.assets='از طریق «عکس مرجع» داخل صفحهٔ طراحی';
   downloads={save:function(o){return new Promise(function(res){var a=document.createElement('a');a.href=URL.createObjectURL(o.data);a.download=o.filename;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();res()},500)})}};diag.downloads='دارد';

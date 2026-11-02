@@ -52,7 +52,7 @@ CONFLICTS = []
 SEV = {3: 'بحرانی', 2: 'مهم', 1: 'جزئی'}
 BY = 'Claude'          # نویسندهٔ این اجرا (--by)
 FORCE = False          # --force: نوشتن روی محتوای hold
-VERS = ('concept', 'scenario', 'storyboard', 'shoot', 'caption', 'edit', 'prep')
+VERS = ('concept', 'scenario', 'storyboard', 'shoot', 'caption', 'edit', 'prep', 'ai')  # ai: فقط برای alts/pick
 VKEYS = ('text', 'tags', 'prompt')
 
 def fa(x): return str(x).translate(FA)
@@ -234,8 +234,13 @@ def cmd_ai(a):
         i = find(I, a.id); it = I[i]; guard(it); x = it.get('ai') or {}
         for k in ('brief', 'prompt', 'ideas'):
             v = getattr(a, k)
-            if v is not None: x[k] = v
-        x['at'] = stamp(); x['src'] = 'content'; it['ai'] = x; touch(it); return i
+            if v is None: continue
+            if x.get(k) and x[k] != v:  # متن قبلی پنل «یادداشت Claude» گم نشه
+                al = x.get('alts') or []
+                al.append({'k': k, 'text': x[k], 'by': x.get('wby') or it.get('updatedBy') or '?', 'at': x.get('at') or ''})
+                x['alts'] = al[-10:]
+            x[k] = v
+        x['at'] = stamp(); x['src'] = 'content'; x['wby'] = BY; it['ai'] = x; touch(it); return i
     print('ok', commit('content: ai %s' % a.id, fn))
 
 def cmd_add(a):

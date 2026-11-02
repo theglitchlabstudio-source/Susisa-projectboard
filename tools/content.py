@@ -17,6 +17,13 @@
   content.py sync [--dry]                  # همگام‌سازی دوطرفهٔ دو برد (قاعده‌ها پایین)
   content.py check [--md] [--json]          # هشدارهای برد محتوا (مثل ناظر)
   content.py summary                        # خلاصهٔ Markdown برای kb/live.md
+  content.py alts <id> [بخش]               # نسخه‌های قبلی متن‌ها (۱ = تازه‌ترین)
+  content.py pick <id> <بخش> <n>           # نسخهٔ n رو اصلی کن (متن فعلی می‌ره تو نسخه‌ها)
+
+گزینه‌های کلی (قبل از دستور): --by "نام نویسنده" (پیش‌فرض Claude؛ مثلاً «ادمین پیج» یا «چت Cowork»)، --force (نوشتن روی محتوای hold).
+نسخه‌ها: بازنویسی text/tags/prompt بخش‌های concept, scenario, storyboard, shoot, caption, edit, prep متن قبلی رو تو <بخش>.alts نگه می‌داره؛
+  آخرین نوشته اصلیه؛ اگه بخش «تأیید شد» بود، برمی‌گرده به «منتظر تأیید» تا آدم یکی رو نهایی کنه.
+hold: محتوای متوقف به دستور ممضی؛ set/stage/approve/task/comment/ai/pick بدون --force روش کار نمی‌کنن.
 
 قاعده‌های sync:
   محتوا ← برد اصلی (منبع جزئیات تولید، تاریخ انتشار و مرحله، برد محتواست):
@@ -43,6 +50,10 @@ WDN = ['دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه
 NAME2ID = {}
 CONFLICTS = []
 SEV = {3: 'بحرانی', 2: 'مهم', 1: 'جزئی'}
+BY = 'Claude'          # نویسندهٔ این اجرا (--by)
+FORCE = False          # --force: نوشتن روی محتوای hold
+VERS = ('concept', 'scenario', 'storyboard', 'shoot', 'caption', 'edit', 'prep')
+VKEYS = ('text', 'tags', 'prompt')
 
 def fa(x): return str(x).translate(FA)
 def lbl(t, k): return LBL_OVR.get(t, {}).get(k) or LBL.get(k, k)
@@ -92,10 +103,28 @@ def conv_val(path, v):
     if v == 'null': return None
     if k in ('dur',) and re.match(r'^\d+(\.\d+)?$', v): return float(v)
     return v
-def touch(it): it['updatedAt'] = stamp(); it['updatedBy'] = 'Claude'
+def touch(it): it['updatedAt'] = stamp(); it['updatedBy'] = BY
+def guard(it):
+    if it.get('hold') and not FORCE:
+        sys.exit('«%s» به دستور ممضی متوقفه (hold)؛ چیزی روش نوشته نمی‌شه. اگه خود ممضی خواسته، با --force.' % it.get('title'))
+def reopen(sec, note):
+    if ((sec.get('ap') or {}).get('status')) == 'ok':
+        sec['ap'] = {'status': 'review', 'by': BY, 'at': stamp(), 'note': note}
+        sec['hist'] = (sec.get('hist') or [])[-19:] + [{'status': 'review', 'by': BY, 'at': stamp(), 'note': note}]
+def archive(it, path, new):
+    """اگه path متن نسخه‌دار باشه و مقدار قبلی فرق کنه، قبلی رو تو alts نگه دار. خروجی: (نام بخش یا None, آرشیو شد؟)"""
+    ks = path.split('.')
+    if len(ks) != 2 or ks[0] not in VERS or ks[1] not in VKEYS: return None, False
+    sec = it.get(ks[0])
+    old = sec.get(ks[1]) if isinstance(sec, dict) else None
+    if not old or old == new: return ks[0], False
+    al = sec.get('alts') or []
+    al.append({'k': ks[1], 'text': old, 'by': sec.get('wby') or it.get('updatedBy') or '?', 'at': sec.get('wat') or ''})
+    sec['alts'] = al[-10:]
+    return ks[0], True
 def logc(M, text):
     a = M.setdefault('activity', {}).get('list') or []
-    M['activity'] = {'list': ([{'at': stamp(), 'by': 'Claude', 'text': text}] + a)[:200]}
+    M['activity'] = {'list': ([{'at': stamp(), 'by': BY, 'text': text}] + a)[:200]}
 def names():
     P = B.load('profiles'); return {k: v.get('name', k) for k, v in P.items()}
 
@@ -125,12 +154,42 @@ def cmd_show(a):
 
 def cmd_set(a):
     def fn(I, M, T):
-        i = find(I, a.id); it = I[i]
+        i = find(I, a.id); it = I[i]; guard(it); secs = {}
         for kv in a.kv:
-            p, _, v = kv.partition('='); set_path(it, p, conv_val(p, v))
-        touch(it); logc(M, '«%s»: ویرایش توسط Claude (%s)' % (it.get('title'), '، '.join(x.partition('=')[0] for x in a.kv)))
+            p, _, v = kv.partition('='); val = conv_val(p, v)
+            sn, arch = archive(it, p, val)
+            set_path(it, p, val)
+            if sn: secs[sn] = secs.get(sn, False) or arch
+        for sn, arch in secs.items():
+            sec = it[sn]; sec['wby'] = BY; sec['wat'] = stamp()
+            if arch: reopen(sec, 'نسخهٔ تازه از %s؛ نسخهٔ قبلی تو «نسخه‌های دیگه»' % BY)
+        touch(it); logc(M, '«%s»: ویرایش توسط %s (%s)' % (it.get('title'), BY, '، '.join(x.partition('=')[0] for x in a.kv)))
         return i
     print('ok', commit('content: set %s' % a.id, fn))
+
+def cmd_alts(a):
+    B.ensure(); I = B.load('content_items'); it = I[find(I, a.id)]
+    secs = [a.sec] if a.sec else [k for k in VERS if isinstance(it.get(k), dict) and it[k].get('alts')]
+    if not secs: print('نسخهٔ دیگه‌ای نیست'); return
+    for sn in secs:
+        sec = it.get(sn) or {}; al = sec.get('alts') or []
+        print('== %s · نوشتهٔ فعلی: %s %s · %d نسخهٔ دیگه' % (sn, sec.get('wby') or '?', sec.get('wat') or '', len(al)))
+        for n, x in enumerate(reversed(al), 1):
+            print('  [%d] %s · %s · %s\n      %s' % (n, x.get('k', 'text'), x.get('by', '?'), x.get('at', ''), (x.get('text') or '').replace('\n', ' ')[:300]))
+
+def cmd_pick(a):
+    def fn(I, M, T):
+        i = find(I, a.id); it = I[i]; guard(it); sec = it.get(a.sec)
+        al = (sec or {}).get('alts') or []
+        n = int(a.n)
+        if not 1 <= n <= len(al): sys.exit('نسخهٔ %d نیست؛ %d نسخه هست' % (n, len(al)))
+        j = len(al) - n; x = al[j]; k = x.get('k', 'text'); old = sec.get(k)
+        rest = al[:j] + al[j + 1:]
+        if old: rest.append({'k': k, 'text': old, 'by': sec.get('wby') or it.get('updatedBy') or '?', 'at': sec.get('wat') or ''})
+        sec[k] = x.get('text', ''); sec['alts'] = rest[-10:]; sec['wby'] = x.get('by', ''); sec['wat'] = x.get('at', '')
+        reopen(sec, 'نسخهٔ %s برگشت (انتخاب %s)' % (x.get('by', ''), BY))
+        touch(it); logc(M, '«%s»: %s ← نسخهٔ %s' % (it.get('title'), a.sec, x.get('by', ''))); return i
+    print('ok', commit('content: pick %s %s' % (a.id, a.sec), fn))
 
 def move_stage(it, key):
     f = flow(it)
@@ -144,35 +203,35 @@ def move_stage(it, key):
 
 def cmd_stage(a):
     def fn(I, M, T):
-        i = find(I, a.id); it = I[i]; move_stage(it, a.key); touch(it); logc(M, '«%s» ← %s' % (it.get('title'), lbl(it.get('type'), a.key))); return i
+        i = find(I, a.id); it = I[i]; guard(it); move_stage(it, a.key); touch(it); logc(M, '«%s» ← %s' % (it.get('title'), lbl(it.get('type'), a.key))); return i
     print('ok', commit('content: stage %s %s' % (a.id, a.key), fn))
 
 def cmd_approve(a):
     if a.sec not in APS or a.st not in AP: sys.exit('بخش یا وضعیت نامعتبر')
     def fn(I, M, T):
-        i = find(I, a.id); it = I[i]; sec = it.setdefault(a.sec, {})
-        apx = sec.get('ap') or {}; apx.update({'status': a.st, 'by': 'Claude', 'at': stamp()})
+        i = find(I, a.id); it = I[i]; guard(it); sec = it.setdefault(a.sec, {})
+        apx = sec.get('ap') or {}; apx.update({'status': a.st, 'by': BY, 'at': stamp()})
         if a.note: apx['note'] = a.note
-        sec['ap'] = apx; sec['hist'] = (sec.get('hist') or [])[-19:] + [{'status': a.st, 'by': 'Claude', 'at': stamp(), 'note': a.note or ''}]
+        sec['ap'] = apx; sec['hist'] = (sec.get('hist') or [])[-19:] + [{'status': a.st, 'by': BY, 'at': stamp(), 'note': a.note or ''}]
         touch(it); logc(M, '«%s»: %s ← %s' % (it.get('title'), a.sec, AP[a.st])); return i
     print('ok', commit('content: approve %s %s' % (a.id, a.sec), fn))
 
 def cmd_task(a):
     def fn(I, M, T):
-        i = find(I, a.id); it = I[i]
-        it.setdefault('tasks', []).append({'text': a.text, 'stage': a.stage or it.get('stage') or '', 'owner': a.owner or '', 'due': norm_date(a.due) if a.due else '', 'done': False, 'by': 'Claude', 'at': stamp()})
+        i = find(I, a.id); it = I[i]; guard(it)
+        it.setdefault('tasks', []).append({'text': a.text, 'stage': a.stage or it.get('stage') or '', 'owner': a.owner or '', 'due': norm_date(a.due) if a.due else '', 'done': False, 'by': BY, 'at': stamp()})
         touch(it); logc(M, '«%s»: ریزتسک «%s»' % (it.get('title'), a.text)); return i
     print('ok', commit('content: task %s' % a.id, fn))
 
 def cmd_comment(a):
     def fn(I, M, T):
-        i = find(I, a.id); it = I[i]; it.setdefault('comments', []).append({'by': 'Claude', 'at': stamp(), 'text': a.text}); touch(it)
+        i = find(I, a.id); it = I[i]; guard(it); it.setdefault('comments', []).append({'by': BY, 'at': stamp(), 'text': a.text}); touch(it)
         logc(M, '«%s»: پیام تازه از Claude' % it.get('title')); return i
     print('ok', commit('content: comment %s' % a.id, fn))
 
 def cmd_ai(a):
     def fn(I, M, T):
-        i = find(I, a.id); it = I[i]; x = it.get('ai') or {}
+        i = find(I, a.id); it = I[i]; guard(it); x = it.get('ai') or {}
         for k in ('brief', 'prompt', 'ideas'):
             v = getattr(a, k)
             if v is not None: x[k] = v
@@ -185,7 +244,7 @@ def cmd_add(a):
         nid = a.type[0] + format(int(time.time() * 1000), 'x')[-9:]
         it = {'type': a.type, 'title': a.title, 'date': norm_date(a.date) if a.date else '', 'time': '', 'owner': a.owner or '', 'stage': 'concept',
               'concept': {'text': a.concept or '', 'ap': {'status': 'draft'}}, 'stages': {}, 'tasks': [], 'comments': [], 'tags': [],
-              'createdAt': stamp(), 'createdBy': 'Claude'}
+              'createdAt': stamp(), 'createdBy': BY}
         if a.board: it['boardTask'] = B.find(T, a.board)
         touch(it); I[nid] = it; logc(M, 'ساخت «%s» توسط Claude' % a.title); return nid
     print('ok', commit('content: add', fn))
@@ -436,7 +495,7 @@ def summary():
 
 def main():
     global NAME2ID
-    ap_ = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); sp = ap_.add_subparsers(dest='cmd', required=True)
+    ap_ = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter); ap_.add_argument('--by', default='Claude', help='نام نویسنده برای ثبت نسخه و تاریخچه'); ap_.add_argument('--force', action='store_true', help='نوشتن روی محتوای hold'); sp = ap_.add_subparsers(dest='cmd', required=True)
     s = sp.add_parser('list'); s.add_argument('--type'); s.add_argument('--stage'); s.add_argument('--q')
     s = sp.add_parser('show'); s.add_argument('id')
     s = sp.add_parser('set'); s.add_argument('id'); s.add_argument('kv', nargs='+')
@@ -450,10 +509,14 @@ def main():
     s = sp.add_parser('sync'); s.add_argument('--dry', action='store_true')
     s = sp.add_parser('check'); s.add_argument('--md', action='store_true'); s.add_argument('--json', action='store_true')
     sp.add_parser('summary')
+    s = sp.add_parser('alts'); s.add_argument('id'); s.add_argument('sec', nargs='?')
+    s = sp.add_parser('pick'); s.add_argument('id'); s.add_argument('sec'); s.add_argument('n')
     a = ap_.parse_args()
+    global BY, FORCE
+    BY = (a.by or 'Claude').strip() or 'Claude'; FORCE = a.force
     if a.cmd in ('check', 'summary'):
         B.ensure(); NAME2ID = {v: k for k, v in names().items()}
     if a.cmd == 'summary': print(summary()); return
-    {'list': cmd_list, 'show': cmd_show, 'set': cmd_set, 'stage': cmd_stage, 'approve': cmd_approve, 'task': cmd_task, 'comment': cmd_comment, 'ai': cmd_ai, 'add': cmd_add, 'link': cmd_link, 'sync': cmd_sync, 'check': cmd_check}[a.cmd](a)
+    {'list': cmd_list, 'show': cmd_show, 'set': cmd_set, 'stage': cmd_stage, 'approve': cmd_approve, 'task': cmd_task, 'comment': cmd_comment, 'ai': cmd_ai, 'add': cmd_add, 'link': cmd_link, 'sync': cmd_sync, 'check': cmd_check, 'alts': cmd_alts, 'pick': cmd_pick}[a.cmd](a)
 
 if __name__ == '__main__': main()

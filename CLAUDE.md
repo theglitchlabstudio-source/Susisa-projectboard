@@ -68,6 +68,13 @@ python3 tools/brief.py <id>… | --open [--owner M] | --critical [--stdout]
 - **پوشهٔ کاری محتوا:** `E:\glitch test\susisa\06 mohtava instagram\taghvim mohtava` (هر محتوا زیرپوشهٔ `<تاریخ>_<نوع>_<اسم>` با `REPORT.md`؛ اسمش در فیلد `folder` همان محتوا در برد محتوا). آینه در ولت: `susisa/06 mohtava instagram/taghvim mohtava/`.
 - **لحن:** لقب‌ها و «همکار نکته‌بین» در `00-voice.md`؛ حتی روز آروم یه ایده، هشدار یا سؤال.
 
+## حافظهٔ مشترک و ادمین پیج (تصمیم ممضی، ۱۱ آبان ۱۴۰۵)
+- **همهٔ سطح‌ها** (ایجنت مدیر پروژه، ادمین پیج، چت سوسیسا، چت Claude، Cowork، Claude Code) یه منبع حقیقت دارن: همین مخزن. قاعده‌ها: `agent/SHARED-MEMORY.md` (اول کار بخون). هر تصمیم، کانسپت، سناریو، کپشن یا عدد **همون لحظه** با ابزار روی برد؛ دانش و تصمیم یه خط زیر «رویدادهای تازه» `kb/BANK.md`.
+- **امضا:** `python3 tools/content.py --by "<سطح> (<نام>)" …` (مثلاً `--by "چت Cowork (ممضی)"`، `--by "ادمین پیج"`).
+- **نسخه‌ها:** بازنویسی text/tags/prompt بخش‌های محتوا، متن قبلی رو تو `<بخش>.alts` نگه می‌داره (برد: «نسخه‌های دیگه» ← «این بشه اصلی»؛ ابزار: `content.py alts <id>` و `content.py pick <id> <بخش> <n>`). آخرین نوشته پیش‌فرضه؛ بخش تأییدشده برمی‌گرده به «منتظر تأیید» تا آدم نهایی کنه.
+- **hold:** محتوای متوقف به دستور ممضی رو ابزار قفل کرده (`--force` فقط با دستور ممضی).
+- **ادمین پیج** (تحلیل اینستاگرام، اینسایت `insight.h24/h72/last.*`، `insight.analysis`، پیش‌نویس‌ها) بخشی از اجراهای ایجنت مدیر پروژه‌ست: `agent/ig-analyst/INSTRUCTIONS.md`، دانش ماژول ۲۹، داده `kb/instagram/`.
+
 ## برد تولید محتوا (content.html)
 صفحهٔ جدا در همین مخزن: `content.html` (GitHub Pages: `.../Susisa-projectboard/content.html`). لینکش در هدر برد اصلی («برد محتوا») است.
 - داده روی همان شاخهٔ `board-data`: `data/content_items.json` (هر ریل/پست/استوری با کانسپت، سناریو، استوری‌بورد، برگهٔ ضبط، تدوین، کپشن، کنترل کیفیت، مراحل `stages` و ریزتسک‌ها `tasks`)، `data/content_meta.json` (اسناد `settings` و `activity`)، `data/content_ideas.json`. طرح‌های استوری‌بورد: `files/content/<itemId>_<shotId>.jpg`.

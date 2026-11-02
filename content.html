@@ -626,6 +626,12 @@ function F(path,it,ph,o){o=o||{};var v=getD(it,path);
   return '<input type="'+(o.num?'number':'text')+'" data-f="'+path+'"'+(o.num?' data-num="1" min="0" step="0.5"':'')+' value="'+esc(v==null?'':v)+'" placeholder="'+esc(ph||'')+'"'+(o.attr||'')+'>'}
 function arrCtl(path,i,n){return '<div class="ctl"><button class="btn xs ghost" data-act="arrMv" data-arr="'+path+'" data-i="'+i+'" data-d="-1" aria-label="بالا"'+(i===0?' disabled':'')+'>↑</button><button class="btn xs ghost" data-act="arrMv" data-arr="'+path+'" data-i="'+i+'" data-d="1" aria-label="پایین"'+(i===n-1?' disabled':'')+'>↓</button><button class="btn xs ghost danger" data-act="arrDel" data-arr="'+path+'" data-i="'+i+'" aria-label="حذف">✕</button></div>'}
 function arrAddBtn(path,label,tpl){return '<div><button class="btn sm" data-act="arrAdd" data-arr="'+path+'" data-tpl="'+esc(JSON.stringify(tpl||{}))+'">+ '+label+'</button></div>'}
+var KLAB={text:'متن',tags:'هشتگ‌ها',prompt:'پرامپت'},VSEC=/^(concept|scenario|storyboard|shoot|caption|edit|prep)\.(text|tags|prompt)$/,archived={};
+function altsBlock(it,sec){var s=it[sec];if(!isObj(s))return '';var al=Array.isArray(s.alts)?s.alts:[];
+  var cur=s.wby?'<div class="muted small" style="margin-top:6px">نوشتهٔ فعلی: '+esc(s.wby)+(s.wat?' · '+fa(s.wat):'')+'</div>':'';
+  if(!al.length)return cur;
+  return cur+'<details class="panel" style="margin-top:8px"><summary><b>نسخه‌های دیگه ('+fa(al.length)+')</b> <span class="muted small">آخرین نوشته اصلیه؛ هر کدوم رو خواستی «این بشه اصلی» بزن و بعد تأیید کن</span></summary><div class="list" style="margin-top:6px">'+
+    al.map(function(x,i){return {x:x,i:i}}).reverse().map(function(o){var x=o.x;return '<div class="arow" style="grid-template-columns:1fr auto"><div><div class="muted small">'+esc(KLAB[x.k]||x.k||'متن')+' · '+esc(x.by||'?')+(x.at?' · '+fa(x.at):'')+'</div><div style="white-space:pre-wrap;max-height:220px;overflow:auto">'+esc(x.text||'')+'</div></div><button class="btn xs" data-act="altUse" data-sec="'+sec+'" data-i="'+o.i+'">این بشه اصلی</button></div>'}).join('')+'</div></details>'}
 function apprBlock(it,sec){
   var a=(it[sec]&&it[sec].ap)||{},s=a.status||'draft',hist=Array.isArray(it[sec]&&it[sec].hist)?it[sec].hist:[];
   return '<div class="appr"><div class="ab"><b>وضعیت '+sectionName(it.type,sec)+'</b>'+apChip(s)+(a.by||a.at?'<span class="muted small">'+esc(a.by||'')+' · '+fa(a.at||'')+'</span>':'')+'</div>'+
@@ -645,7 +651,7 @@ function rSheet(){
     '<div class="stagebar">'+flowOf(it).map(function(k,i){var c=i<stageIdx(it)?'past':i===stageIdx(it)?'on':'';return '<button class="'+c+'" data-act="stageJump" data-k="'+k+'" title="رفتن به این مرحله">'+stLabel(it.type,k)+'</button>'}).join('')+'</div>'+
     '<nav class="stabs" role="tablist">'+secs.map(function(s){var col=APPROVABLE.indexOf(s[0])>=0?{draft:'transparent',review:'var(--warn)',ok:'var(--ok)',fix:'var(--red)'}[apStatus(it,s[0])]:'transparent';return '<button class="stab" role="tab" data-stab="'+s[0]+'" aria-selected="'+(s[0]===openTab)+'">'+s[1]+'<span class="dot" style="background:'+col+'"></span></button>'}).join('')+'</nav></div><div class="sbody">';
   h+=linkPanel(it);
-  h+=({concept:sConcept,scenario:sScenario,storyboard:sBoard,slides:sSlides,shoot:sShoot,edit:sEdit,caption:sCaption,qc:sQc,stages:sStages,files:sFiles,insight:sInsight,talk:sTalk}[openTab])(it);
+  h+=({concept:sConcept,scenario:sScenario,storyboard:sBoard,slides:sSlides,shoot:sShoot,edit:sEdit,caption:sCaption,qc:sQc,stages:sStages,files:sFiles,insight:sInsight,talk:sTalk}[openTab])(it)+altsBlock(it,openTab);
   h+='<div class="ab" style="margin-top:22px;border-top:1px solid var(--line);padding-top:12px"><span class="muted small grow">'+(it.createdAt?'ساخته شده: '+esc(it.createdBy||'')+' '+fa(it.createdAt)+' · ':'')+(it.updatedAt?'آخرین تغییر: '+esc(it.updatedBy||'')+' '+fa(it.updatedAt):'')+'</span><button class="btn sm danger" data-act="archive">بایگانی</button></div></div></aside>';
   host.innerHTML=h;var nb=host.querySelector('.sbody');if(nb&&keep)nb.scrollTop=sc;
   if(openTab==='storyboard')loadSketches(it);
@@ -750,10 +756,10 @@ function sFiles(it){
 }
 function sInsight(it){
   var M=[['views','بازدید'],['reach','دسترسی'],['skip','نرخ رد شدن در ۳ ثانیه (٪)'],['watch','میانگین زمان تماشا (ثانیه)'],['sends','ارسال'],['saves','ذخیره'],['likes','لایک'],['comments','کامنت'],['follows','فالوور تازه'],['replies','پاسخ استیکر یا دایرکت']];
-  var h='<div class="hint">۲۴ و ۷۲ ساعت بعد از انتشار از اینسایت پر کن. «ارسال به‌ازای دسترسی» خودکار حساب می‌شه؛ مهم‌ترین سیگنال برای رسیدن به غیرفالوورها.</div><div class="tblwrap"><table style="min-width:520px"><thead><tr><th>شاخص</th><th>۲۴ ساعت</th><th>۷۲ ساعت</th></tr></thead><tbody>';
-  M.forEach(function(m){h+='<tr><td>'+m[1]+'</td><td>'+F('insight.h24.'+m[0],it,'',{num:1})+'</td><td>'+F('insight.h72.'+m[0],it,'',{num:1})+'</td></tr>'});
+  var h='<div class="hint">۲۴ و ۷۲ ساعت بعد از انتشار از اینسایت پر کن. «ارسال به‌ازای دسترسی» خودکار حساب می‌شه؛ مهم‌ترین سیگنال برای رسیدن به غیرفالوورها.</div><div class="tblwrap"><table style="min-width:520px"><thead><tr><th>شاخص</th><th>۲۴ ساعت</th><th>۷۲ ساعت</th><th>آخرین ثبت</th></tr></thead><tbody>';
+  M.forEach(function(m){h+='<tr><td>'+m[1]+'</td><td>'+F('insight.h24.'+m[0],it,'',{num:1})+'</td><td>'+F('insight.h72.'+m[0],it,'',{num:1})+'</td><td>'+F('insight.last.'+m[0],it,'',{num:1})+'</td></tr>'});
   function rate(k){var i=(it.insight||{})[k]||{};return i.reach?fa(((+i.sends||0)/(+i.reach)*100).toFixed(1))+'٪':'—'}
-  h+='<tr><td><b>ارسال به‌ازای دسترسی</b></td><td><b>'+rate('h24')+'</b></td><td><b>'+rate('h72')+'</b></td></tr></tbody></table></div><label class="fld"><span>درس برای قسمت بعد</span>'+F('insight.lesson',it,'',{area:1,rows:3})+'</label>';
+  h+='<tr><td><b>ارسال به‌ازای دسترسی</b></td><td><b>'+rate('h24')+'</b></td><td><b>'+rate('h72')+'</b></td><td><b>'+rate('last')+'</b></td></tr></tbody></table></div><div class="frow"><label class="fld"><span>منبع و تاریخ «آخرین ثبت»</span>'+F('insight.src',it,'مثلاً Metricool، ۱۱ آبان')+'</label></div><label class="fld"><span>تحلیل ادمین پیج</span>'+F('insight.analysis',it,'چی خوب بود، چی نه، گام بعدی (ادمین پیج خودکار پر می‌کنه)',{area:1,rows:4})+'</label><label class="fld"><span>درس برای قسمت بعد</span>'+F('insight.lesson',it,'',{area:1,rows:3})+'</label>';
   return h;
 }
 function sTalk(it){
@@ -948,6 +954,10 @@ function onClick(e){
   case 'shotColor':queue(openId,patchPath(it,'storyboard.shots.'+el.dataset.i+'.color',el.dataset.c),true);rSheet();return;
   case 'sketch':openSketch(+el.dataset.i);return;
   case 'hookPick':{var hk=clone(getD(it,'scenario.hooks')||[]);hk.forEach(function(x,i){x.pick=i===+el.dataset.i});queue(openId,{scenario:{hooks:hk}},true);return}
+  case 'altUse':{var sc=el.dataset.sec,ss=clone(it[sc]||{}),ar=clone(ss.alts||[]),ix=+el.dataset.i,x=ar[ix];if(!x)return;var kk=x.k||'text',oldv=ss[kk];ar.splice(ix,1);if(oldv)ar.push({k:kk,text:oldv,by:ss.wby||it.updatedBy||'',at:ss.wat||''});
+    var pp={};pp[sc]={alts:ar.slice(-10),wby:x.by||'',wat:x.at||''};pp[sc][kk]=x.text||'';
+    if(ss.ap&&ss.ap.status==='ok'){var nap={status:'review',by:me||'',at:nowStamp(),note:'نسخهٔ دیگه انتخاب شد'};pp[sc].ap=nap;pp[sc].hist=clone(ss.hist||[]).concat([{status:'review',by:nap.by,at:nap.at,note:nap.note}]).slice(-20)}
+    archived[openId+'|'+sc+'.'+kk]=1;queue(openId,pp,true);log('«'+it.title+'»: '+sectionName(it.type,sc)+' ← نسخهٔ '+(x.by||''));rSheet();toast('جابه‌جا شد؛ متن قبلی رفت توی نسخه‌ها');return}
   case 'capUse':{var vr=clone(getD(it,'caption.variants')||[]),k2=+el.dataset.i,old=getD(it,'caption.text')||'';var nt=vr[k2].text;vr[k2].text=old;queue(openId,{caption:{text:nt,variants:vr}},true);rSheet();toast('جابه‌جا شد؛ کپشن قبلی رفت توی نسخه‌ها');return}
   case 'backplan':backplan();return;
   case 'mention':{var ta=document.getElementById('cmtNew');if(ta){ta.value+=(ta.value&&!/\s$/.test(ta.value)?' ':'')+'@'+el.dataset.n+' ';ta.focus()}return}
@@ -989,7 +999,10 @@ function onInput(e){var el=e.target;
   if(el.dataset.li&&el.dataset.k==='title'){queue(el.dataset.li,{title:el.value},false);return}
   if(!openId||!el.closest||!el.closest('.sheet')||!el.dataset.f)return;
   if(el.type==='checkbox'||el.type==='radio'||el.tagName==='SELECT'||el.dataset.date||el.type==='file')return;
-  sheetDirty=true;var it=item(openId),v=el.dataset.num?(el.value===''?'':+el.value):el.value;queue(openId,patchPath(it,el.dataset.f,v),false)}
+  sheetDirty=true;var it=item(openId),v=el.dataset.num?(el.value===''?'':+el.value):el.value,pth=el.dataset.f,pt=patchPath(it,pth,v),mm=VSEC.exec(pth);
+  if(mm&&!archived[openId+'|'+pth]){archived[openId+'|'+pth]=1;var ss=isObj(it[mm[1]])?it[mm[1]]:{},ov=ss[mm[2]],ex={};ex[mm[1]]={wby:me||'',wat:nowStamp()};
+    if(ov&&(ss.wby||'')!==(me||'')){var ar=clone(ss.alts||[]);ar.push({k:mm[2],text:ov,by:ss.wby||it.updatedBy||'',at:ss.wat||''});ex[mm[1]].alts=ar.slice(-10)}pt=merge(pt,ex)}
+  queue(openId,pt,false)}
 function onFocusOut(e){if(!openId)return;var el=e.target;if(!el.closest||!el.closest('.sheet'))return;
   setTimeout(function(){var a=document.activeElement;if(!a||!a.closest||!a.closest('.sheet')||!/INPUT|TEXTAREA|SELECT/.test(a.tagName)){if(sheetDirty){sheetDirty=false;flush(openId);if(el.dataset.f==='title')log('«'+(item(openId)||{}).title+'»: عنوان تازه');render()}}},80)}
 function onSubmit(e){
